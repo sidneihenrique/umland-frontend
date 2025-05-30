@@ -45,16 +45,50 @@ header .right{
 
 .money .lucide-icon{
     color: var(--yellow);
-    width: 48px;
-    height: 48px;
-    font-size: 48px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .amount{
     font-size: 22px;
     font-weight: 800;
+}
+
+.reputation{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-icon-wrapper{
+    width: 64px;
+    height: 64px;
+
+    border: 3px solid var(--black);
+    border-radius: 50%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    overflow: hidden;
+}
+
+.user-icon-wrapper img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.action-buttons{
+    width: 80%;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 24px;
+}
+
+diagram-editor{
+    width: 80%;
+    height: 79vh;
 }
