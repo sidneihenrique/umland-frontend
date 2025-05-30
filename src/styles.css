@@ -14,3 +14,52 @@
     box-sizing: border-box;
     font-family: 'Roboto', sans-serif;
 }
+
+body{
+  padding: 16px;
+}
+
+.btn-icon{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px;
+  
+  border: 0;
+  border-radius: 8px;
+
+
+  background: transparent;
+
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+.btn-icon.filled{
+  border: 3px solid var(--black);
+  background-color: var(--gray);
+  transition: 0.5s;
+}
+
+.btn-icon.filled:hover{
+  background-color: var(--yellow);
+  transition: 0.5s;
+}
+
+.btn-icon .lucide-icon{
+  width: 48px;
+  height: 48px;
+  font-size: 48px;
+  color: var(--black);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon.filled .lucide-icon{
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+}

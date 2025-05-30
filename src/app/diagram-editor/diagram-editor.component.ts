@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { LucideIconsModule } from '../lucide-icons.module';
 
 @Component({
   standalone: true,

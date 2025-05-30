@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
-import { LucideAngularModule, Sparkle } from 'lucide-angular';
+import { LucideAngularModule } from 'lucide-angular';
+// Importa os ícones para o componente game-phase
 import { 
         X, 
         Store, 
