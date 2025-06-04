@@ -1,5 +1,6 @@
 import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { dia, shapes, util, elementTools, linkTools, connectors, layout } from '@joint/core'
+import { UMLElementUtil } from '../utils/uml-element.util';
 
 @Component({
   standalone: true,
@@ -14,12 +15,8 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   private graph: dia.Graph | null = null;
   private zoomLevel: number = 1;
   private readonly zoomMin: number = 0.2;
-  private readonly zoomMax: number = 3;
-  private readonly zoomStep: number = 0.1;
-
-  private isPanning: boolean = false;
-  private panStart: { x: number; y: number } = { x: 0, y: 0 };
-  private translateStart: { x: number; y: number } = { x: 0, y: 0 };
+  private readonly zoomMax: number =  3;
+  private readonly zoomStep: number = 0.03;
 
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
 
@@ -31,8 +28,8 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     this.graph = new dia.Graph();
 
     const container = this.paperContainer.nativeElement as HTMLElement;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const width = 2000;
+    const height = 2000;
 
     this.paper = new dia.Paper({
       el: this.paperContainer.nativeElement,
@@ -61,95 +58,128 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
 
     // Ativar zoom com o scroll do mouse
     container.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
-    container.addEventListener('mousedown', this.onMouseDown.bind(this));
-    container.addEventListener('mousemove', this.onMouseMove.bind(this));
-    container.addEventListener('mouseup', this.onMouseUp.bind(this));
+    // container.addEventListener('mousedown', this.onMouseDown.bind(this));
+    // container.addEventListener('mousemove', this.onMouseMove.bind(this));
+    // container.addEventListener('mouseup', this.onMouseUp.bind(this));
   }
 
-  @HostListener('window:resize')
-  onResize() {
-    if (this.paper && this.paperContainer) {
-      const container = this.paperContainer.nativeElement as HTMLElement;
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      this.paper.setDimensions(width, height);
-    }
-  }
+
 
 
   private onMouseWheel(event: WheelEvent) {
     if (!this.paper) return;
 
-    event.preventDefault();
+    // Só faz zoom se for gesto de pinça (ctrlKey ou metaKey)
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
 
-    const zoomIn = event.deltaY < 0;
 
-    let newZoom = this.zoomLevel + (zoomIn ? this.zoomStep : -this.zoomStep);
-    newZoom = Math.max(this.zoomMin, Math.min(this.zoomMax, newZoom));
+      const container = document.querySelector('.wrapper-board') as HTMLElement; // container
+      const paperElement = container.querySelector('.board') as HTMLElement; // paper
 
-    // Obter posição do mouse em coordenadas do modelo (antes do zoom)
-    const clientRect = this.paper.el.getBoundingClientRect();
-    const clientX = event.clientX - clientRect.left;
-    const clientY = event.clientY - clientRect.top;
+      const zoomIn = event.deltaY < 0;
+      let newZoom = this.zoomLevel + (zoomIn ? this.zoomStep : -this.zoomStep);
+      newZoom = Math.max(this.zoomMin, Math.min(this.zoomMax, newZoom));
 
-    const currentPoint = this.paper.clientToLocalPoint({ x: clientX, y: clientY });
+      // Posição do mouse relativa ao container
+      const rect = container.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left + container.scrollLeft;
+      const mouseY = event.clientY - rect.top + container.scrollTop;
 
-    // Aplicar novo zoom
-    this.paper.scale(newZoom, newZoom);
-    this.zoomLevel = newZoom;
+      // Fator de escala
+      const scale = newZoom / this.zoomLevel;
 
-    // Obter nova posição do mesmo ponto após o zoom
-    const newClientPoint = this.paper.localToClientPoint(currentPoint);
+      // Ajusta o scroll para manter o ponto do mouse fixo
+      container.scrollLeft = (mouseX * scale) - (event.clientX - rect.left);
+      container.scrollTop = (mouseY * scale) - (event.clientY - rect.top);
 
-    // Calcular quanto o canvas deve se mover para manter o ponto sob o cursor fixo
-    const dx = clientX - newClientPoint.x;
-    const dy = clientY - newClientPoint.y;
+      // Aplica o zoom via CSS transform
+      if (paperElement) {
+        paperElement.style.transformOrigin = '0 0';
+        paperElement.style.transform = `scale(${newZoom})`;
 
-    const currentTranslate = this.paper.translate();
-    this.paper.translate(currentTranslate.tx + dx, currentTranslate.ty + dy);
-  }
+      }
 
-  private onMouseDown(event: MouseEvent) {
-    if (!this.paper) return;
-
-    // Verifica se o clique foi em área vazia
-    const target = event.target as HTMLElement;
-    const isBlank = target && target.getAttribute('magnet') !== 'true' && !target.closest('.joint-element');
-
-    if (isBlank) {
-      this.isPanning = true;
-      this.panStart = { x: event.clientX, y: event.clientY };
-      const { tx, ty } = this.paper.translate();
-      this.translateStart = { x: tx, y: ty };
-      this.setCursor('grabbing');
+      this.zoomLevel = newZoom;
     }
-
-  }
-
-  private onMouseMove(event: MouseEvent) {
-    if (!this.paper) return;
-
-    if (this.isPanning) {
-      const dx = event.clientX - this.panStart.x;
-      const dy = event.clientY - this.panStart.y;
-      this.paper.translate(this.translateStart.x + dx, this.translateStart.y + dy);
-    } else {
-      // Quando o mouse está em área vazia, mas não arrastando
-      const target = event.target as HTMLElement;
-      const isBlank = target && target.getAttribute('magnet') !== 'true' && !target.closest('.joint-element');
-      this.setCursor(isBlank ? 'grab' : 'default');
-    }
-  }
-
-  private onMouseUp(_: MouseEvent) {
-    this.isPanning = false;
-    this.setCursor('grab');
   }
 
   private setCursor(style: string) {
     if (this.paperContainer && this.paperContainer.nativeElement) {
       this.paperContainer.nativeElement.style.cursor = style;
     }
+  }
+
+  onDragStart(event: DragEvent, type: string) {
+    event.dataTransfer?.setData('uml-type', type);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    const type = event.dataTransfer?.getData('uml-type');
+    if (type === 'actor' && this.graph && this.paper) {
+      const container = this.paperContainer.nativeElement as HTMLElement;
+      const rect = container.getBoundingClientRect();
+
+      // Posição do mouse relativa ao container
+      const clientX = event.clientX - rect.left + container.scrollLeft;
+      const clientY = event.clientY - rect.top + container.scrollTop;
+
+      // Ajuste para o zoom atual
+      const scaledX = clientX / this.zoomLevel;
+      const scaledY = clientY / this.zoomLevel;
+
+      const actor = UMLElementUtil.createActor(scaledX, scaledY);
+      actor.addTo(this.graph);
+    }
+  }
+
+  addElement(type?: string, event?: MouseEvent) {
+    if (this.graph && this.paper) {
+      const container = this.paperContainer.nativeElement as HTMLElement;
+
+      // Se não recebeu o evento, adiciona um listener de click para capturar o próximo clique
+      if(!event) {
+        const clickHandler = (evt: MouseEvent) => {
+          // Remove o listener após o clique para evitar múltiplas execuções
+          container.removeEventListener('click', clickHandler);
+          // Chama addElement novamente, agora com o evento
+          this.addElement(type, evt);
+        };
+        container.addEventListener('click', clickHandler);
+        
+        // Muda o cursor para indicar que está aguardando o clique
+        this.setCursor('crosshair');
+        return
+      } else if (event && type) {
+          const rect = container.getBoundingClientRect();
+
+          // Posição do mouse relativa ao container
+          const clientX = event.clientX - rect.left + container.scrollLeft;
+          const clientY = event.clientY - rect.top + container.scrollTop;
+
+          // Ajuste para o zoom atual
+          const scaledX = clientX / this.zoomLevel;
+          const scaledY = clientY / this.zoomLevel;
+
+          if (type === 'actor') {
+            const actor = UMLElementUtil.createActor(scaledX, scaledY);
+            actor.addTo(this.graph);
+          } else {
+            console.error('Unknown element type:', type);
+          }
+          // Voltar o cursor ao normal após adicionar o elemento
+          this.setCursor('default');
+      }
+    } else {
+      console.error('Graph or paper not initialized');
+      return;
+    }
+
   }
 
   ngOnDestroy(): void {

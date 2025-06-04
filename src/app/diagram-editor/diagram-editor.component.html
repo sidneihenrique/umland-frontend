@@ -3,7 +3,12 @@
         <button class="btn-icon filled">
             <img src="assets/icons/association.svg" alt="">
         </button>
-        <button class="btn-icon filled">
+        <button 
+            class="btn-icon filled"
+            draggable="true" 
+            (dragstart)="onDragStart($event, 'actor')"
+            (click)="addElement('actor')"    
+        >
             <img src="assets/icons/actor.svg" alt="">
         </button>
         <button class="btn-icon filled">
@@ -20,8 +25,15 @@
         </button>
     </div>
 
-    <div class="board" #paperContainer>
-        
+    <div class="wrapper-board">
+        <div 
+            class="board" 
+            #paperContainer
+            (dragover)="onDragOver($event)"
+            (drop)="onDrop($event)"    
+        >
+            
+        </div>
     </div>
 
     <img src="assets/characters/character_teacher_01.png" alt="" class="character">
