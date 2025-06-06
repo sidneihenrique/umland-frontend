@@ -120,12 +120,13 @@ diagram-editor{
     left: 0;
     z-index: 1000;
     width: 300px;
-    background: white;
+    background: var(--gray);
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-top: 5px;
+    overflow: hidden;
 }
 
 .dica-texto {
@@ -133,18 +134,67 @@ diagram-editor{
     min-height: 60px;
     display: flex;
     align-items: center;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    position: relative;
+    transition: none; 
 }
 
-/* Animações CSS */
-.fade-in {
+/* Animações de entrada */
+.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
 }
 
-.fade-out {
-    opacity: 0;
-    transform: translateY(-10px);
+.exit-left {
+    animation: exitLeft 0.3s forwards;
+}
+
+.exit-right {
+    animation: exitRight 0.3s forwards;
+}
+
+.enter-right {
+    animation: enterRight 0.3s forwards;
+}
+
+.enter-left {
+    animation: enterLeft 0.3s forwards;
+}
+
+/* Keyframes para as animações */
+@keyframes exitLeft {
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
+
+@keyframes exitRight {
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes enterRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes enterLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 /* Navegação */

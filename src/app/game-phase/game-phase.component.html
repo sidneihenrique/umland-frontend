@@ -36,7 +36,7 @@
             
             @if (isOpen) {
                 <div class="dicas-content">
-                    <div class="dica-texto {{currentClass}}">
+                    <div class="dica-texto" [class]="animationState">
                         {{ dicaTexto }}
                     </div>
                     <div class="dicas-navegacao">

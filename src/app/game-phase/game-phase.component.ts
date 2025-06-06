@@ -15,7 +15,7 @@ export class GamePhaseComponent {
   @Input() isOpen = false;
   dicas: string[] = [];
   dicaAtual = 0;
-  currentClass = 'fade-in';
+  animationState = 'visible';
   
   // Lista de dicas de UML (você pode expandir)
   todasDicas: string[] = [
@@ -43,15 +43,15 @@ export class GamePhaseComponent {
     
     this.dicas = dicasEmbaralhadas;
     this.dicaAtual = 0;
-    this.currentClass = 'fade-in';
+    this.animationState = 'visible';
   }
 
   mudarDica(direcao: number) {
-    this.currentClass = 'fade-out';
+    this.animationState = direcao > 0 ? 'exit-left' : 'exit-right';
     
     setTimeout(() => {
       this.dicaAtual = (this.dicaAtual + direcao + this.dicas.length) % this.dicas.length;
-      this.currentClass = 'fade-in';
+      this.animationState = direcao > 0 ? 'enter-right' : 'enter-left';
     }, 300);
   }
 

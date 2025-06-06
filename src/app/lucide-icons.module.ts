@@ -10,6 +10,8 @@ import {
   MoveUpRight,
   Lightbulb,
   BookCheck,
+  ChevronLeft,
+  ChevronRight,
   MessageCircleQuestion,
   Save
 } from 'lucide-angular';
@@ -24,6 +26,8 @@ import {
     MoveUpRight,
     Lightbulb,
     BookCheck,
+    ChevronLeft,
+    ChevronRight,
     MessageCircleQuestion,
     Save
   })],
