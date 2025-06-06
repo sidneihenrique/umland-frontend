@@ -11,7 +11,12 @@
         >
             <img src="assets/icons/actor.svg" alt="">
         </button>
-        <button class="btn-icon filled">
+        <button
+            class="btn-icon filled"
+            draggable="true" 
+            (dragstart)="onDragStart($event, 'usecase')"
+            (click)="addElement('usecase')"    
+        >
             <img src="assets/icons/use_case.svg" alt="">
         </button>
         <button class="btn-icon filled">

@@ -47,3 +47,18 @@
 
     width: 240px;
 }
+
+.inline-editor {
+    border: 1px solid var(--gray); 
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+
+    padding: 4px;
+    z-index: 9999;
+
+    font-size: 14px;
+    outline: none;
+
+    width: fit-content;
+    height: fit-content;
+}

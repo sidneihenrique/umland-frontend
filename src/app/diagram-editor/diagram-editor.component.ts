@@ -58,13 +58,12 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
 
     // Ativar zoom com o scroll do mouse
     container.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
-    // container.addEventListener('mousedown', this.onMouseDown.bind(this));
-    // container.addEventListener('mousemove', this.onMouseMove.bind(this));
-    // container.addEventListener('mouseup', this.onMouseUp.bind(this));
+
+    // Aciona o editor inline ao dar duplo clique em um elemento
+    this.paper.on('element:pointerdblclick', (cellView, evt) => {
+      this.showInlineEditor(cellView, evt);
+    });
   }
-
-
-
 
   private onMouseWheel(event: WheelEvent) {
     if (!this.paper) return;
@@ -121,24 +120,20 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   onDrop(event: DragEvent) {
     event.preventDefault();
     const type = event.dataTransfer?.getData('uml-type');
-    if (type === 'actor' && this.graph && this.paper) {
-      const container = this.paperContainer.nativeElement as HTMLElement;
-      const rect = container.getBoundingClientRect();
+    if(this.graph && this.paper) {
+      // Verifica se o tipo é válido
+      if (!type || (type !== 'actor' && type !== 'usecase')) {
+        console.error('Invalid UML element type:', type);
+        return;
+      }
 
-      // Posição do mouse relativa ao container
-      const clientX = event.clientX - rect.left + container.scrollLeft;
-      const clientY = event.clientY - rect.top + container.scrollTop;
-
-      // Ajuste para o zoom atual
-      const scaledX = clientX / this.zoomLevel;
-      const scaledY = clientY / this.zoomLevel;
-
-      const actor = UMLElementUtil.createActor(scaledX, scaledY);
-      actor.addTo(this.graph);
+      // Chama a função para adicionar o elemento
+      this.addElement(type, event);
     }
   }
 
   addElement(type?: string, event?: MouseEvent) {
+    // Verifica se o graph e o paper foram inicializados
     if (this.graph && this.paper) {
       const container = this.paperContainer.nativeElement as HTMLElement;
 
@@ -166,11 +161,21 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
           const scaledX = clientX / this.zoomLevel;
           const scaledY = clientY / this.zoomLevel;
 
-          if (type === 'actor') {
-            const actor = UMLElementUtil.createActor(scaledX, scaledY);
-            actor.addTo(this.graph);
-          } else {
-            console.error('Unknown element type:', type);
+          switch (type) {
+            case 'actor': {
+              const actor = UMLElementUtil.createActor(scaledX, scaledY);
+              actor.addTo(this.graph);
+              break;
+            }
+            case 'usecase': {
+              const useCase = UMLElementUtil.createUseCase(scaledX, scaledY);
+              useCase.addTo(this.graph);
+              break;
+            }
+            // Adicione outros tipos conforme necessário
+            default:
+              console.error('Unknown element type:', type);
+              break;
           }
           // Voltar o cursor ao normal após adicionar o elemento
           this.setCursor('default');
@@ -180,6 +185,66 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
       return;
     }
 
+  }
+
+  private showInlineEditor(cellView: dia.CellView, evt: dia.Event): void {
+    const element = cellView.model;
+    const paper = cellView.paper;
+
+    console.log('Element clicked:', element);
+
+    // Verifica se o elemento e o paper estão definidos
+    if (!element || !paper) return;
+
+    // Remove editores anteriores, se houver
+    const existingEditor = document.querySelector('.inline-editor');
+    if (existingEditor) {
+      existingEditor.remove();
+    }
+
+    // Posição absoluta do elemento clicado
+    const bbox = cellView.getBBox();
+    const paperRect = this.paperContainer.nativeElement.getBoundingClientRect();
+
+    console.log('Bounding box:', bbox);
+    console.log('Paper rect:', paperRect);
+
+    const left = paperRect.left + bbox.x * this.zoomLevel;
+    const top = paperRect.top + bbox.y * this.zoomLevel;
+
+    // Cria o editor
+    const inputDiv = document.createElement('div');
+    inputDiv.className = 'inline-editor';
+    inputDiv.contentEditable = 'true';
+    inputDiv.style.position = 'absolute';
+    inputDiv.style.left = `${left}px`;
+    inputDiv.style.top = `${top}px`;
+
+    // Texto atual do elemento
+    const label = element.attr(['label', 'text']) || '';
+    inputDiv.innerText = label;
+
+    // Insere no body
+    document.body.appendChild(inputDiv);
+
+    // Foco automático
+    inputDiv.focus();
+
+    // Finalizar edição (Enter ou clicar fora)
+    const finishEditing = () => {
+      const newText = inputDiv.innerText.trim();
+      element.attr(['label', 'text'], newText);
+      inputDiv.remove();
+    };
+
+    inputDiv.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        finishEditing();
+      }
+    });
+
+    inputDiv.addEventListener('blur', finishEditing);
   }
 
   ngOnDestroy(): void {
