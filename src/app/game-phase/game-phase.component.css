@@ -69,6 +69,7 @@ header .right{
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
     
     overflow: hidden;
 }
@@ -91,4 +92,93 @@ header .right{
 diagram-editor{
     width: 80%;
     height: 79vh;
+}
+
+.dicas-container {
+  position: relative; /* Necessário para posicionar as dicas */
+  display: inline-block;
+}
+
+.btn-dicas {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.btn-dicas:hover {
+  background-color: #45a049;
+}
+
+.dicas-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    width: 300px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 5px;
+}
+
+.dica-texto {
+    margin-bottom: 8px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Animações CSS */
+.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Navegação */
+.dicas-navegacao {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.contador {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.btn-navegacao {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.btn-navegacao:hover {
+    background: #f0f0f0;
+}
+
+/* Ícones */
+.lucide-icon {
+    transition: color 0.2s;
+}
+
+.btn-navegacao:hover .lucide-icon {
+    color: #4CAF50;
 }
