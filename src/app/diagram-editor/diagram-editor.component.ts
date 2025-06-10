@@ -1,5 +1,6 @@
-import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, ViewChild, HostListener } from '@angular/core';
-import { dia, shapes, util, elementTools, linkTools, connectors, layout } from '@joint/core'
+import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, ViewChild, HostListener, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import * as joint from '@joint/core';
 import { UMLElementUtil } from '../utils/uml-element.util';
 
 @Component({
@@ -10,39 +11,43 @@ import { UMLElementUtil } from '../utils/uml-element.util';
   styleUrl: './diagram-editor.component.css'
 })
 export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy {
-
-  private paper: dia.Paper | null = null;
-  private graph: dia.Graph | null = null;
+  private paper: joint.dia.Paper | null = null;
+  private graph: joint.dia.Graph | null = null;
   private zoomLevel: number = 1;
   private readonly zoomMin: number = 0.2;
-  private readonly zoomMax: number =  3;
+  private readonly zoomMax: number = 3;
   private readonly zoomStep: number = 0.03;
 
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
 
-  ngOnInit(): void {
+  constructor(@Inject(PLATFORM_ID) private platformId: object) {}
 
-  }
+  ngOnInit(): void {}
 
   ngAfterViewInit(): void {
-    this.graph = new dia.Graph();
+    if (isPlatformBrowser(this.platformId)) {
+      this.initializeJointJS();
+    }
+  }
+
+  private initializeJointJS(): void {
+    this.graph = new joint.dia.Graph();
 
     const container = this.paperContainer.nativeElement as HTMLElement;
     const width = 2000;
     const height = 2000;
 
-    this.paper = new dia.Paper({
+    this.paper = new joint.dia.Paper({
       el: this.paperContainer.nativeElement,
       model: this.graph,
       width: width,
       height: height,
       gridSize: 10,
       drawGrid: true,
-      defaultLink: new shapes.standard.Link(),
-
+      defaultLink: new joint.shapes.standard.Link(),
     });
 
-    const rect = new shapes.standard.Rectangle();
+    const rect = new joint.shapes.standard.Rectangle();
     rect.position(25, 100);
     rect.resize(100, 40);
     rect.attr({
@@ -56,11 +61,9 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     });
     rect.addTo(this.graph);
 
-    // Ativar zoom com o scroll do mouse
     container.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
 
-    // Aciona o editor inline ao dar duplo clique em um elemento
-    this.paper.on('element:pointerdblclick', (cellView, evt) => {
+    this.paper.on('element:pointerdblclick', (cellView: joint.dia.ElementView, evt: joint.dia.Event) => {
       this.showInlineEditor(cellView, evt);
     });
   }
@@ -187,7 +190,7 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
 
   }
 
-  private showInlineEditor(cellView: dia.CellView, evt: dia.Event): void {
+  private showInlineEditor(cellView: joint.dia.ElementView, evt: joint.dia.Event): void {
     const element = cellView.model;
     const paper = cellView.paper;
 
