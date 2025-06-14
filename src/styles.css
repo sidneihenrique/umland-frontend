@@ -67,3 +67,23 @@ body{
   height: 24px;
   font-size: 24px;
 }
+
+.inline-editor {
+    border: 1px solid var(--black); 
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    backdrop-filter: blur(4px);
+
+    padding: 4px;
+    z-index: 9999;
+
+    font-size: 14px;
+    outline: none;
+
+    max-width: 200px;
+    height: fit-content;
+
+    text-wrap: wrap;
+
+    transform-origin: -50%;
+}
