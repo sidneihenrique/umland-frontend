@@ -242,8 +242,13 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
       // Adicione um padding se desejar
       const paddingX = 32;
       const paddingY = 16;
-      element.resize(editorRect.width + paddingX, editorRect.height + paddingY);
 
+      if(element.get('type') === 'custom.UseCase') {
+        element.resize(editorRect.width + paddingX, editorRect.height + paddingY);
+      }
+
+      inputDiv.removeEventListener('blur', finishEditing);
+      paper.off('paper:pointerdown', finishEditing);
       inputDiv.remove();
     };
 
