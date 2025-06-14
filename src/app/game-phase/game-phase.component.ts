@@ -1,24 +1,23 @@
-import { Component, Input } from '@angular/core';
+import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
+import Swiper from 'swiper';
+import { SwiperOptions } from 'swiper/types';
+import { Navigation } from 'swiper/modules';
 import { CommonModule } from '@angular/common';
-import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'game-phase',
   standalone: true,
-  imports: [LucideIconsModule, DiagramEditorComponent],
+  imports: [LucideIconsModule, DiagramEditorComponent, CommonModule],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
 export class GamePhaseComponent {
-  @Input() isOpen = false;
-  dicas: string[] = [];
-  dicaAtual = 0;
-  animationState = 'visible';
-  
-  // Lista de dicas de UML (você pode expandir)
-  todasDicas: string[] = [
+  isOpen = false;
+
+  // Todas as dicas possíveis
+  private todasDicas: string[] = [
     "Use casos de uso para representar funcionalidades do sistema do ponto de vista do usuário.",
     "Diagramas de classe mostram a estrutura estática do sistema com classes e relacionamentos.",
     "Herança em UML é representada por uma seta com ponta vazia (triângulo).",
@@ -29,33 +28,66 @@ export class GamePhaseComponent {
     "Diagramas de atividade são similares a fluxogramas e mostram o fluxo de processos."
   ];
 
-  abrirDicas() {
+  dicas: string[] = [];
+
+  activeSlideIndex = 0;
+  private swiper?: Swiper;
+
+  constructor() {
+    this.dicas = this.sortearDicas(3);
+  }
+
+  private sortearDicas(qtd: number): string[] {
+    // Embaralha o array e pega os primeiros 'qtd'
+    return this.todasDicas
+      .map(dica => ({ dica, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .slice(0, qtd)
+      .map(obj => obj.dica);
+  }
+
+  toggleDicas() {
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
-      this.sortearDicas();
+      // Timeout para garantir que o DOM esteja atualizado
+      setTimeout(() => this.initSwiper(), 0);
+    } else {
+      this.destroySwiper();
     }
   }
 
-  sortearDicas() {
-    const dicasEmbaralhadas = [...this.todasDicas]
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 3);
-    
-    this.dicas = dicasEmbaralhadas;
-    this.dicaAtual = 0;
-    this.animationState = 'visible';
+  private initSwiper() {
+    // Destrói qualquer instância existente
+    this.destroySwiper();
+
+    // Configuração do Swiper
+    this.swiper = new Swiper('.clues-swiper', {
+      modules: [Navigation],
+      slidesPerView: 1,
+      spaceBetween: 10,
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      on: {
+        slideChange: (swiper) => {
+          this.activeSlideIndex = swiper.activeIndex;
+        },
+        init: (swiper) => {
+          this.activeSlideIndex = swiper.activeIndex;
+        }
+      }
+    });
   }
 
-  mudarDica(direcao: number) {
-    this.animationState = direcao > 0 ? 'exit-left' : 'exit-right';
-    
-    setTimeout(() => {
-      this.dicaAtual = (this.dicaAtual + direcao + this.dicas.length) % this.dicas.length;
-      this.animationState = direcao > 0 ? 'enter-right' : 'enter-left';
-    }, 300);
+  private destroySwiper() {
+    if (this.swiper) {
+      this.swiper.destroy(true, true);
+      this.swiper = undefined;
+    }
   }
 
-  get dicaTexto() {
-    return this.dicas[this.dicaAtual];
+  ngOnDestroy() {
+    this.destroySwiper();
   }
 }

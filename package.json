@@ -21,9 +21,12 @@
     "@angular/router": "^20.0.2",
     "@angular/ssr": "^20.0.1",
     "@joint/core": "^4.1.3",
+    "@ng-bootstrap/ng-bootstrap": "^18.0.0",
+    "bootstrap": "^5.3.6",
     "express": "^4.18.2",
     "lucide-angular": "^0.511.0",
     "rxjs": "~7.8.0",
+    "swiper": "^11.2.8",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
