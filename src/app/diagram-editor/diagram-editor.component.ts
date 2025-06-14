@@ -222,6 +222,12 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
     const element = cellView.model;
     const paper = cellView.paper;
 
+    const labelNode = cellView.el.querySelector('text') as SVGTextElement;
+
+    if (!labelNode) return;
+
+    const labelRect = labelNode.getBoundingClientRect();
+
     console.log('Element clicked:', element);
 
     // Verifica se o elemento e o paper estão definidos
@@ -233,23 +239,15 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
       existingEditor.remove();
     }
 
-    // Posição absoluta do elemento clicado
-    const bbox = cellView.getBBox();
-    const paperRect = this.paperContainer.nativeElement.getBoundingClientRect();
-
-    console.log('Bounding box:', bbox);
-    console.log('Paper rect:', paperRect);
-
-    const left = paperRect.left + bbox.x * this.zoomLevel;
-    const top = paperRect.top + bbox.y * this.zoomLevel;
-
     // Cria o editor
     const inputDiv = document.createElement('div');
     inputDiv.className = 'inline-editor';
     inputDiv.contentEditable = 'true';
     inputDiv.style.position = 'absolute';
-    inputDiv.style.left = `${left}px`;
-    inputDiv.style.top = `${top}px`;
+    inputDiv.style.minWidth = `${labelRect.width}px`;
+    inputDiv.style.left = `${labelRect.left + window.scrollX}px`;
+    inputDiv.style.top = `${labelRect.top + window.scrollY}px`;
+    inputDiv.style.zIndex = '1000';
 
     // Texto atual do elemento
     const label = element.attr(['label', 'text']) || '';
@@ -261,10 +259,19 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
     // Foco automático
     inputDiv.focus();
 
+
     // Finalizar edição (Enter ou clicar fora)
     const finishEditing = () => {
       const newText = inputDiv.innerText.trim();
       element.attr(['label', 'text'], newText);
+
+      // Ajusta o tamanho do elemento conforme o tamanho do .inline-editor
+      const editorRect = inputDiv.getBoundingClientRect();
+      // Adicione um padding se desejar
+      const paddingX = 32;
+      const paddingY = 16;
+      element.resize(editorRect.width + paddingX, editorRect.height + paddingY);
+
       inputDiv.remove();
     };
 
@@ -275,7 +282,9 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
       }
     });
 
+    
     inputDiv.addEventListener('blur', finishEditing);
+    paper.on('paper:pointerdown', finishEditing);
   }
 
   ngOnDestroy(): void {
