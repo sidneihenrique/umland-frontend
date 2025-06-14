@@ -1,16 +1,20 @@
 import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, ViewChild, HostListener, PLATFORM_ID, Inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import * as joint from '@joint/core';
 import { UMLElementUtil } from '../utils/uml-element.util';
+import Swiper from 'swiper';
+import { SwiperOptions } from 'swiper/types';
+import { LucideIconsModule } from '../lucide-icons.module';
 
 @Component({
   standalone: true,
   selector: 'diagram-editor',
-  imports: [],
+  imports: [CommonModule, LucideIconsModule],
   templateUrl: './diagram-editor.component.html',
   styleUrl: './diagram-editor.component.css'
 })
-export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy, AfterViewInit {
+  @ViewChild('speechSwiper', { static: false }) speechSwiperRef?: ElementRef;
   private paper: joint.dia.Paper | null = null;
   private graph: joint.dia.Graph | null = null;
   private zoomLevel: number = 1;
@@ -18,17 +22,41 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   private readonly zoomMax: number = 3;
   private readonly zoomStep: number = 0.03;
 
+  showTeacher = true;
+  teacherDialogues = [
+    'Olá! Bem-vindo ao jogo. Vou te ajudar a entender como funciona.',
+    'Aqui você pode criar diagramas UML facilmente.',
+    'Clique nos botões acima para acessar dicas rápidas!'
+  ];
+  private teacherSwiper?: Swiper;
+
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
 
   constructor(@Inject(PLATFORM_ID) private platformId: object) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // setTimeout(() => {
+    //   this.showTeacher = true;
+    //   setTimeout(() => this.initTeacherSwiper(), 100); // Garante que o DOM já renderizou
+    // }, 500);
+  }
 
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.initializeJointJS();
     }
+    if (this.speechSwiperRef && !this.teacherSwiper) {
+      this.teacherSwiper = new Swiper(this.speechSwiperRef.nativeElement, {
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev'
+        },
+        slidesPerView: 1,
+        allowTouchMove: false
+      } as SwiperOptions);
+    }
   }
+  
 
   private initializeJointJS(): void {
     this.graph = new joint.dia.Graph();
@@ -258,6 +286,10 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.graph) {
       this.graph.clear();
       this.graph = null;
+    }
+    if (this.teacherSwiper) {
+      this.teacherSwiper.destroy(true, true);
+      this.teacherSwiper = undefined;
     }
   }
 
