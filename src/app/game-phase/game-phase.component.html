@@ -29,24 +29,37 @@
     </header>
 
     <div class="action-buttons">
-        <div class="dicas-container">
-            <button (click)="abrirDicas()" class="btn-icon filled">
+        <div class="clues-container">
+            <button (click)="toggleDicas()" class="btn-icon filled"  [class.open-clues]="isOpen">
                 <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
             </button>
             
             @if (isOpen) {
-                <div class="dicas-content">
-                    <div class="dica-texto" [class]="animationState">
-                        {{ dicaTexto }}
+                <div class="clues-content">
+                    <!-- Navigation buttons -->
+                    <div class="clues-navegation">
+                        <span class="counter">
+                            <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon> 
+                            Dica Rapida #{{ activeSlideIndex + 1 }} – Diagrama de Casos de Uso
+                        </span>
                     </div>
-                    <div class="dicas-navegacao">
-                        <button (click)="mudarDica(-1)" class="btn-navegacao">
-                            <lucide-icon name="chevron-left" class="lucide-icon"></lucide-icon>
-                        </button>
-                        <span class="contador">Dica {{ dicaAtual + 1 }} de {{ dicas.length }}</span>
-                        <button (click)="mudarDica(1)" class="btn-navegacao">
-                            <lucide-icon name="chevron-right" class="lucide-icon"></lucide-icon>
-                        </button>
+                    <!-- Swiper Container -->
+                    <div class="swiper clues-swiper">
+                        
+                        <div class="swiper-wrapper">
+                            
+                            <div class="swiper-slide" *ngFor="let dica of dicas">
+                                <div class="clue-text">
+                                    <div class="swiper-button-prev btn-navegation">
+                                        <lucide-icon name="chevron-left" class="lucide-icon"></lucide-icon>
+                                    </div>
+                                    {{ dica }}
+                                    <div class="swiper-button-next btn-navegation">
+                                        <lucide-icon name="chevron-right" class="lucide-icon"></lucide-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             }
