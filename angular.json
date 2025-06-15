@@ -28,6 +28,11 @@
               "src/assets"
             ],
             "styles": [
+              {
+                "input": "node_modules/swiper/swiper-bundle.css",
+                "bundleName": "swiper",
+                "inject": true
+              },
               "src/styles.css"
             ],
             "scripts": [],

@@ -95,144 +95,111 @@ diagram-editor {
     height: 79vh;
 }
 
-.dicas-container {
+.clues-container {
     position: relative;
-    /* Necessário para posicionar as dicas */
     display: inline-block;
 }
 
-.btn-dicas {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-.btn-dicas:hover {
-    background-color: #45a049;
-}
-
-.dicas-content {
-    position: absolute;
-    top: 100%;
-    left: 0;
+.clues-content {
+    width: 500px;
+    height: 173px;
+    position: fixed;
+    top: 160px;
+    left: 719px;
+    gap: 6px;
+    border-radius: 32px;
+    padding-top: 16px;
+    padding-right: 16px;
+    padding-bottom: 24px;
+    padding-left: 16px;
+    background: #f5f5f5; /* ajuste conforme seu design */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     z-index: 1000;
-    width: 300px;
-    background: var(--gray);
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-top: 5px;
-    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
-.dica-texto {
-    margin-bottom: 8px;
+.clue-text {
     min-height: 60px;
     display: flex;
+    align-items: left;
+    justify-content: left;
+    text-align: left;
+    padding: 8px;
+    font-family: 'Roboto', Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    font-size: 1.05em;
+    letter-spacing: 0.01em;
+}
+
+.clues-swiper {
+    width: 100%;
+    height: auto;
+    margin-bottom: 12px;
+}
+
+.swiper-slide {
+    display: flex;
+    justify-content: center;
     align-items: center;
-    position: relative;
-    transition: none;
 }
 
-/* Animações de entrada */
-.visible {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.exit-left {
-    animation: exitLeft 0.3s forwards;
-}
-
-.exit-right {
-    animation: exitRight 0.3s forwards;
-}
-
-.enter-right {
-    animation: enterRight 0.3s forwards;
-}
-
-.enter-left {
-    animation: enterLeft 0.3s forwards;
-}
-
-/* Keyframes para as animações */
-@keyframes exitLeft {
-    to {
-        transform: translateX(-100%);
-        opacity: 0;
-    }
-}
-
-@keyframes exitRight {
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-
-@keyframes enterRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes enterLeft {
-    from {
-        transform: translateX(-100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-/* Navegação */
-.dicas-navegacao {
+.clues-navegation {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: 8px;
 }
 
-.contador {
-    font-size: 0.8em;
-    color: #666;
+.counter {
+    font-size: 0.9em;
+    color: #646464;
+    flex-grow: 1;
+    text-align: left;
+    align-items: center;
+    display: inline-flex;
 }
 
-.btn-navegacao {
+.btn-navegation {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 4px;
+    padding: 4px 8px;
     border-radius: 4px;
     display: flex;
     align-items: center;
     transition: background 0.2s;
 }
 
-.btn-navegacao:hover {
+.btn-navegation:hover {
     background: #f0f0f0;
 }
 
-/* Ícones */
-.lucide-icon {
-    transition: color 0.2s;
+/* Override Swiper styles */
+.swiper-button-next,
+.swiper-button-prev {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    width: auto;
+    height: auto;
+    margin: 0;
 }
 
-.btn-navegacao:hover .lucide-icon {
-    color: #4CAF50;
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    display: none;
+}
+
+.btn-icon.filled.open-clues {
+    background: var(--yellow);
+    color: var(--white);
+}
+
+.btn-icon.filled.open-clues .lucide-icon {
+    color: var(--white);
 }

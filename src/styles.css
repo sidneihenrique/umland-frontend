@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
-:root {
+@import 'swiper/css';
+:root{
   --gray: #D9D9D9;
   --white: #FFFFFF;
   --black: #000000;
