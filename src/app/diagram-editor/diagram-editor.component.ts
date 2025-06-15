@@ -13,8 +13,7 @@ import { LucideIconsModule } from '../lucide-icons.module';
   templateUrl: './diagram-editor.component.html',
   styleUrl: './diagram-editor.component.css'
 })
-export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('speechSwiper', { static: false }) speechSwiperRef?: ElementRef;
+export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   private paper: joint.dia.Paper | null = null;
   private graph: joint.dia.Graph | null = null;
   private zoomLevel: number = 1;
@@ -22,45 +21,19 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   private readonly zoomMax: number = 3;
   private readonly zoomStep: number = 0.03;
 
-  showTeacher = true;
-  teacherDialogues = [
-    'Olá! Bem-vindo ao jogo. Vou te ajudar a entender como funciona.',
-    'Aqui você pode criar diagramas UML facilmente.',
-    'Clique nos botões acima para acessar dicas rápidas!'
-  ];
-  private teacherSwiper?: Swiper;
 
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
 
   constructor(@Inject(PLATFORM_ID) private platformId: object) {}
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => {
-        this.showTeacher = true;
-      }, 500);
-    }
+    
   }
-
+  
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.initializeJointJS();
-      
-      // Inicializa o Swiper com um pequeno delay para garantir que o DOM esteja pronto
-      setTimeout(() => {
-        if (this.speechSwiperRef && !this.teacherSwiper) {
-          this.teacherSwiper = new Swiper(this.speechSwiperRef.nativeElement, {
-            navigation: {
-              nextEl: '.swiper-button-next',
-              prevEl: '.swiper-button-prev'
-            },
-            slidesPerView: 1,
-            allowTouchMove: false
-          } as SwiperOptions);
-        }
-      }, 100);
     }
   }
-  
 
   private initializeJointJS(): void {
     this.graph = new joint.dia.Graph();
@@ -304,10 +277,6 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.graph) {
       this.graph.clear();
       this.graph = null;
-    }
-    if (this.teacherSwiper) {
-      this.teacherSwiper.destroy(true, true);
-      this.teacherSwiper = undefined;
     }
   }
 

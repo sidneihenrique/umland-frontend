@@ -63,9 +63,41 @@
                 </div>
             }
         </div>
-        <button class="btn-icon filled">
-            <lucide-icon name="book-check" class="lucide-icon"></lucide-icon>
+        <button class="btn-icon filled" (click)="toggleSpeech()">
+                <lucide-icon name="book-check" class="lucide-icon"></lucide-icon>
         </button>
+        <div class="character-container">
+            <!-- Balão de fala -->
+            @if (isSpeaking) {
+                <div class="speech-bubble">
+                    <div class="speech-content">
+                        <div class="clues-navegation">
+                            <button class="btn-navegation" (click)="prevMessage()">
+                                <lucide-icon name="chevron-left" class="lucide-icon"></lucide-icon>
+                            </button>
+                            <div class="clue-text">
+                                {{ dialogo[activeSlideIndex] }}
+                            </div>
+                            <button class="btn-navegation" (click)="nextMessage()">
+                                @if (isLastMessage) {
+                                    <lucide-icon name="x" class="lucide-icon"></lucide-icon>
+                                } @else {
+                                    <lucide-icon name="chevron-right" class="lucide-icon"></lucide-icon>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            <!-- Personagem -->
+            <img 
+                src="assets/characters/character_teacher_01.png" 
+                alt="Professor" 
+                class="character" 
+                [class.speaking]="isSpeaking"
+            />
+        </div>
         <button class="btn-icon filled">
             <lucide-icon name="message-circle-question" class="lucide-icon"></lucide-icon>
         </button>
@@ -76,3 +108,5 @@
     <diagram-editor></diagram-editor>
     <app-store></app-store>
 </div>
+
+<!-- <img src="assets/characters/character_teacher_01.png" alt="" class="character" /> -->
