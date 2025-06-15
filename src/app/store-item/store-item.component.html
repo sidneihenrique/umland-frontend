@@ -1,0 +1,15 @@
+<div class="store-item-card">
+    <div class="main-item-info">
+        <img [src]="imageUrl" [alt]="title" class="store-banner">
+        <h3>{{ title }}</h3>
+    </div>
+    <div class="description">
+        <h3>Descrição</h3>
+        <p>{{ description }}</p>
+    </div>
+    <button class="price" (click)="onBuy()">
+        <label>COMPRAR</label>
+        <img src="/assets/store/price.png" alt="Preço">
+        <label>{{ price }}</label>
+    </button>
+</div>

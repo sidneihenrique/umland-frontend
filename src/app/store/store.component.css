@@ -1,0 +1,110 @@
+.store-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: transparent;
+    backdrop-filter: blur(0px);
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: all 0.2s ease-out;
+}
+
+.store-overlay.visible {
+    background-color: var(--overlay);
+    backdrop-filter: blur(4px);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.store-dialog {
+    background: var(--bg);
+    border-radius: 20px;
+    padding: 16px;
+    min-width: 50vw;
+    max-width: max-content;
+    max-height: 90vh;
+    overflow-y: auto;
+    gap: 16px;
+}
+
+.store-dialog img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+.store-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.store-header h2 {
+    margin: 0;
+    color: var(--white);
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 100%;
+    letter-spacing: 0%;
+}
+
+.store-header img {
+    width: 40px;
+    height: 40px;
+}
+
+.title {
+    display: flex;
+    gap: 16px;
+    flex-direction: row;
+    align-content: center;
+    align-items: center;
+    padding: 0.2rem 1rem;
+}
+
+.btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.close-button {
+    background: var(--red);
+}
+
+.close-button:hover {
+    background: none;
+}
+
+::ng-deep .close-button:hover .lucide-icon {
+    color: var(--white);
+}
+
+.store-content {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 80vw;
+    padding: 1rem;
+}

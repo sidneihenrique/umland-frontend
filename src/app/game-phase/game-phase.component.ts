@@ -5,16 +5,21 @@ import Swiper from 'swiper';
 import { SwiperOptions } from 'swiper/types';
 import { Navigation } from 'swiper/modules';
 import { CommonModule } from '@angular/common';
+import { NgIf } from '@angular/common';
+import { AppComponent } from "../app.component";
+import { StoreComponent } from "../store/store.component";
 
 @Component({
   selector: 'game-phase',
   standalone: true,
-  imports: [LucideIconsModule, DiagramEditorComponent, CommonModule],
+  imports: [LucideIconsModule, DiagramEditorComponent, CommonModule, StoreComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
 export class GamePhaseComponent {
   isOpen = false;
+  @ViewChild(StoreComponent) store!: StoreComponent;
+  
 
   // Todas as dicas possíveis
   private todasDicas: string[] = [
@@ -89,5 +94,9 @@ export class GamePhaseComponent {
 
   ngOnDestroy() {
     this.destroySwiper();
+  }
+
+  toggleStore() {
+    this.store.toggle();
   }
 }

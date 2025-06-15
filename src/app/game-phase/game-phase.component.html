@@ -3,8 +3,7 @@
         <div class="left">
             <button class="btn-icon filled" id="exit">
                 <lucide-icon class="lucide-icon" name="X"></lucide-icon>
-            </button>
-            <button class="btn-icon">
+            </button> <button class="btn-icon" (click)="toggleStore()">
                 <lucide-icon class="lucide-icon" name="store"></lucide-icon>
             </button>
             <button class="btn-icon">
@@ -18,7 +17,7 @@
                 <span class="amount">135</span>
             </div>
             <div class="reputation">
-                <lucide-icon name = "sparkles" class="lucide-icon" [size]="32"></lucide-icon>
+                <lucide-icon name="sparkles" class="lucide-icon" [size]="32"></lucide-icon>
                 <span class="amount">500</span>
                 <lucide-icon name="move-up-right" class="lucide-icon" [size]="16" color="#00D819"></lucide-icon>
             </div>
@@ -33,7 +32,7 @@
             <button (click)="toggleDicas()" class="btn-icon filled"  [class.open-clues]="isOpen">
                 <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
             </button>
-            
+
             @if (isOpen) {
                 <div class="clues-content">
                     <!-- Navigation buttons -->
@@ -74,9 +73,6 @@
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
     </div>
-
-
     <diagram-editor></diagram-editor>
+    <app-store></app-store>
 </div>
-
-
