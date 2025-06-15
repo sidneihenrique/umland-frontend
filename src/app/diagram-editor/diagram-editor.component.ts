@@ -22,6 +22,14 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
   private readonly zoomMax: number = 3;
   private readonly zoomStep: number = 0.03;
 
+  // Botão de remover elemento
+  private removeBtn: HTMLButtonElement | null = null;
+  private currentCellView: joint.dia.ElementView | null = null;
+
+  // Editor inline
+  private currentInlineEditor: HTMLDivElement | null = null;
+  private currentEditingCellView: joint.dia.ElementView | null = null;
+
   showTeacher = true;
   teacherDialogues = [
     'Olá! Bem-vindo ao jogo. Vou te ajudar a entender como funciona.',
@@ -75,24 +83,33 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
       defaultLink: new joint.shapes.standard.Link(),
     });
 
-    const rect = new joint.shapes.standard.Rectangle();
-    rect.position(25, 100);
-    rect.resize(100, 40);
-    rect.attr({
-      body: {
-        fill: 'blue',
-      },
-      label: {
-        text: 'Hello',
-        fill: 'white',
-      },
-    });
-    rect.addTo(this.graph);
 
     container.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
 
+    // Configura o zoom do paper
     this.paper.on('element:pointerdblclick', (cellView: joint.dia.ElementView, evt: joint.dia.Event) => {
       this.showInlineEditor(cellView, evt);
+    });
+
+    // Adiciona o evento de clique para adicionar elementos
+    this.paper.on('element:pointerclick', (cellView: joint.dia.ElementView, evt: joint.dia.Event) => {
+      this.showRemoveButton(cellView);
+    });
+
+    // Esconde o botão de remover ao clicar fora do elemento
+    this.paper.on('blank:pointerdown', () => {
+      this.hideRemoveButton();
+    });
+
+    // Atualiza a posição do botão de remover ao mover o mouse sobre o elemento
+    this.paper.on('element:pointermove', (cellView: joint.dia.ElementView) => {
+      this.updateRemoveButtonPosition(cellView);
+    });
+
+    this.paper.on('element:pointermove', (cellView: joint.dia.ElementView) => {
+      if (this.currentEditingCellView === cellView) {
+        this.updateInlineEditorPosition(cellView);
+      }
     });
   }
 
@@ -256,6 +273,10 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
     // Insere no body
     document.body.appendChild(inputDiv);
 
+    this.currentInlineEditor = inputDiv;
+    this.currentEditingCellView = cellView;
+    this.updateInlineEditorPosition(cellView);
+
     // Foco automático
     inputDiv.focus();
 
@@ -273,6 +294,7 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
 
       if(element.get('type') === 'custom.UseCase') {
         element.resize(editorRect.width + paddingX, editorRect.height + paddingY);
+        this.updateRemoveButtonPosition(cellView);
       }
 
       inputDiv.removeEventListener('blur', finishEditing);
@@ -290,6 +312,54 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
     
     inputDiv.addEventListener('blur', finishEditing);
     paper.on('paper:pointerdown', finishEditing);
+  }
+
+  private showRemoveButton(cellView: joint.dia.ElementView) {
+    this.hideRemoveButton(); // Remove botão anterior, se existir
+    this.currentCellView = cellView;
+
+    const btn = document.createElement('button');
+    btn.className = 'remove-btn';
+    btn.innerText = 'X';
+    btn.style.position = 'absolute';
+    btn.style.zIndex = '1000';
+
+    btn.onclick = () => {
+      // Remove o elemento do graph
+      cellView.model.remove();
+      this.hideRemoveButton();
+    };
+
+    document.body.appendChild(btn);
+    this.removeBtn = btn;
+    this.updateRemoveButtonPosition(cellView);
+  }
+
+  private updateRemoveButtonPosition(cellView: joint.dia.ElementView) {
+    if (!this.removeBtn) return;
+    const bbox = cellView.getBBox();
+    // Supondo que o botão tenha 28px de largura (ajuste se necessário)
+    const buttonWidth = 20;
+    const point = this.paper!.localToClientPoint({ x: bbox.x - buttonWidth, y: bbox.y });
+    this.removeBtn.style.left = `${point.x + window.scrollX}px`;
+    this.removeBtn.style.top = `${point.y + window.scrollY}px`;
+  }
+
+  private hideRemoveButton() {
+    if (this.removeBtn && this.removeBtn.parentNode) {
+      this.removeBtn.parentNode.removeChild(this.removeBtn);
+      this.removeBtn = null;
+      this.currentCellView = null;
+    }
+  }
+
+  private updateInlineEditorPosition(cellView: joint.dia.ElementView) {
+    if (!this.currentInlineEditor) return;
+    const labelNode = cellView.el.querySelector('text') as SVGTextElement;
+    if (!labelNode) return;
+    const labelRect = labelNode.getBoundingClientRect();
+    this.currentInlineEditor.style.left = `${labelRect.left + window.scrollX}px`;
+    this.currentInlineEditor.style.top = `${labelRect.top + window.scrollY}px`;
   }
 
   ngOnDestroy(): void {

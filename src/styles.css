@@ -88,3 +88,15 @@ body{
 
     transform-origin: -50%;
 }
+
+.remove-btn{
+  background: none;
+
+  color: var(--red);
+
+  border: 0;
+
+  font-weight: 800;
+  
+  cursor: pointer;
+}
