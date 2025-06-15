@@ -13,7 +13,7 @@ import { LucideIconsModule } from '../lucide-icons.module';
   templateUrl: './diagram-editor.component.html',
   styleUrl: './diagram-editor.component.css'
 })
-export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy, AfterViewInit {
+export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('speechSwiper', { static: false }) speechSwiperRef?: ElementRef;
   private paper: joint.dia.Paper | null = null;
   private graph: joint.dia.Graph | null = null;
@@ -41,27 +41,31 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy,
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
 
   constructor(@Inject(PLATFORM_ID) private platformId: object) {}
-
   ngOnInit(): void {
-    // setTimeout(() => {
-    //   this.showTeacher = true;
-    //   setTimeout(() => this.initTeacherSwiper(), 100); // Garante que o DOM já renderizou
-    // }, 500);
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        this.showTeacher = true;
+      }, 500);
+    }
   }
 
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.initializeJointJS();
-    }
-    if (this.speechSwiperRef && !this.teacherSwiper) {
-      this.teacherSwiper = new Swiper(this.speechSwiperRef.nativeElement, {
-        navigation: {
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev'
-        },
-        slidesPerView: 1,
-        allowTouchMove: false
-      } as SwiperOptions);
+      
+      // Inicializa o Swiper com um pequeno delay para garantir que o DOM esteja pronto
+      setTimeout(() => {
+        if (this.speechSwiperRef && !this.teacherSwiper) {
+          this.teacherSwiper = new Swiper(this.speechSwiperRef.nativeElement, {
+            navigation: {
+              nextEl: '.swiper-button-next',
+              prevEl: '.swiper-button-prev'
+            },
+            slidesPerView: 1,
+            allowTouchMove: false
+          } as SwiperOptions);
+        }
+      }, 100);
     }
   }
   
