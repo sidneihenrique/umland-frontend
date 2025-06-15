@@ -1,18 +1,22 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
 import { CommonModule } from '@angular/common';
 import { NgIf } from '@angular/common';
+import { AppComponent } from "../app.component";
+import { StoreComponent } from "../store/store.component";
 
 @Component({
   selector: 'game-phase',
   standalone: true,
-  imports: [LucideIconsModule, DiagramEditorComponent],
+  imports: [LucideIconsModule, DiagramEditorComponent, StoreComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
 export class GamePhaseComponent {
   @Input() isOpen = false;
+  @ViewChild(StoreComponent) store!: StoreComponent;
+  
   dicas: string[] = [];
   dicaAtual = 0;
   animationState = 'visible';
@@ -57,5 +61,9 @@ export class GamePhaseComponent {
 
   get dicaTexto() {
     return this.dicas[this.dicaAtual];
+  }
+
+  toggleStore() {
+    this.store.toggle();
   }
 }

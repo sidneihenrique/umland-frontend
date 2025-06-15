@@ -1,0 +1,19 @@
+<div class="store-overlay" [class.visible]="visible" (click)="hide()">
+    <div class="store-dialog" (click)="$event.stopPropagation()">
+        <div class="store-header">
+            <button class="btn-icon close-button" (click)="hide()">
+                <lucide-icon name="x" class="lucide-icon"></lucide-icon>
+            </button>
+            <div class="title">
+                <img src="/assets/store/store.png" alt="Loja de Itens">
+                <h2>LOJA DE ITENS</h2>
+            </div>
+        </div>
+        <div class="store-content">
+            <app-store-item *ngFor="let item of storeItems" [imageUrl]="item.imageUrl"
+            [title]="item.title" [description]="item.description" [price]="item.price"
+            (buy)="onBuy(item)" (use)="onUse(item)">
+            </app-store-item>
+        </div>
+    </div>
+</div>

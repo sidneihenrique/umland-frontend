@@ -1,32 +1,34 @@
 /* You can add global styles to this file, and also import other style files */
-:root{
+:root {
   --gray: #D9D9D9;
   --white: #FFFFFF;
   --black: #000000;
   --red: #FF0000;
   --yellow: #EBB235;
-
+  --overlay: rgba(0, 0, 0, 0.5);
+  --bg: #1A1A1A;
+  --bg-card: #2A2A2A;
 }
 
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Roboto', sans-serif;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
 }
 
-body{
+body {
   padding: 16px;
   overflow-y: hidden;
 }
 
-.btn-icon{
+.btn-icon {
   display: flex;
   align-items: center;
   justify-content: center;
 
   padding: 8px;
-  
+
   border: 0;
   border-radius: 8px;
 
@@ -37,24 +39,24 @@ body{
   transition: 0.5s;
 }
 
-.btn-icon.filled{
+.btn-icon.filled {
   border: 3px solid var(--black);
   background-color: var(--gray);
   transition: 0.5s;
 }
 
-.btn-icon.filled:hover{
+.btn-icon.filled:hover {
   background-color: var(--yellow);
   transition: 0.5s;
 }
 
-.lucide-icon{
+.lucide-icon {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.btn-icon .lucide-icon{
+.btn-icon .lucide-icon {
   width: 32px;
   height: 32px;
   font-size: 32px;
@@ -62,28 +64,28 @@ body{
 
 }
 
-.btn-icon.filled .lucide-icon{
+.btn-icon.filled .lucide-icon {
   width: 24px;
   height: 24px;
   font-size: 24px;
 }
 
 .inline-editor {
-    border: 1px solid var(--black); 
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    backdrop-filter: blur(4px);
+  border: 1px solid var(--black);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
 
-    padding: 4px;
-    z-index: 9999;
+  padding: 4px;
+  z-index: 9999;
 
-    font-size: 14px;
-    outline: none;
+  font-size: 14px;
+  outline: none;
 
-    max-width: 200px;
-    height: fit-content;
+  max-width: 200px;
+  height: fit-content;
 
-    text-wrap: wrap;
+  text-wrap: wrap;
 
-    transform-origin: -50%;
+  transform-origin: -50%;
 }
