@@ -165,6 +165,7 @@ diagram-editor {
 
 .btn-navegation {
     background: transparent;
+    color: #646464;
     border: none;
     cursor: pointer;
     padding: 4px 8px;
@@ -202,4 +203,64 @@ diagram-editor {
 
 .btn-icon.filled.open-clues .lucide-icon {
     color: var(--white);
+}
+
+/* Container do personagem */
+.character-container {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+/* Personagem */
+.character {
+  width: 240px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.character.speaking {
+  transform: translateX(-20px);
+}
+
+.speech-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Balão de fala */
+.speech-bubble {
+  position: absolute;
+  bottom: 100%;
+  right: 80px;
+  width: 300px;
+  background: #f5f5f5;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Triângulo do balão */
+.speech-bubble:after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 30px;
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: white transparent;
+}
+
+.speech-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

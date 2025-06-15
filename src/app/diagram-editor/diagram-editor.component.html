@@ -1,6 +1,6 @@
 <div class="content">
     <div class="drag-and-drop-buttons">
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="addLink('association')">
             <img src="assets/icons/association.svg" alt="">
         </button>
         <button 
@@ -19,13 +19,13 @@
         >
             <img src="assets/icons/use_case.svg" alt="">
         </button>
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="addLink('extend')">
             <img src="assets/icons/extend.svg" alt="">
         </button>
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="addLink('include')">
             <img src="assets/icons/include.svg" alt="">
         </button>
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="addLink('dependency')">
             <img src="assets/icons/dependency.svg" alt="">
         </button>
     </div>
@@ -39,26 +39,7 @@
         >
             
         </div>
-    </div>
-
-    <div class="character-dialogue" *ngIf="showTeacher">
-    <div #speechSwiper class="speech-swiper swiper">
-        <div class="swiper-wrapper">
-            <div class="swiper-slide" *ngFor="let frase of teacherDialogues">
-                <div class="speech-bubble">
-                    <button class="btn-navegation swiper-button-prev">
-                        <lucide-icon name="chevron-left"></lucide-icon>
-                    </button>
-                    <span class="speech-text">{{ frase }}</span>
-                    <button class="btn-navegation swiper-button-next">
-                        <lucide-icon name="chevron-right"></lucide-icon>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <img src="assets/characters/character_teacher_01.png" alt="" class="character teacher" />
-</div>
+    </div>    
 </div>
 
 

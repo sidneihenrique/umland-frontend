@@ -1,12 +1,9 @@
-import { Component, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, OnInit } from '@angular/core';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
 import Swiper from 'swiper';
-import { SwiperOptions } from 'swiper/types';
 import { Navigation } from 'swiper/modules';
 import { CommonModule } from '@angular/common';
-import { NgIf } from '@angular/common';
-import { AppComponent } from "../app.component";
 import { StoreComponent } from "../store/store.component";
 
 @Component({
@@ -16,7 +13,7 @@ import { StoreComponent } from "../store/store.component";
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
-export class GamePhaseComponent {
+export class GamePhaseComponent implements OnInit{
   isOpen = false;
   @ViewChild(StoreComponent) store!: StoreComponent;
   
@@ -33,13 +30,28 @@ export class GamePhaseComponent {
     "Diagramas de atividade são similares a fluxogramas e mostram o fluxo de processos."
   ];
 
+  // Mensagens do balão de fala
+  dialogo: string[] = [
+    "Olá! Como posso te ajudar hoje?",
+    "Lembre-se de revisar os conceitos básicos antes de começar.",
+    "Você pode navegar pelas dicas usando os botões de seta."
+  ];
+
   dicas: string[] = [];
 
   activeSlideIndex = 0;
   private swiper?: Swiper;
 
+  isSpeaking = false;
+  activeSpeechIndex = 0;
+  characterState = 'hidden';
+
   constructor() {
     this.dicas = this.sortearDicas(3);
+  }
+  
+  ngOnInit() {
+    this.toggleSpeech()
   }
 
   private sortearDicas(qtd: number): string[] {
@@ -99,4 +111,34 @@ export class GamePhaseComponent {
   toggleStore() {
     this.store.toggle();
   }
+
+  toggleSpeech() {
+    this.isSpeaking = !this.isSpeaking;
+    this.characterState = this.isSpeaking ? 'visible' : 'hidden';
+    if (this.isSpeaking) {
+      this.activeSlideIndex = 0;
+    }
+  }
+
+  nextMessage() {
+    if (this.activeSlideIndex < this.dialogo.length - 1) {
+      this.activeSlideIndex++;
+    } else {
+      // Última mensagem - fecha o balão
+      this.isSpeaking = false;
+      setTimeout(() => {
+        this.characterState = 'hidden';
+        this.activeSlideIndex = 0;
+      }, 300); // Tempo para a animação de fadeOut
+    }
+  }
+
+  prevMessage() {
+    this.activeSlideIndex = Math.max(0, this.activeSlideIndex - 1);
+  }
+
+  get isLastMessage(): boolean {
+    return this.activeSlideIndex === this.dialogo.length - 1;
+  }
+
 }
