@@ -83,4 +83,58 @@ export class UMLElementUtil {
     ellipse.set('type', 'custom.UseCase');
     return ellipse;
   }
+
+  static createLink(
+    source: dia.Element,
+    target: dia.Element,
+    type: string
+  ): dia.Link {
+    const link = new shapes.standard.Link();
+    link.source(source);
+    link.target(target);
+
+
+    // Personalização por tipo
+    switch (type) {
+      case 'extend':
+        link.labels([{
+          attrs: {
+            text: { text: '<<extend>>', fontSize: 14, fill: '#000' },
+            rect: { fill: '#fff', stroke: '#000', strokeWidth: 0 }
+          },
+          position: { distance: 0.5 }
+        }]);
+        link.attr('line/strokeDasharray', '5,5'); // linha tracejada
+        break;
+      case 'include':
+        link.labels([{
+          attrs: {
+            text: { text: '<<include>>', fontSize: 14, fill: '#000' },
+            rect: { fill: '#fff', stroke: '#000', strokeWidth: 0 }
+          },
+          position: { distance: 0.5 }
+        }]);
+        link.attr('line/strokeDasharray', '2.2'); // linha contínua
+        break;
+      case 'dependency':
+        link.labels([{
+          position: { distance: 0.5 }
+        }]);
+        break;
+      case 'association':
+        link.labels([{
+          attrs: {
+            rect: { fill: '#fff', stroke: '#000', strokeWidth: 0 }
+          },
+          position: { distance: 0.5 }
+        }]);
+        link.attr('line/strokeDasharray', 'none'); // linha contínua
+        link.attr('line/targetMarker', { d: '' }); // remove a seta
+        break;
+      default:
+        break;
+    }
+
+    return link;
+  }
 }

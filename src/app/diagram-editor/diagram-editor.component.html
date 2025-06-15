@@ -1,6 +1,6 @@
 <div class="content">
     <div class="drag-and-drop-buttons">
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="addLink('association')">
             <img src="assets/icons/association.svg" alt="">
         </button>
         <button 
@@ -19,13 +19,13 @@
         >
             <img src="assets/icons/use_case.svg" alt="">
         </button>
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="addLink('extend')">
             <img src="assets/icons/extend.svg" alt="">
         </button>
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="addLink('include')">
             <img src="assets/icons/include.svg" alt="">
         </button>
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="addLink('dependency')">
             <img src="assets/icons/dependency.svg" alt="">
         </button>
     </div>
