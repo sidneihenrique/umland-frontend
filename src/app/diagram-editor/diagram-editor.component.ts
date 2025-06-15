@@ -90,6 +90,11 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
 
     container.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
 
+    this.paperContainer.nativeElement.addEventListener('scroll', () => {
+      this.updateRemoveButtonPosition(this.currentCellView);
+      this.updateInlineEditorPosition(this.currentEditingCellView);
+    });
+
     // Configura o zoom do paper
     this.paper.on('element:pointerdblclick', (cellView: joint.dia.ElementView, evt: joint.dia.Event) => {
       this.showInlineEditor(cellView, evt);
@@ -153,6 +158,9 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
 
       this.zoomLevel = newZoom;
     }
+    // Após aplicar o zoom:
+    this.updateRemoveButtonPosition(this.currentCellView);
+    this.updateInlineEditorPosition(this.currentEditingCellView);
   }
 
   private setCursor(style: string) {
@@ -316,6 +324,7 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     
     inputDiv.addEventListener('blur', finishEditing);
     paper.on('paper:pointerdown', finishEditing);
+
   }
 
   private showRemoveButton(cellView: joint.dia.ElementView) {
@@ -339,8 +348,8 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     this.updateRemoveButtonPosition(cellView);
   }
 
-  private updateRemoveButtonPosition(cellView: joint.dia.ElementView) {
-    if (!this.removeBtn) return;
+  private updateRemoveButtonPosition(cellView: joint.dia.ElementView | null) {
+    if (!this.removeBtn || !cellView) return;
     const bbox = cellView.getBBox();
     // Supondo que o botão tenha 28px de largura (ajuste se necessário)
     const buttonWidth = 20;
@@ -357,8 +366,8 @@ export class DiagramEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  private updateInlineEditorPosition(cellView: joint.dia.ElementView) {
-    if (!this.currentInlineEditor) return;
+  private updateInlineEditorPosition(cellView: joint.dia.ElementView | null) {
+    if (!this.currentInlineEditor || !cellView) return;
     const labelNode = cellView.el.querySelector('text') as SVGTextElement;
     if (!labelNode) return;
     const labelRect = labelNode.getBoundingClientRect();

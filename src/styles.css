@@ -88,7 +88,6 @@ body {
 
   text-wrap: wrap;
 
-<<<<<<< HEAD
     transform-origin: -50%;
 }
 
@@ -102,7 +101,4 @@ body {
   font-weight: 800;
   
   cursor: pointer;
-=======
-  transform-origin: -50%;
->>>>>>> 2b1923b0f3e04bf484636f40384278d96cfbae03
 }
