@@ -88,5 +88,50 @@ body {
 
   text-wrap: wrap;
 
-  transform-origin: -50%;
+    transform-origin: -50%;
+}
+
+.remove-btn{
+  background: none;
+
+  color: var(--red);
+
+  border: 0;
+
+  font-weight: 800;
+  
+  cursor: pointer;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 4px;
+
+}
+
+.remove-btn img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.link-btn {
+  background: var(--white);
+  color: var(--black);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  cursor: pointer;
+  margin-left: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: background 0.2s;
+}
+.link-btn:hover {
+  background: var(--blue);
 }

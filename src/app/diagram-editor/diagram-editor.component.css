@@ -17,6 +17,7 @@
 
 .drag-and-drop-buttons img{
     width: 24px;
+    cursor: pointer;
 }
 
 .wrapper-board{
