@@ -2,11 +2,8 @@ import { Component, AfterViewInit, ViewChild, OnInit } from '@angular/core';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
 import Swiper from 'swiper';
-import { SwiperOptions } from 'swiper/types';
 import { Navigation } from 'swiper/modules';
 import { CommonModule } from '@angular/common';
-import { NgIf } from '@angular/common';
-import { AppComponent } from "../app.component";
 import { StoreComponent } from "../store/store.component";
 
 @Component({

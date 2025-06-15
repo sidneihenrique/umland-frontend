@@ -63,7 +63,7 @@
                 </div>
             }
         </div>
-        <button class="btn-icon filled" (click)="toggleSpeech()">
+        <button class="btn-icon filled">
                 <lucide-icon name="book-check" class="lucide-icon"></lucide-icon>
         </button>
         <div class="character-container">
@@ -96,9 +96,10 @@
                 alt="Professor" 
                 class="character" 
                 [class.speaking]="isSpeaking"
+                (click)="toggleSpeech()"
             />
         </div>
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="toggleSpeech()">
             <lucide-icon name="message-circle-question" class="lucide-icon"></lucide-icon>
         </button>
         <button class="btn-icon filled">
@@ -108,5 +109,3 @@
     <diagram-editor></diagram-editor>
     <app-store></app-store>
 </div>
-
-<!-- <img src="assets/characters/character_teacher_01.png" alt="" class="character" /> -->
