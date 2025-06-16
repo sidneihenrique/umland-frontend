@@ -1,12 +1,13 @@
-import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
+import { DataService, UserResponse, User } from '../../services/data.service';
 import Swiper from 'swiper';
-import { SwiperOptions } from 'swiper/types';
 import { Navigation } from 'swiper/modules';
 import { CommonModule } from '@angular/common';
-import { NgIf } from '@angular/common';
-import { AppComponent } from "../app.component";
+import { HttpClientModule } from '@angular/common/http';
 import { StoreComponent } from "../store/store.component";
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/dialog-finished-gamephase.component";
@@ -14,11 +15,19 @@ import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/d
 @Component({
   selector: 'game-phase',
   standalone: true,
-  imports: [LucideIconsModule, DiagramEditorComponent, CommonModule, StoreComponent, ConfirmDialogComponent, DialogFinishedGamephaseComponent],
+  imports: [
+    LucideIconsModule,
+    DiagramEditorComponent,
+    CommonModule,
+    StoreComponent,
+    HttpClientModule,
+    RouterModule, 
+    ConfirmDialogComponent, 
+    DialogFinishedGamephaseComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
-export class GamePhaseComponent implements OnInit{
+export class GamePhaseComponent implements OnInit {
   isOpen = false;
   @ViewChild(StoreComponent) store!: StoreComponent;
 
@@ -32,6 +41,10 @@ export class GamePhaseComponent implements OnInit{
 
   // Variável para controlar a visibilidade do diálogo de finalização
   finishedGamePhaseVisible: boolean = false;
+
+  // User data
+  userData?: User;
+  userLoadError: string = '';
 
   // Todas as dicas possíveis
   private todasDicas: string[] = [
@@ -61,12 +74,23 @@ export class GamePhaseComponent implements OnInit{
   activeSpeechIndex = 0;
   characterState = 'hidden';
 
-  constructor() {
+  constructor(
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private dataService: DataService
+  ) {
     this.dicas = this.sortearDicas(3);
   }
-  
+
   ngOnInit() {
-    this.toggleSpeech()
+    if (isPlatformBrowser(this.platformId)) {
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        this.loadUserData(userId);
+      } else {
+        this.router.navigate(['/login']);
+      }
+    }
   }
 
   private sortearDicas(qtd: number): string[] {
@@ -154,6 +178,42 @@ export class GamePhaseComponent implements OnInit{
 
   get isLastMessage(): boolean {
     return this.activeSlideIndex === this.dialogo.length - 1;
+  }
+
+  private loadUserData(userId: string) {
+    this.dataService.getUserById(userId).subscribe({
+      next: (response: UserResponse) => {
+        this.userData = response.user;
+      },
+      error: (error) => {
+        console.error('Erro ao carregar dados do usuário:', error);
+        this.userLoadError = 'Erro ao carregar dados do usuário';
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
+  exitGame() {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('userId');
+    }
+    this.router.navigate(['/login']);
+  }
+
+  get userMoney(): number {
+    return this.userData?.money || 0;
+  }
+
+  get userReputation(): number {
+    return this.userData?.reputation || 0;
+  }
+
+  get userName(): string {
+    return this.userData?.name || '';
+  }
+
+  get isProgressing(): boolean {
+    return this.userData?.progressing || false;
   }
 
   openConfirmDialog(title: string, message: string, onConfirm: () => void) {
