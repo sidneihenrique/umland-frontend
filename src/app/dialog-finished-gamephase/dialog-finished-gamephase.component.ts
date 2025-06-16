@@ -17,6 +17,7 @@ export class DialogFinishedGamephaseComponent implements OnInit {
 
   ngOnInit() {
     // Simula a soma de reputação, você pode substituir isso pela lógica real
+    this.visible = true; // Torna o diálogo visível quando o componente é inicializado
     this.reputationSum = 100; // Exemplo de valor
     this.coinsSum = 50; // Exemplo de valor
   }

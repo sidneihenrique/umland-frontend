@@ -14,7 +14,7 @@ import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/d
 @Component({
   selector: 'game-phase',
   standalone: true,
-  imports: [LucideIconsModule, DiagramEditorComponent, CommonModule, StoreComponent, DialogFinishedGamephaseComponent],
+  imports: [LucideIconsModule, DiagramEditorComponent, CommonModule, StoreComponent, ConfirmDialogComponent, DialogFinishedGamephaseComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
@@ -25,8 +25,13 @@ export class GamePhaseComponent implements OnInit{
   @ViewChild('dialogContainer', { read: ViewContainerRef, static: true })
   dialogContainer!: ViewContainerRef;
 
-  private dialogRef: ComponentRef<ConfirmDialogComponent> | null = null;
-  
+  confirmDialogVisible: boolean = false;
+  confirmDialogTitle: string = '';
+  confirmDialogMessage: string = '';
+  private confirmCallback: (() => void) | null = null;
+
+  // Variável para controlar a visibilidade do diálogo de finalização
+  finishedGamePhaseVisible: boolean = false;
 
   // Todas as dicas possíveis
   private todasDicas: string[] = [
@@ -151,31 +156,23 @@ export class GamePhaseComponent implements OnInit{
     return this.activeSlideIndex === this.dialogo.length - 1;
   }
 
-  openConfirmDialog(
-    title: string,
-    message: string,
-    onConfirm: () => void
-  ) {
-    // Limpa qualquer dialog anterior
-    this.dialogContainer.clear();
+  openConfirmDialog(title: string, message: string, onConfirm: () => void) {
+    this.confirmDialogTitle = title;
+    this.confirmDialogMessage = message;
+    this.confirmCallback = onConfirm;
+    this.confirmDialogVisible = true;
+  }
 
-    // Cria o componente dinamicamente
-    this.dialogRef = this.dialogContainer.createComponent(ConfirmDialogComponent);
+  onConfirm() {
+    if (this.confirmCallback) {
+      this.confirmCallback();
+    }
+    this.confirmDialogVisible = false;
+    this.finishedGamePhaseVisible = true;
+  }
 
-    // Passa os inputs
-    this.dialogRef.instance.title = title;
-    this.dialogRef.instance.message = message;
-
-    // Substitui o método confirm
-    this.dialogRef.instance.confirm = () => {
-      onConfirm();
-      this.dialogRef?.destroy();
-    };
-
-    // Fecha ao cancelar
-    this.dialogRef.instance.hide = () => {
-      this.dialogRef?.destroy();
-    };
+  onCancel() {
+    this.confirmDialogVisible = false;
   }
 
   onSaveClick() {

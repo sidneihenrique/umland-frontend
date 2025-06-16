@@ -107,15 +107,15 @@
     </div>
     <diagram-editor></diagram-editor>
     <app-store></app-store>
-    <ng-template #dialogContainer></ng-template>
-    <app-dialog-finished-gamephase></app-dialog-finished-gamephase>
-    <!-- <app-confirm-dialog 
+        <app-confirm-dialog 
         [visible]="confirmDialogVisible" 
         [title]="confirmDialogTitle" 
         [message]="confirmDialogMessage" 
         (confirm)="onConfirm()" 
         (cancel)="onCancel()">
-    </app-confirm-dialog> -->
+    </app-confirm-dialog>
+    <app-dialog-finished-gamephase *ngIf="finishedGamePhaseVisible"></app-dialog-finished-gamephase>
+
 </div>
 
 <!-- <img src="assets/characters/character_teacher_01.png" alt="" class="character" /> -->

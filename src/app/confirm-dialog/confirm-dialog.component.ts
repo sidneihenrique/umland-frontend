@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 
@@ -10,26 +10,23 @@ import { LucideAngularModule } from 'lucide-angular';
   styleUrl: './confirm-dialog.component.css'
 })
 export class ConfirmDialogComponent implements OnInit {
-  visible: boolean = false;
-  title: string = '';
-  message: string = '';
+
+  @Input() visible: boolean = false;
+  @Input() title: string = '';
+  @Input() message: string = '';
+  @Output() confirm = new EventEmitter<void>();
+  @Output() cancel = new EventEmitter<void>();
 
   ngOnInit() {
-    this.visible = true;
-    
+
   }
 
   hide() {
-    this.visible = false;
+    this.cancel.emit();
   }
 
-  confirm() {
-    this.hide();
-  }
-
-  cancel() {
-    // Logic for cancellation action
-    this.hide();
+  confirmAction() {
+    this.confirm.emit();
   }
 
 }
