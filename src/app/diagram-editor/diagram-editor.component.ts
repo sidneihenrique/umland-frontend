@@ -21,6 +21,550 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   private readonly zoomMax: number = 3;
   private readonly zoomStep: number = 0.03;
 
+  private graphJSON: any = {
+    "cells": [
+      {
+        "type": "custom.UseCase",
+        "attrs": {
+          "body": {
+            "stroke": "#000",
+            "fill": "#FFF7D0"
+          },
+          "label": {
+            "fontSize": 16,
+            "fill": "#000",
+            "text": "Realizar empréstimo de livro",
+            "textWrap": {
+              "width": 200,
+              "height": null,
+              "ellipsis": false,
+              "breakWord": true
+            }
+          }
+        },
+        "position": {
+          "x": 310,
+          "y": 1370
+        },
+        "size": {
+          "width": 222.40000915527344,
+          "height": 42.39999961853027
+        },
+        "angle": 0,
+        "id": "3489d19a-2cf0-4b02-89fd-da1c045e4c5c",
+        "z": 1
+      },
+      {
+        "type": "custom.UseCase",
+        "attrs": {
+          "body": {
+            "stroke": "#000",
+            "fill": "#FFF7D0"
+          },
+          "label": {
+            "fontSize": 16,
+            "fill": "#000",
+            "text": "Devolver livro",
+            "textWrap": {
+              "width": 200,
+              "height": null,
+              "ellipsis": false,
+              "breakWord": true
+            }
+          }
+        },
+        "position": {
+          "x": 170,
+          "y": 1470
+        },
+        "size": {
+          "width": 127.20000457763672,
+          "height": 42.39999961853027
+        },
+        "angle": 0,
+        "id": "6dc7171e-d3df-452e-8301-539d63d7ec7e",
+        "z": 2
+      },
+      {
+        "type": "custom.UseCase",
+        "attrs": {
+          "body": {
+            "stroke": "#000",
+            "fill": "#FFF7D0"
+          },
+          "label": {
+            "fontSize": 16,
+            "fill": "#000",
+            "text": "Renovar empréstimo",
+            "textWrap": {
+              "width": 200,
+              "height": null,
+              "ellipsis": false,
+              "breakWord": true
+            }
+          }
+        },
+        "position": {
+          "x": 140,
+          "y": 1250
+        },
+        "size": {
+          "width": 175.1999969482422,
+          "height": 42.39999961853027
+        },
+        "angle": 0,
+        "id": "80a91b24-ed0e-408e-b50c-b82a816536df",
+        "z": 3
+      },
+      {
+        "type": "custom.UseCase",
+        "attrs": {
+          "body": {
+            "stroke": "#000",
+            "fill": "#FFF7D0"
+          },
+          "label": {
+            "fontSize": 16,
+            "fill": "#000",
+            "text": "Cadastrar livro no sistema",
+            "textWrap": {
+              "width": 200,
+              "height": null,
+              "ellipsis": false,
+              "breakWord": true
+            }
+          }
+        },
+        "position": {
+          "x": 210,
+          "y": 1790
+        },
+        "size": {
+          "width": 211.1999969482422,
+          "height": 42.39999961853027
+        },
+        "angle": 0,
+        "id": "4dcd4992-80fd-4428-923f-d8e512a766a8",
+        "z": 4
+      },
+      {
+        "type": "custom.UseCase",
+        "attrs": {
+          "body": {
+            "stroke": "#000",
+            "fill": "#FFF7D0"
+          },
+          "label": {
+            "fontSize": 16,
+            "fill": "#000",
+            "text": "Remover livro do catálogo",
+            "textWrap": {
+              "width": 200,
+              "height": null,
+              "ellipsis": false,
+              "breakWord": true
+            }
+          }
+        },
+        "position": {
+          "x": 260,
+          "y": 1580
+        },
+        "size": {
+          "width": 206.40000915527344,
+          "height": 42.39999961853027
+        },
+        "angle": 0,
+        "id": "4b134385-96ec-4812-959c-7f6704a1df50",
+        "z": 5
+      },
+      {
+        "type": "custom.UseCase",
+        "attrs": {
+          "body": {
+            "stroke": "#000",
+            "fill": "#FFF7D0"
+          },
+          "label": {
+            "fontSize": 16,
+            "fill": "#000",
+            "text": "Gerar relatório de empréstimos",
+            "textWrap": {
+              "width": 200,
+              "height": null,
+              "ellipsis": false,
+              "breakWord": true
+            }
+          }
+        },
+        "position": {
+          "x": 250,
+          "y": 1690
+        },
+        "size": {
+          "width": 232,
+          "height": 59.20000076293945
+        },
+        "angle": 0,
+        "id": "1466696e-7313-4bcd-a978-77e29c2c29cc",
+        "z": 6
+      },
+      {
+        "type": "custom.Actor",
+        "attrs": {
+          "body": {
+            "stroke": "none",
+            "fill": "transparent"
+          },
+          "label": {
+            "fontSize": 16,
+            "fill": "#000",
+            "text": "Aluno",
+            "refY": "60%"
+          },
+          "actor": {
+            "xlink:href": "assets/uml-svg/actor.svg",
+            "width": 48,
+            "height": 86,
+            "x": 0,
+            "y": 0
+          }
+        },
+        "position": {
+          "x": 80,
+          "y": 1340
+        },
+        "size": {
+          "width": 48,
+          "height": 86
+        },
+        "angle": 0,
+        "id": "343b44c5-6cd4-430e-b26c-f9d05ff0ca5e",
+        "z": 7
+      },
+      {
+        "type": "custom.Actor",
+        "attrs": {
+          "body": {
+            "stroke": "none",
+            "fill": "transparent"
+          },
+          "label": {
+            "fontSize": 16,
+            "fill": "#000",
+            "text": "Bibliotecário",
+            "refY": "60%"
+          },
+          "actor": {
+            "xlink:href": "assets/uml-svg/actor.svg",
+            "width": 48,
+            "height": 86,
+            "x": 0,
+            "y": 0
+          }
+        },
+        "position": {
+          "x": 80,
+          "y": 1590
+        },
+        "size": {
+          "width": 48,
+          "height": 86
+        },
+        "angle": 0,
+        "id": "65d80ec9-8709-4b41-8f20-f5ba7baed944",
+        "z": 8
+      },
+      {
+        "type": "custom.UseCase",
+        "attrs": {
+          "body": {
+            "stroke": "#000",
+            "fill": "#FFF7D0"
+          },
+          "label": {
+            "fontSize": 16,
+            "fill": "#000",
+            "text": "Consultar disponibilidade",
+            "textWrap": {
+              "width": 200,
+              "height": null,
+              "ellipsis": false,
+              "breakWord": true
+            }
+          }
+        },
+        "position": {
+          "x": 330,
+          "y": 1260
+        },
+        "size": {
+          "width": 204.8000030517578,
+          "height": 42.39999961853027
+        },
+        "angle": 0,
+        "id": "ef5fc98f-9996-4e89-914a-54407061981a",
+        "z": 9
+      },
+      {
+        "type": "custom.Association",
+        "attrs": {
+          "line": {
+            "targetMarker": {
+              "d": ""
+            },
+            "strokeDasharray": "none"
+          }
+        },
+        "source": {
+          "id": "343b44c5-6cd4-430e-b26c-f9d05ff0ca5e"
+        },
+        "target": {
+          "id": "3489d19a-2cf0-4b02-89fd-da1c045e4c5c"
+        },
+        "id": "0cdc2b18-f681-4b69-88a5-08fcab504ac4",
+        "labels": [
+          {
+            "attrs": {
+              "rect": {
+                "fill": "#fff",
+                "stroke": "#000",
+                "strokeWidth": 0
+              }
+            },
+            "position": {
+              "distance": 0.5
+            }
+          }
+        ],
+        "z": 10
+      },
+      {
+        "type": "custom.Association",
+        "attrs": {
+          "line": {
+            "targetMarker": {
+              "d": ""
+            },
+            "strokeDasharray": "none"
+          }
+        },
+        "source": {
+          "id": "343b44c5-6cd4-430e-b26c-f9d05ff0ca5e"
+        },
+        "target": {
+          "id": "6dc7171e-d3df-452e-8301-539d63d7ec7e"
+        },
+        "id": "a330c7ed-5ec9-407d-9e63-5a50417c2b1f",
+        "labels": [
+          {
+            "attrs": {
+              "rect": {
+                "fill": "#fff",
+                "stroke": "#000",
+                "strokeWidth": 0
+              }
+            },
+            "position": {
+              "distance": 0.5
+            }
+          }
+        ],
+        "z": 11
+      },
+      {
+        "type": "custom.Include",
+        "attrs": {
+          "line": {
+            "strokeDasharray": "2.2"
+          }
+        },
+        "source": {
+          "id": "3489d19a-2cf0-4b02-89fd-da1c045e4c5c"
+        },
+        "target": {
+          "id": "ef5fc98f-9996-4e89-914a-54407061981a"
+        },
+        "id": "09229805-e6cc-42fc-a108-c1bd2a4aa23b",
+        "labels": [
+          {
+            "attrs": {
+              "text": {
+                "text": "<<include>>",
+                "fontSize": 14,
+                "fill": "#000"
+              },
+              "rect": {
+                "fill": "#fff",
+                "stroke": "#000",
+                "strokeWidth": 0
+              }
+            },
+            "position": {
+              "distance": 0.5
+            }
+          }
+        ],
+        "z": 12
+      },
+      {
+        "type": "custom.Association",
+        "attrs": {
+          "line": {
+            "targetMarker": {
+              "d": ""
+            },
+            "strokeDasharray": "none"
+          }
+        },
+        "source": {
+          "id": "65d80ec9-8709-4b41-8f20-f5ba7baed944"
+        },
+        "target": {
+          "id": "4b134385-96ec-4812-959c-7f6704a1df50"
+        },
+        "id": "e6ceaf2e-4403-404f-b85d-3d7fb6221adb",
+        "labels": [
+          {
+            "attrs": {
+              "rect": {
+                "fill": "#fff",
+                "stroke": "#000",
+                "strokeWidth": 0
+              }
+            },
+            "position": {
+              "distance": 0.5
+            }
+          }
+        ],
+        "z": 13
+      },
+      {
+        "type": "custom.Association",
+        "attrs": {
+          "line": {
+            "targetMarker": {
+              "d": ""
+            },
+            "strokeDasharray": "none"
+          }
+        },
+        "source": {
+          "id": "65d80ec9-8709-4b41-8f20-f5ba7baed944"
+        },
+        "target": {
+          "id": "1466696e-7313-4bcd-a978-77e29c2c29cc"
+        },
+        "id": "71820ffc-b642-457b-95e4-c2b01f88b54c",
+        "labels": [
+          {
+            "attrs": {
+              "rect": {
+                "fill": "#fff",
+                "stroke": "#000",
+                "strokeWidth": 0
+              }
+            },
+            "position": {
+              "distance": 0.5
+            }
+          }
+        ],
+        "z": 14
+      },
+      {
+        "type": "custom.Association",
+        "attrs": {
+          "line": {
+            "targetMarker": {
+              "d": ""
+            },
+            "strokeDasharray": "none"
+          }
+        },
+        "source": {
+          "id": "65d80ec9-8709-4b41-8f20-f5ba7baed944"
+        },
+        "target": {
+          "id": "4dcd4992-80fd-4428-923f-d8e512a766a8"
+        },
+        "id": "fc305ccc-0020-47f9-ab34-a45c71328081",
+        "labels": [
+          {
+            "attrs": {
+              "rect": {
+                "fill": "#fff",
+                "stroke": "#000",
+                "strokeWidth": 0
+              }
+            },
+            "position": {
+              "distance": 0.5
+            }
+          }
+        ],
+        "z": 15
+      },
+      {
+        "type": "custom.Association",
+        "attrs": {
+          "line": {
+            "targetMarker": {
+              "d": ""
+            },
+            "strokeDasharray": "none"
+          }
+        },
+        "source": {
+          "id": "343b44c5-6cd4-430e-b26c-f9d05ff0ca5e"
+        },
+        "target": {
+          "id": "80a91b24-ed0e-408e-b50c-b82a816536df"
+        },
+        "id": "c2f7ce1c-6980-41a4-a912-76e723c03be7",
+        "labels": [
+          {
+            "attrs": {
+              "rect": {
+                "fill": "#fff",
+                "stroke": "#000",
+                "strokeWidth": 0
+              }
+            },
+            "position": {
+              "distance": 0.5
+            }
+          }
+        ],
+        "z": 16
+      },
+      {
+        "type": "custom.Dependency",
+        "attrs": {
+          
+        },
+        "source": {
+          "id": "65d80ec9-8709-4b41-8f20-f5ba7baed944"
+        },
+        "target": {
+          "id": "343b44c5-6cd4-430e-b26c-f9d05ff0ca5e"
+        },
+        "id": "cdfed96e-21a8-4267-a652-1db2fc61cc9c",
+        "labels": [
+          {
+            "position": {
+              "distance": 0.5
+            }
+          }
+        ],
+        "z": 17
+      }
+    ]
+  }
+  private graphJSONCorrect = new joint.dia.Graph();
+  
+
   // Botão de remover elemento
   private removeBtn: HTMLButtonElement | null = null;
   private currentCellView: joint.dia.ElementView | joint.dia.LinkView | null = null;
@@ -103,7 +647,6 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     this.paper.on('blank:pointerdown', () => {
       this.hideRemoveButton();
       this.hideLinkButton();
-      console.log("Clicou no paper", this)
       this.showInlineEditor(this.currentCellView);
     });
 
@@ -486,6 +1029,85 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     };
 
     this.paper!.on('element:pointerclick', selectSource);
+  }
+
+  // Cálcula se o graph do usuário está correto
+  calculateGraphAccuracy(): number {
+    this.graphJSONCorrect = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
+    this.graphJSONCorrect.fromJSON(this.graphJSON);
+    if (!this.graph || !this.graphJSONCorrect) return 0;
+
+    // Obtenha elementos e links do usuário e do modelo
+    const userElements = this.graph.getElements();
+    const userLinks = this.graph.getLinks();
+    const modelElements = this.graphJSONCorrect.getElements();
+    const modelLinks = this.graphJSONCorrect.getLinks();
+
+    let totalChecks = 0;
+    let correctChecks = 0;
+
+    // --- Verificação de elementos ---
+    totalChecks += modelElements.length;
+    for (const modelElem of modelElements) {
+      const match = userElements.find(userElem =>
+        userElem.get('type') === modelElem.get('type') &&
+        (userElem.attr(['label', 'text']) || '') === (modelElem.attr(['label', 'text']) || '')
+      );
+      if (match) correctChecks++;
+    }
+
+    // Penaliza elementos extras do usuário
+    if (userElements.length > modelElements.length) {
+      totalChecks += userElements.length - modelElements.length;
+      correctChecks -= (userElements.length - modelElements.length);
+    }
+
+    // Penaliza elementos ausentes do usuário
+    if (modelElements.length > userElements.length) {
+      totalChecks += modelElements.length - userElements.length;
+      // Não soma em correctChecks, pois já não foram encontrados
+    }
+
+    // --- Verificação de links ---
+    totalChecks += modelLinks.length;
+    for (const modelLink of modelLinks) {
+      const modelSource = modelLink.getSourceElement();
+      const modelTarget = modelLink.getTargetElement();
+      const modelLabel = modelLink.label(0)?.attrs?.['text']?.text || '';
+      const match = userLinks.find(userLink => {
+        const userSource = userLink.getSourceElement();
+        const userTarget = userLink.getTargetElement();
+        const userLabel = userLink.label(0)?.attrs?.['text']?.text || '';
+        return (
+          userLink.get('type') === modelLink.get('type') &&
+          userSource && modelSource &&
+          userTarget && modelTarget &&
+          (userSource.attr(['label', 'text']) || '') === (modelSource.attr(['label', 'text']) || '') &&
+          (userTarget.attr(['label', 'text']) || '') === (modelTarget.attr(['label', 'text']) || '') &&
+          userLabel === modelLabel
+        );
+      });
+      if (match) correctChecks++;
+    }
+
+    // Penaliza links extras do usuário
+    if (userLinks.length > modelLinks.length) {
+      totalChecks += userLinks.length - modelLinks.length;
+      correctChecks -= (userLinks.length - modelLinks.length);
+    }
+
+    // Penaliza links ausentes do usuário
+    if (modelLinks.length > userLinks.length) {
+      totalChecks += modelLinks.length - userLinks.length;
+      // Não soma em correctChecks, pois já não foram encontrados
+    }
+
+    // Garante que não fique negativo
+    correctChecks = Math.max(0, correctChecks);
+
+    // Calcula a porcentagem
+    const accuracy = totalChecks > 0 ? (correctChecks / totalChecks) * 100 : 0;
+    return Math.round(accuracy);
   }
 
   ngOnDestroy(): void {

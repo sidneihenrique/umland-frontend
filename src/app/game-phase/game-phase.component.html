@@ -108,7 +108,7 @@
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
     </div>
-    <diagram-editor></diagram-editor>
+    <diagram-editor #diagramEditor ></diagram-editor>
     <app-store></app-store>
         <app-confirm-dialog 
         [visible]="confirmDialogVisible" 
@@ -117,6 +117,9 @@
         (confirm)="onConfirm()" 
         (cancel)="onCancel()">
     </app-confirm-dialog>
-    <app-dialog-finished-gamephase *ngIf="finishedGamePhaseVisible"></app-dialog-finished-gamephase>
+    <app-dialog-finished-gamephase 
+        *ngIf="finishedGamePhaseVisible"
+        [accuracy]="accuracy">
+    </app-dialog-finished-gamephase>
 
 </div>

@@ -105,6 +105,7 @@ export class UMLElementUtil {
           position: { distance: 0.5 }
         }]);
         link.attr('line/strokeDasharray', '5,5'); // linha tracejada
+        link.set('type', 'custom.Extend');
         break;
       case 'include':
         link.labels([{
@@ -115,11 +116,13 @@ export class UMLElementUtil {
           position: { distance: 0.5 }
         }]);
         link.attr('line/strokeDasharray', '2.2'); // linha contínua
+        link.set('type', 'custom.Include');
         break;
       case 'dependency':
         link.labels([{
           position: { distance: 0.5 }
         }]);
+        link.set('type', 'custom.Dependency');
         break;
       case 'association':
         link.labels([{
@@ -130,6 +133,7 @@ export class UMLElementUtil {
         }]);
         link.attr('line/strokeDasharray', 'none'); // linha contínua
         link.attr('line/targetMarker', { d: '' }); // remove a seta
+        link.set('type', 'custom.Association')
         break;
       default:
         break;

@@ -34,6 +34,10 @@ export class GamePhaseComponent implements OnInit {
   @ViewChild('dialogContainer', { read: ViewContainerRef, static: true })
   dialogContainer!: ViewContainerRef;
 
+  @ViewChild('diagramEditor') diagramEditorComponentRef!: DiagramEditorComponent;
+
+  accuracy: number = 0;
+
   confirmDialogVisible: boolean = false;
   confirmDialogTitle: string = '';
   confirmDialogMessage: string = '';
@@ -227,6 +231,8 @@ export class GamePhaseComponent implements OnInit {
     if (this.confirmCallback) {
       this.confirmCallback();
     }
+    this.accuracy = this.diagramEditorComponentRef.calculateGraphAccuracy();
+
     this.confirmDialogVisible = false;
     this.finishedGamePhaseVisible = true;
   }
