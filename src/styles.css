@@ -5,6 +5,7 @@
   --white: #FFFFFF;
   --black: #000000;
   --red: #FF0000;
+  --green: #00D819;
   --yellow: #EBB235;
   --overlay: rgba(0, 0, 0, 0.5);
   --bg: #1A1A1A;
@@ -131,6 +132,7 @@ body {
   margin-left: 4px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   transition: background 0.2s;
+  z-index: 40;
 }
 .link-btn:hover {
   background: var(--blue);

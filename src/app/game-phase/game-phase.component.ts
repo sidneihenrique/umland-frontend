@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, OnInit } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit } from '@angular/core';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
 import Swiper from 'swiper';
@@ -8,17 +8,24 @@ import { CommonModule } from '@angular/common';
 import { NgIf } from '@angular/common';
 import { AppComponent } from "../app.component";
 import { StoreComponent } from "../store/store.component";
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/dialog-finished-gamephase.component";
 
 @Component({
   selector: 'game-phase',
   standalone: true,
-  imports: [LucideIconsModule, DiagramEditorComponent, CommonModule, StoreComponent],
+  imports: [LucideIconsModule, DiagramEditorComponent, CommonModule, StoreComponent, DialogFinishedGamephaseComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
 export class GamePhaseComponent implements OnInit{
   isOpen = false;
   @ViewChild(StoreComponent) store!: StoreComponent;
+
+  @ViewChild('dialogContainer', { read: ViewContainerRef, static: true })
+  dialogContainer!: ViewContainerRef;
+
+  private dialogRef: ComponentRef<ConfirmDialogComponent> | null = null;
   
 
   // Todas as dicas possíveis
@@ -142,6 +149,44 @@ export class GamePhaseComponent implements OnInit{
 
   get isLastMessage(): boolean {
     return this.activeSlideIndex === this.dialogo.length - 1;
+  }
+
+  openConfirmDialog(
+    title: string,
+    message: string,
+    onConfirm: () => void
+  ) {
+    // Limpa qualquer dialog anterior
+    this.dialogContainer.clear();
+
+    // Cria o componente dinamicamente
+    this.dialogRef = this.dialogContainer.createComponent(ConfirmDialogComponent);
+
+    // Passa os inputs
+    this.dialogRef.instance.title = title;
+    this.dialogRef.instance.message = message;
+
+    // Substitui o método confirm
+    this.dialogRef.instance.confirm = () => {
+      onConfirm();
+      this.dialogRef?.destroy();
+    };
+
+    // Fecha ao cancelar
+    this.dialogRef.instance.hide = () => {
+      this.dialogRef?.destroy();
+    };
+  }
+
+  onSaveClick() {
+    this.openConfirmDialog(
+      'Tem certeza que deseja salvar?',
+      'Essa ação irá salvar seu progresso.',
+      () => {
+        // Lógica de salvar aqui!
+        console.log('Salvou!');
+      }
+    );
   }
 
 }

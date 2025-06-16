@@ -13,7 +13,10 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircleQuestion,
-  Save
+  Save,
+  TriangleAlert,
+  CircleCheckBig,
+  RotateCcw
 } from 'lucide-angular';
 
 @NgModule({
@@ -29,7 +32,10 @@ import {
     ChevronLeft,
     ChevronRight,
     MessageCircleQuestion,
-    Save
+    Save,
+    TriangleAlert,
+    CircleCheckBig,
+    RotateCcw
   })],
   exports: [LucideAngularModule],
 })

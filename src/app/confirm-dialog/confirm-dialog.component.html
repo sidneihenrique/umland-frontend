@@ -1,0 +1,26 @@
+<div class="overlay" [class.visible]="visible" (click)="hide()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+
+        <div class="header">
+            <button class="btn-icon close-button" (click)="hide()">
+                <lucide-icon name="x" class="lucide-icon"></lucide-icon>
+            </button>
+        </div>
+
+        <div class="content">
+            
+            <lucide-icon name="triangle-alert" class="lucide-icon left" size="64"></lucide-icon>
+            
+            <div class="right">
+                <h2>{{ title }}</h2>
+                <p>{{ message }}</p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" (click)="hide()">Cancelar</button>
+            <button class="btn btn-primary" (click)="confirm()">Confirmar</button>
+        </div>
+
+    </div>
+</div>
