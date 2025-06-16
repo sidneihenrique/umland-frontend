@@ -130,6 +130,16 @@
 
 }
 
+.dialog .accuracy-green {
+    color: var(--green);
+}
+.dialog  .accuracy-yellow {
+    color: var(--yellow);
+}
+.dialog .accuracy-red {
+    color: var(--red);
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);

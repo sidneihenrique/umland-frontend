@@ -8,14 +8,25 @@
 
         <div class="content">
             <div class="accuracy">
-                <h1>85%</h1>
+                <h1 [ngClass]="{
+                    'accuracy-green': accuracy >= 80,
+                    'accuracy-yellow': accuracy > 70 && accuracy < 80,
+                    'accuracy-red': accuracy <= 70
+                    }">
+                {{accuracy}}%
+                </h1>
                 <lucide-icon name="circle-check-big" class="lucide-icon" size="48"></lucide-icon>
             </div>
 
             <div class="reputation">
-                <p>+ <span class="reputation-sum">{{reputationSum}}</span></p>
+                <p>
+                    <span *ngIf="reputationSum > 0">+ </span>
+                    <span class="reputation-sum">{{reputationSum}}</span>
+                </p>
                 <lucide-icon name="sparkles" class="lucide-icon sparkles"></lucide-icon>
-                <lucide-icon name="move-up-right" class="lucide-icon" [size]="16" color="#00D819"></lucide-icon>
+                
+                <lucide-icon *ngIf="reputationSum > 0" name="move-up-right" class="lucide-icon" [size]="16" color="#00D819"></lucide-icon>
+                <lucide-icon *ngIf="reputationSum <= 0" name="move-down-right" class="lucide-icon" [size]="16" color="#FF0000"></lucide-icon>
             </div>
 
             <div class="coins">
