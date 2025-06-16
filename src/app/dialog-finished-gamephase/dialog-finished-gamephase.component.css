@@ -1,0 +1,140 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: transparent;
+    backdrop-filter: blur(0px);
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: all 0.2s ease-out;
+}
+
+.overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+    background-color: var(--overlay);
+    backdrop-filter: blur(2px);
+}
+
+.dialog {
+    background: var(--bg);
+    border-radius: 20px;
+    padding: 48px 16px;
+    min-width: 50vw;
+    max-width: max-content;
+    max-height: 90vh;
+
+
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.dialog * {
+    color: var(--white);
+}
+
+.dialog .header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.header h2 {
+    font-size: 40px;
+    font-weight: 800;
+}
+
+.header p {
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.dialog .content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.accuracy {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.accuracy h1 {
+    font-size: 72px;
+    font-weight: 800;
+}
+
+.accuracy .lucide-icon {
+    width: 64px;
+    height: 64px;
+
+}
+
+.reputation,
+.coins {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.reputation .lucide-icon.sparkles,
+.coins .lucide-icon {
+    color: var(--yellow);
+}
+
+.dialog .back-to-map {
+    cursor: pointer;
+
+    align-self: center;
+
+    width: fit-content;
+    background: var(--green);
+    border-radius: 6px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    outline: 0;
+    border: 0;
+
+    padding: 8px 24px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.dialog .back-to-map:hover .lucide-icon {
+    animation: spin 1s linear infinite;
+
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(-360deg);
+    }
+}

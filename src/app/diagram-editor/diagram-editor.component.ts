@@ -385,7 +385,6 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     btn.style.position = 'absolute';
     btn.style.left = `${point.x + window.scrollX}px`;
     btn.style.top = `${point.y + window.scrollY}px`;
-    btn.style.zIndex = '1000';
 
     btn.onclick = () => {
       this.linkingSource = cellView.model;

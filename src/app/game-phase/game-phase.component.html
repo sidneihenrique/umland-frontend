@@ -104,10 +104,19 @@
         <button class="btn-icon filled" (click)="toggleSpeech()">
             <lucide-icon name="message-circle-question" class="lucide-icon"></lucide-icon>
         </button>
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="onSaveClick()">
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
     </div>
     <diagram-editor></diagram-editor>
     <app-store></app-store>
+        <app-confirm-dialog 
+        [visible]="confirmDialogVisible" 
+        [title]="confirmDialogTitle" 
+        [message]="confirmDialogMessage" 
+        (confirm)="onConfirm()" 
+        (cancel)="onCancel()">
+    </app-confirm-dialog>
+    <app-dialog-finished-gamephase *ngIf="finishedGamePhaseVisible"></app-dialog-finished-gamephase>
+
 </div>

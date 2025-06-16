@@ -1,0 +1,31 @@
+<div class="overlay" [class.visible]="visible">
+    <div class="dialog">
+
+        <div class="header">
+            <h2>Parabéns!</h2>
+            <p>Fase concluída com sucesso</p>
+        </div>
+
+        <div class="content">
+            <div class="accuracy">
+                <h1>85%</h1>
+                <lucide-icon name="circle-check-big" class="lucide-icon" size="48"></lucide-icon>
+            </div>
+
+            <div class="reputation">
+                <p>+ <span class="reputation-sum">{{reputationSum}}</span></p>
+                <lucide-icon name="sparkles" class="lucide-icon sparkles"></lucide-icon>
+                <lucide-icon name="move-up-right" class="lucide-icon" [size]="16" color="#00D819"></lucide-icon>
+            </div>
+
+            <div class="coins">
+                <p>+ <span class="coins-sum">{{coinsSum}}</span></p>
+                <lucide-icon name="circle-dollar-sign" class="lucide-icon"></lucide-icon>
+            </div>
+
+        </div>
+
+        <button class="back-to-map">VOLTAR PARA O MAPA <lucide-icon name="rotate-ccw" class="lucide-icon"></lucide-icon></button>
+    </div>
+    
+</div>

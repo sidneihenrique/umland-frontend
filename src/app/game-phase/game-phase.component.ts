@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { LucideIconsModule } from '../lucide-icons.module';
@@ -9,6 +9,8 @@ import { Navigation } from 'swiper/modules';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreComponent } from "../store/store.component";
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/dialog-finished-gamephase.component";
 
 @Component({
   selector: 'game-phase',
@@ -19,14 +21,26 @@ import { StoreComponent } from "../store/store.component";
     CommonModule,
     StoreComponent,
     HttpClientModule,
-    RouterModule
-  ],
+    RouterModule, 
+    ConfirmDialogComponent, 
+    DialogFinishedGamephaseComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
 export class GamePhaseComponent implements OnInit {
   isOpen = false;
   @ViewChild(StoreComponent) store!: StoreComponent;
+
+  @ViewChild('dialogContainer', { read: ViewContainerRef, static: true })
+  dialogContainer!: ViewContainerRef;
+
+  confirmDialogVisible: boolean = false;
+  confirmDialogTitle: string = '';
+  confirmDialogMessage: string = '';
+  private confirmCallback: (() => void) | null = null;
+
+  // Variável para controlar a visibilidade do diálogo de finalização
+  finishedGamePhaseVisible: boolean = false;
 
   // User data
   userData?: User;
@@ -200,6 +214,36 @@ export class GamePhaseComponent implements OnInit {
 
   get isProgressing(): boolean {
     return this.userData?.progressing || false;
+  }
+
+  openConfirmDialog(title: string, message: string, onConfirm: () => void) {
+    this.confirmDialogTitle = title;
+    this.confirmDialogMessage = message;
+    this.confirmCallback = onConfirm;
+    this.confirmDialogVisible = true;
+  }
+
+  onConfirm() {
+    if (this.confirmCallback) {
+      this.confirmCallback();
+    }
+    this.confirmDialogVisible = false;
+    this.finishedGamePhaseVisible = true;
+  }
+
+  onCancel() {
+    this.confirmDialogVisible = false;
+  }
+
+  onSaveClick() {
+    this.openConfirmDialog(
+      'Tem certeza que deseja salvar?',
+      'Essa ação irá salvar seu progresso.',
+      () => {
+        // Lógica de salvar aqui!
+        console.log('Salvou!');
+      }
+    );
   }
 
 }
