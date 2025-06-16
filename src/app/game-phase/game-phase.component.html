@@ -12,22 +12,22 @@
             </button>
         </div>
         <span class="game-time">00:05:45</span>
-        <div class="right">
-            <div class="money">
+        <div class="right">            <div class="money">
                 <lucide-icon name="circle-dollar-sign" class="lucide-icon" [size]="32"></lucide-icon>
-                <span class="amount">{{ userMoney }}</span>
+                <span class="amount">{{ userData?.money }}</span>
             </div>
             <div class="reputation">
                 <lucide-icon name="sparkles" class="lucide-icon" [size]="32"></lucide-icon>
-                <span class="amount">{{ userReputation }}</span>
-                @if (isProgressing) {
+                <span class="amount">{{ userData?.reputation }}</span>
+                @if (userData?.progressing) {
                 <lucide-icon name="move-up-right" class="lucide-icon" [size]="16" color="#00D819"></lucide-icon>
                 } @else {
                 <lucide-icon name="move-down-right" class="lucide-icon" [size]="16" color="#FF0000"></lucide-icon>
                 }
-            </div>            <div class="user-info">
+            </div>
+            <div class="user-info">
                 <div class="user-icon-wrapper">
-                    <img [src]="userName === 'Tiago' ? 'assets/images/sid.jpeg' : userName === 'Maria' ? 'assets/images/sida.jpg' : 'https://github.com/sidneihenrique.png'" [alt]="userName">
+                    <img [src]="userData?.name === 'Tiago' ? 'assets/images/sid.jpeg' : userData?.name === 'Maria' ? 'assets/images/sida.jpg' : 'https://github.com/sidneihenrique.png'" [alt]="userData?.name">
                 </div>
                 <span class="user-name">{{ userName }}</span>
             </div>

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { StoreItemComponent } from "../store-item/store-item.component";
+import { DataService, User } from '../../services/data.service';
 
 interface StoreItem {
   imageUrl: string;
@@ -19,6 +20,23 @@ interface StoreItem {
 })
 export class StoreComponent implements OnInit {
   visible: boolean = false;
+  userMoney: number = 0;
+
+  constructor(
+    private dataService: DataService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
+
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        this.dataService.getUserById(userId).subscribe(response => {
+          this.userMoney = response.user.money;
+        });
+      }
+    }
+  }
 
   storeItems: StoreItem[] = [
     {
@@ -46,10 +64,6 @@ export class StoreComponent implements OnInit {
       price: 21
     }
   ];
-
-  ngOnInit() {
-
-  }
 
   show() {
     this.visible = true;

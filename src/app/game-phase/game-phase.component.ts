@@ -61,23 +61,22 @@ export class GamePhaseComponent implements OnInit {
   characterState = 'hidden';
 
   constructor(
-    private dataService: DataService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private dataService: DataService
   ) {
     this.dicas = this.sortearDicas(3);
   }
 
   ngOnInit() {
-    let userId = '1'; // padrão Tiago
     if (isPlatformBrowser(this.platformId)) {
-      const storedId = localStorage.getItem('userId');
-      if (storedId === '33') {
-        userId = '33';
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        this.loadUserData(userId);
+      } else {
+        this.router.navigate(['/login']);
       }
     }
-    this.loadUserData(userId);
-    this.toggleSpeech();
   }
 
   private sortearDicas(qtd: number): string[] {
@@ -168,21 +167,16 @@ export class GamePhaseComponent implements OnInit {
   }
 
   private loadUserData(userId: string) {
-    if (userId === '33') {
-      this.userData = {
-        name: "Maria",
-        money: 150,
-        reputation: 420,
-        progressing: false // Maria agora tem progresso negativo
-      };
-    } else {
-      this.userData = {
-        name: "Tiago",
-        money: 200,
-        reputation: 380,
-        progressing: true // Tiago tem progresso positivo
-      };
-    }
+    this.dataService.getUserById(userId).subscribe({
+      next: (response: UserResponse) => {
+        this.userData = response.user;
+      },
+      error: (error) => {
+        console.error('Erro ao carregar dados do usuário:', error);
+        this.userLoadError = 'Erro ao carregar dados do usuário';
+        this.router.navigate(['/login']);
+      }
+    });
   }
 
   exitGame() {
