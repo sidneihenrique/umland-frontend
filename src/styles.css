@@ -3,6 +3,7 @@
 :root{
   --gray: #D9D9D9;
   --white: #FFFFFF;
+  --white-50: rgba(255, 255, 255, 0.5);
   --black: #000000;
   --red: #FF0000;
   --yellow: #EBB235;

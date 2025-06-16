@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { delay, map, catchError } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface UserResponse {
     user: User;
@@ -25,10 +26,15 @@ export interface ApiError {
 
 export class DataService {
     private readonly baseUrl: string;
-    private readonly mockUsers: Record<string, UserResponse>;
-
-    constructor(private http: HttpClient) {
-        this.baseUrl = (window as any).apiUrl || 'http://api.example.com';
+    private readonly mockUsers: Record<string, UserResponse>;    constructor(
+        private http: HttpClient,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) {
+        // URL para SSR
+        this.baseUrl = 'http://api.example.com';
+        if (isPlatformBrowser(this.platformId)) {
+            this.baseUrl = (window as any).apiUrl || this.baseUrl;
+        }
 
         // Mock de dados dos usuários
         this.mockUsers = {

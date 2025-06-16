@@ -1,1 +1,44 @@
-<p>login works!</p>
+<div class="login-background">
+    <div class="animated-line l1"></div>
+    <div class="animated-line l2"></div>
+    <div class="animated-line l3"></div>
+    <div class="animated-line l4"></div>
+    <div class="animated-letters">
+        <div class="letter-line letter-u"></div>
+        <div class="letter-line letter-u-bottom"></div>
+        <div class="letter-line letter-m"></div>
+        <div class="letter-line letter-m-mid"></div>
+        <div class="letter-line letter-l"></div>
+        <div class="letter-line letter-l-bottom"></div>
+    </div>
+</div>
+<div class="login-container">
+    <div class="logo-section">
+        <img src="assets/images/logo.png" alt="Logo" class="logo">
+    </div>
+    <div class="form-section">
+        <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+            <div class="form-group">
+                <input type="text" 
+                       [(ngModel)]="username" 
+                       name="username" 
+                       placeholder="Username ou Email" 
+                       required>
+            </div>
+            <div class="form-group">
+                <input type="password" 
+                       [(ngModel)]="password" 
+                       name="password" 
+                       placeholder="Senha" 
+                       required>
+            </div>
+            @if (errorMessage) {
+                <div class="error-message">{{ errorMessage }}</div>
+            }
+            <div class="form-actions">
+                <button type="button" class="forgot-password">Esqueci minha senha</button>
+                <button type="submit" class="login-button">Entrar</button>
+            </div>
+        </form>
+    </div>
+</div>
