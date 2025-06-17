@@ -2,6 +2,7 @@ import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, On
 import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
+import { StorageService } from '../../services/storage.service';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
 import { DataService, UserResponse, User } from '../../services/data.service';
@@ -33,6 +34,19 @@ import { CarouselComponent } from '../utils/carousel/carousel.component';
 
 export class GamePhaseComponent implements OnInit, OnDestroy {
   isOpen = false;
+  currentTime: string = '00:00:00';
+  watchTime: string = '';  // Additional timer for watch bonus time
+  watchCount: number = 0;
+  private timerInterval: any;
+  private watchTimerInterval: any;
+  private timerPaused: boolean = false;
+  private pausedTime: number = 0;
+  private watchStartTime: number = 0;
+  private watchDuration: number = 59 * 1000; // 59 seconds in milliseconds
+  private storeSubscription?: Subscription;
+  private inventorySubscription?: Subscription;
+  private startTime: number = 0;
+  
   @ViewChild(StoreComponent) store!: StoreComponent;
   private userDataSubscription?: Subscription;
 
@@ -85,19 +99,26 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   characterState = 'hidden';
 
   swiperCharacter?: Swiper;
-
   constructor(
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private dataService: DataService
+    private dataService: DataService,
+    private storageService: StorageService
   ) {
     this.dicas = this.sortearDicas(3);
   }
-
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       const userId = localStorage.getItem('userId');
       if (userId) {
+        this.startTimer();
+        this.loadWatchCount();        // Subscribe to inventory changes
+        this.inventorySubscription = this.storageService.getInventoryUpdates().subscribe(inventory => {
+          if (inventory) {
+            this.watchCount = inventory['watch'] || 0;
+            console.log('Watch count updated from storage service:', this.watchCount);
+          }
+        });
         // Inscreve-se nas atualizações de dados do usuário
         this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
           if (userData) {
@@ -113,25 +134,27 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     }
   }
 
-  // private loadUserData(userId: string) {
-  //   this.dataService.getUserById(userId).subscribe({
-  //     next: (response) => {
-  //       this.userData = response.user;
-  //       // Carrega os dados iniciais no BehaviorSubject
-  //       this.dataService.updateUserData(response.user);
-  //     },
-  //     error: (error) => {
-  //       this.userLoadError = error.error;
-  //       this.router.navigate(['/login']);
-  //     }
-  //   });
-  // }
-
-  
+  ngAfterViewInit() {
+    // Subscribe to store state changes
+    this.storeSubscription = this.store.storeStateChanged.subscribe((isOpen: boolean) => {
+      if (!isOpen) {
+        // Store was closed, reload watch count
+        this.loadWatchCount();
+      }
+    });
+  }
   ngOnDestroy() {
-    this.destroySwiper();
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
     if (this.userDataSubscription) {
       this.userDataSubscription.unsubscribe();
+    }
+    if (this.storeSubscription) {
+      this.storeSubscription.unsubscribe();
+    }
+    if (this.inventorySubscription) {
+      this.inventorySubscription.unsubscribe();
     }
   }
 
@@ -186,6 +209,13 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
   toggleStore() {
     this.store.toggle();
+  }
+
+  onStoreStateChanged(isOpen: boolean) {
+    if (!isOpen) {
+      // Store was closed, reload watch count
+      this.loadWatchCount();
+    }
   }
 
   toggleSpeech() {
@@ -289,4 +319,74 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     this.accuracy = accuracyValue;
   }
 
+  private startTimer() {
+    this.startTime = Date.now();
+    this.timerInterval = setInterval(() => {
+      if (!this.timerPaused) {
+        const elapsedTime = Date.now() - this.startTime;
+        const hours = Math.floor(elapsedTime / (1000 * 60 * 60));
+        const minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+
+        this.currentTime = `${this.padNumber(hours)}:${this.padNumber(minutes)}:${this.padNumber(seconds)}`;
+      }
+    }, 1000);
+  }
+
+  activateWatch() {
+    if (this.watchCount > 0 && !this.watchTimerInterval) {
+      // Pause the main timer
+      this.timerPaused = true;
+      this.pausedTime = Date.now();
+      
+      // Decrease watch count
+      this.watchCount--;
+      const inventory = JSON.parse(localStorage.getItem('inventory') || '{}');
+      inventory['watch'] = this.watchCount;
+      localStorage.setItem('inventory', JSON.stringify(inventory));
+
+      // Start watch timer
+      this.watchStartTime = Date.now();
+      this.watchTimerInterval = setInterval(() => {
+        const remainingTime = this.watchDuration - (Date.now() - this.watchStartTime);
+        
+        if (remainingTime <= 0) {
+          // Watch time finished
+          clearInterval(this.watchTimerInterval);
+          this.watchTimerInterval = null;
+          this.watchTime = '';
+          
+          // Resume main timer
+          this.timerPaused = false;
+          const pauseDuration = Date.now() - this.pausedTime;
+          this.startTime += pauseDuration;
+        } else {
+          // Update watch time display
+          const minutes = Math.floor(remainingTime / (1000 * 60));
+          const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+          this.watchTime = `+${this.padNumber(minutes)}:${this.padNumber(seconds)}`;
+        }
+      }, 1000);
+    }
+  }
+
+  private padNumber(num: number): string {
+    return num.toString().padStart(2, '0');
+  }  private loadWatchCount() {
+    const inventoryJson = localStorage.getItem('inventory');
+    if (inventoryJson) {
+      const inventory = JSON.parse(inventoryJson);
+      this.watchCount = inventory['watch'] || 0;
+      console.log('Watch count loaded from inventory:', this.watchCount);
+    } else {
+      this.watchCount = 0;
+      console.log('No inventory found, watch count set to 0');
+    }
+  }
+
+  // Debug method to set watch count
+  setWatchCount(count: number) {
+    localStorage.setItem('watch', count.toString());
+    this.loadWatchCount();
+  }
 }

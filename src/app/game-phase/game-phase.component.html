@@ -7,11 +7,11 @@
             <button class="btn-icon" (click)="toggleStore()">
                 <lucide-icon class="lucide-icon" name="store"></lucide-icon>
             </button>
-            <!-- <button class="btn-icon">
-                <lucide-icon class="lucide-icon" name="backpack"></lucide-icon>
-            </button> -->
         </div>
-        <span class="game-time">00:05:45</span>
+        <div class="game-timers">
+            <span class="game-time">{{currentTime}}</span>
+            <span class="watch-time" [class.active]="watchTime" [style.color]="'#00D819'">{{watchTime}}</span>
+        </div>
         <div class="right">
             <div class="money">
                 <lucide-icon name="circle-dollar-sign" class="lucide-icon" [size]="32"></lucide-icon>
@@ -37,8 +37,9 @@
     </header>
 
     <div class="action-buttons">
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" id="watch" (click)="activateWatch()">
             <img src="assets/store/watch.png" alt="Watch" class="watch-icon">
+            <div class="watch-counter" [style.display]="watchCount > 0 ? 'flex' : 'none'">{{watchCount}}</div>
         </button>
 
         <div class="clues-container">
@@ -100,7 +101,7 @@
         </button>
     </div>
     <diagram-editor #diagramEditor></diagram-editor>
-    <app-store></app-store>
+    <app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
     <app-confirm-dialog [visible]="confirmDialogVisible" [title]="confirmDialogTitle" [message]="confirmDialogMessage"
         (confirm)="onConfirm()" (cancel)="onCancel()">
     </app-confirm-dialog>
