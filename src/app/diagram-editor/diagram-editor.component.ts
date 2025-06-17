@@ -580,8 +580,6 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   // Tipo de link que está sendo criado
   private linkingType: string | null = null;
 
-  
-
 
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
 

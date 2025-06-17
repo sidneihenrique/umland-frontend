@@ -1,5 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
-@import 'swiper/css';
+@import '../node_modules/swiper/swiper-bundle.min.css';
 :root{
   --gray: #D9D9D9;
   --white: #FFFFFF;
