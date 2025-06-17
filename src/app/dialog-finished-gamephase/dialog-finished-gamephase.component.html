@@ -10,8 +10,8 @@
             <div class="accuracy">
                 <h1 [ngClass]="{
                     'accuracy-green': accuracy >= 80,
-                    'accuracy-yellow': accuracy > 70 && accuracy < 80,
-                    'accuracy-red': accuracy <= 70
+                    'accuracy-yellow': accuracy >= 70 && accuracy < 80,
+                    'accuracy-red': accuracy < 70
                     }">
                 {{accuracy}}%
                 </h1>
@@ -36,7 +36,7 @@
 
         </div>
 
-        <button class="back-to-map">VOLTAR PARA O MAPA <lucide-icon name="rotate-ccw" class="lucide-icon"></lucide-icon></button>
+        <button class="back-to-map" (click)="backToMenu()">VOLTAR PARA O MAPA <lucide-icon name="rotate-ccw" class="lucide-icon"></lucide-icon></button>
     </div>
     
 </div>

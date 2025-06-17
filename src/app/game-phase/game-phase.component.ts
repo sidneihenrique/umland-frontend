@@ -69,6 +69,9 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   userData?: User;
   userLoadError: string = '';
 
+  // Save disabled
+  saveDisabled: boolean = false;
+
   // Todas as dicas possíveis
   private todasDicas: string[] = [
     "Use casos de uso para representar funcionalidades do sistema do ponto de vista do usuário.",
@@ -83,10 +86,12 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
   // Mensagens do balão de fala
   dialogCharacter: string[] = [
-    "Olá! Que bom te ver por aqui. Meu nome é Professor Arthur, e hoje eu tenho uma tarefa muito importante pra você",
-    "Estamos desenvolvendo um sistema para uma biblioteca universitária, e a coordenadora do projeto solicitou um levantamento dos requisitos funcionais. O problema é que precisamos criar um diagrama de casos de uso que represente as funcionalidades desse sistema, mas alguns membros da equipe estão com dificuldade de visualizar como organizar os atores e os casos de uso.",
-    "Seu desafio é construir esse diagrama corretamente. Você deve pensar nos usuários da biblioteca, como alunos, bibliotecários e professores, e nas funcionalidades que eles vão precisar: emprestar livros, devolver, renovar, cadastrar novos exemplares, gerar relatórios, etc",
-    "Lembre-se, se o diagrama estiver inconsistente, nossa equipe de desenvolvimento pode implementar coisas erradas! Então, capriche! Se tiver dúvidas, pode acessar as dicas rápidas no canto da tela. Boa sorte!"
+    "Hoje temos um novo desafio pra você. O departamento acadêmico solicitou a modelagem de um sistema para gerenciamento de uma biblioteca universitária. A ideia é facilitar a vida dos alunos e dos bibliotecários, automatizando as atividades do dia a dia.",
+    "O sistema deverá permitir que os alunos possam realizar empréstimos de livros, devolver e renovar empréstimos, além de consultar a disponibilidade dos livros no acervo. Já o bibliotecário precisa ter acesso a funções administrativas, como cadastrar novos livros no sistema, remover livros do catálogo e gerar relatórios de empréstimos.",
+    "Ah, e fique atento! Existe uma dependência entre algumas funcionalidades. Por exemplo, para realizar um empréstimo, o sistema deve primeiro verificar se há exemplar disponível, o que é representado pelo relacionamento de inclusão (<<include>>) com Consultar disponibilidade.",
+    "Seu objetivo nessa fase é garantir que o diagrama de casos de uso esteja corretamente construído, com todos os casos de uso, atores e os relacionamentos necessários, como associações, dependências e inclusões, representando fielmente o funcionamento desse sistema de biblioteca.",
+    "Atenção: Caso o seu diagrama fique inconsistente — como esquecer de associar um ator ou não representar corretamente uma dependência — isso poderá impactar diretamente na compreensão dos desenvolvedores que vão usar esse modelo depois.",
+    "🛠️ Capriche, use as dicas rápidas se precisar, e mãos à obra!"
   ];
 
   dicas: string[] = [];
@@ -388,5 +393,10 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   setWatchCount(count: number) {
     localStorage.setItem('watch', count.toString());
     this.loadWatchCount();
+  }
+
+  onBackToMenu() {
+    this.finishedGamePhaseVisible = false;
+    this.saveDisabled = true;
   }
 }
