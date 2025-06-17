@@ -70,4 +70,8 @@ export class DialogFinishedGamephaseComponent implements OnInit {
     // Exemplo: moedas máximas 50, proporcional à acurácia
     return Math.round((accuracy / 100) * 50);
   }
+
+  backToMenu () {
+    
+  }
 }
