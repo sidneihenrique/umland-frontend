@@ -7,12 +7,13 @@
             <button class="btn-icon" (click)="toggleStore()">
                 <lucide-icon class="lucide-icon" name="store"></lucide-icon>
             </button>
-            <button class="btn-icon">
+            <!-- <button class="btn-icon">
                 <lucide-icon class="lucide-icon" name="backpack"></lucide-icon>
-            </button>
+            </button> -->
         </div>
         <span class="game-time">00:05:45</span>
-        <div class="right">            <div class="money">
+        <div class="right">
+            <div class="money">
                 <lucide-icon name="circle-dollar-sign" class="lucide-icon" [size]="32"></lucide-icon>
                 <span class="amount">{{ userData?.money }}</span>
             </div>
@@ -27,7 +28,8 @@
             </div>
             <div class="user-info">
                 <div class="user-icon-wrapper">
-                    <img [src]="userData?.name === 'Tiago' ? 'assets/images/sid.jpeg' : userData?.name === 'Maria' ? 'assets/images/sida.jpg' : 'https://github.com/sidneihenrique.png'" [alt]="userData?.name">
+                    <img [src]="userData?.name === 'Tiago' ? 'assets/images/sid.jpeg' : userData?.name === 'Maria' ? 'assets/images/sida.jpg' : 'https://github.com/sidneihenrique.png'"
+                        [alt]="userData?.name">
                 </div>
                 <span class="user-name">{{ userName }}</span>
             </div>
@@ -35,6 +37,10 @@
     </header>
 
     <div class="action-buttons">
+        <button class="btn-icon filled">
+            <img src="assets/store/watch.png" alt="Watch" class="watch-icon">
+        </button>
+
         <div class="clues-container">
             <button (click)="toggleDicas()" class="btn-icon filled" [class.open-clues]="isOpen">
                 <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
@@ -77,12 +83,13 @@
             <!-- Balão de fala -->
             @if (isSpeaking) {
             <div class="speech-bubble">
-                <app-carousel [items]="dialogCharacter" ></app-carousel>
+                <app-carousel [items]="dialogCharacter"></app-carousel>
             </div>
             }
 
             <!-- Personagem -->
-            <img src="assets/characters/character_teacher_01.png" alt="Professor" class="character"
+            <img [src]="userData?.name === 'Maria' ? 'assets/characters/maria.png' : 'assets/characters/character_teacher_01.png'"
+                [alt]="userData?.name === 'Maria' ? 'Maria' : 'Professor'" class="character"
                 [class.speaking]="isSpeaking" (click)="toggleSpeech()" />
         </div>
         <button class="btn-icon filled" (click)="toggleSpeech()">
@@ -92,18 +99,12 @@
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
     </div>
-    <diagram-editor #diagramEditor ></diagram-editor>
+    <diagram-editor #diagramEditor></diagram-editor>
     <app-store></app-store>
-        <app-confirm-dialog 
-        [visible]="confirmDialogVisible" 
-        [title]="confirmDialogTitle" 
-        [message]="confirmDialogMessage" 
-        (confirm)="onConfirm()" 
-        (cancel)="onCancel()">
+    <app-confirm-dialog [visible]="confirmDialogVisible" [title]="confirmDialogTitle" [message]="confirmDialogMessage"
+        (confirm)="onConfirm()" (cancel)="onCancel()">
     </app-confirm-dialog>
-    <app-dialog-finished-gamephase 
-        *ngIf="finishedGamePhaseVisible"
-        [accuracy]="accuracy">
+    <app-dialog-finished-gamephase *ngIf="finishedGamePhaseVisible" [accuracy]="accuracy">
     </app-dialog-finished-gamephase>
 
 </div>
