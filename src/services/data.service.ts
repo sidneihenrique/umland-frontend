@@ -1,11 +1,19 @@
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, BehaviorSubject } from 'rxjs';
 import { delay, map, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 
 export interface UserResponse {
     user: User;
+    inventory: Inventory;
+}
+
+export interface Inventory {
+    watch: number;
+    bomb: number;
+    eraser: number;
+    lamp: number;
 }
 
 export interface User {
@@ -26,7 +34,12 @@ export interface ApiError {
 
 export class DataService {
     private readonly baseUrl: string;
-    private readonly mockUsers: Record<string, UserResponse>;    constructor(
+    private currentUser: UserResponse | null = null;
+    private userDataSubject = new BehaviorSubject<User | null>(null);
+
+    public userData$ = this.userDataSubject.asObservable();
+
+    constructor(
         private http: HttpClient,
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
@@ -35,36 +48,82 @@ export class DataService {
         if (isPlatformBrowser(this.platformId)) {
             this.baseUrl = (window as any).apiUrl || this.baseUrl;
         }
-
-        // Mock de dados dos usuários
-        this.mockUsers = {
-            '1': {
+    }    private getDefaultUserData(id: string): UserResponse | null {
+        if (id === '1') {
+            return {
                 user: {
                     name: "Tiago",
                     money: 200,
                     reputation: 380,
                     progressing: true
+                },
+                inventory: {
+                    watch: 0,
+                    bomb: 0,
+                    eraser: 0,
+                    lamp: 0
                 }
-            },
-            '33': {
+            };
+        } else if (id === '33') {
+            return {
                 user: {
                     name: "Maria",
                     money: 25,
                     reputation: 104,
                     progressing: false
+                },
+                inventory: {
+                    watch: 0,
+                    bomb: 0,
+                    eraser: 0,
+                    lamp: 0
                 }
+            };
+        }
+        return null;
+    }
+
+    // Método para atualizar dados do usuário no localStorage e notificar observers
+    updateUserData(userData: User) {
+        if (isPlatformBrowser(this.platformId)) {
+            localStorage.setItem('user', JSON.stringify(userData));
+            this.userDataSubject.next(userData);
+        }
+    }
+
+    // Método para carregar dados do usuário do localStorage
+    loadUserData(): User | null {
+        if (isPlatformBrowser(this.platformId)) {
+            const userJson = localStorage.getItem('user');
+            if (userJson) {
+                const userData = JSON.parse(userJson);
+                this.userDataSubject.next(userData);
+                return userData;
             }
-        };
+        }
+        return null;
     }
 
     getUserById(id: string): Observable<UserResponse> {
-        return of(this.mockUsers[id]).pipe(
+        return of(null).pipe(
             delay(300),
-            map(user => {
-                if (!user) {
+            map(() => {
+                const defaultData = this.getDefaultUserData(id);
+                if (!defaultData) {
                     throw new Error('User not found');
                 }
-                return user;
+
+                if (isPlatformBrowser(this.platformId)) {
+                    const userData = this.loadUserData();
+                    if (userData) {
+                        return {
+                            user: userData,
+                            inventory: JSON.parse(localStorage.getItem('inventory') || '{}')
+                        };
+                    }
+                }
+
+                return defaultData;
             }),
             catchError(error => {
                 throw {

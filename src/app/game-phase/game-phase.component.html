@@ -98,7 +98,7 @@
             }
 
             <!-- Personagem -->
-            <img src="assets/characters/character_teacher_01.png" alt="Professor" class="character"
+            <img [src]="userData?.name === 'Maria' ? 'assets/characters/maria.png' : 'assets/characters/character_teacher_01.png'" [alt]="userData?.name === 'Maria' ? 'Maria' : 'Professor'" class="character"
                 [class.speaking]="isSpeaking" (click)="toggleSpeech()" />
         </div>
         <button class="btn-icon filled" (click)="toggleSpeech()">

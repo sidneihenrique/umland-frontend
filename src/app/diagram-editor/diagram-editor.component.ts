@@ -1,10 +1,11 @@
-import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, ViewChild, HostListener, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, ViewChild, HostListener, PLATFORM_ID, Inject, EventEmitter, Output } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import * as joint from '@joint/core';
 import { UMLElementUtil } from '../utils/uml-element.util';
 import Swiper from 'swiper';
 import { SwiperOptions } from 'swiper/types';
 import { LucideIconsModule } from '../lucide-icons.module';
+import { DataService } from '../../services/data.service';
 
 @Component({
   standalone: true,
@@ -14,6 +15,8 @@ import { LucideIconsModule } from '../lucide-icons.module';
   styleUrl: './diagram-editor.component.css'
 })
 export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit {
+  @Output() accuracyCalculated = new EventEmitter<number>();
+  
   private paper: joint.dia.Paper | null = null;
   private graph: joint.dia.Graph | null = null;
   private zoomLevel: number = 1;
@@ -585,7 +588,10 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: object) {}
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private dataService: DataService
+  ) {}
   ngOnInit(): void {
     
   }
@@ -1030,12 +1036,14 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
     this.paper!.on('element:pointerclick', selectSource);
   }
-
   // Cálcula se o graph do usuário está correto
   calculateGraphAccuracy(): number {
     this.graphJSONCorrect = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
     this.graphJSONCorrect.fromJSON(this.graphJSON);
-    if (!this.graph || !this.graphJSONCorrect) return 0;
+    if (!this.graph || !this.graphJSONCorrect) {
+      this.accuracyCalculated.emit(0);
+      return 0;
+    }
 
     // Obtenha elementos e links do usuário e do modelo
     const userElements = this.graph.getElements();
@@ -1107,7 +1115,12 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
     // Calcula a porcentagem
     const accuracy = totalChecks > 0 ? (correctChecks / totalChecks) * 100 : 0;
-    return Math.round(accuracy);
+    const finalAccuracy = Math.round(accuracy);
+    
+    // Emite o evento com a acurácia calculada
+    this.accuracyCalculated.emit(finalAccuracy);
+    
+    return finalAccuracy;
   }
 
   ngOnDestroy(): void {

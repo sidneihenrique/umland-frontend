@@ -1,5 +1,6 @@
-import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
@@ -27,9 +28,10 @@ import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/d
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
-export class GamePhaseComponent implements OnInit {
+export class GamePhaseComponent implements OnInit, OnDestroy {
   isOpen = false;
   @ViewChild(StoreComponent) store!: StoreComponent;
+  private userDataSubscription?: Subscription;
 
   @ViewChild('dialogContainer', { read: ViewContainerRef, static: true })
   dialogContainer!: ViewContainerRef;
@@ -90,10 +92,38 @@ export class GamePhaseComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       const userId = localStorage.getItem('userId');
       if (userId) {
+        // Inscreve-se nas atualizações de dados do usuário
+        this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
+          if (userData) {
+            this.userData = userData;
+          }
+        });
+        
+        // Carrega os dados iniciais
         this.loadUserData(userId);
       } else {
         this.router.navigate(['/login']);
       }
+    }
+  }
+
+  private loadUserData(userId: string) {
+    this.dataService.getUserById(userId).subscribe({
+      next: (response) => {
+        this.userData = response.user;
+        // Carrega os dados iniciais no BehaviorSubject
+        this.dataService.updateUserData(response.user);
+      },
+      error: (error) => {
+        this.userLoadError = error.error;
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+  ngOnDestroy() {
+    this.destroySwiper();
+    if (this.userDataSubscription) {
+      this.userDataSubscription.unsubscribe();
     }
   }
 
@@ -139,16 +169,11 @@ export class GamePhaseComponent implements OnInit {
       }
     });
   }
-
   private destroySwiper() {
     if (this.swiper) {
       this.swiper.destroy(true, true);
       this.swiper = undefined;
     }
-  }
-
-  ngOnDestroy() {
-    this.destroySwiper();
   }
 
   toggleStore() {
@@ -182,19 +207,6 @@ export class GamePhaseComponent implements OnInit {
 
   get isLastMessage(): boolean {
     return this.activeSlideIndex === this.dialogo.length - 1;
-  }
-
-  private loadUserData(userId: string) {
-    this.dataService.getUserById(userId).subscribe({
-      next: (response: UserResponse) => {
-        this.userData = response.user;
-      },
-      error: (error) => {
-        console.error('Erro ao carregar dados do usuário:', error);
-        this.userLoadError = 'Erro ao carregar dados do usuário';
-        this.router.navigate(['/login']);
-      }
-    });
   }
 
   exitGame() {
@@ -231,8 +243,11 @@ export class GamePhaseComponent implements OnInit {
     if (this.confirmCallback) {
       this.confirmCallback();
     }
+    
+    // Calcular e atualizar a acurácia
     this.accuracy = this.diagramEditorComponentRef.calculateGraphAccuracy();
 
+    // Fecha o diálogo de confirmação e abre o diálogo de finalização
     this.confirmDialogVisible = false;
     this.finishedGamePhaseVisible = true;
   }
@@ -250,6 +265,10 @@ export class GamePhaseComponent implements OnInit {
         console.log('Salvou!');
       }
     );
+  }
+
+  onAccuracyCalculated(accuracyValue: number) {
+    this.accuracy = accuracyValue;
   }
 
 }
