@@ -1,8 +1,9 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, Output, EventEmitter } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { StoreItemComponent } from "../store-item/store-item.component";
 import { DataService, User } from '../../services/data.service';
+import { StorageService } from '../../services/storage.service';
 
 interface StoreItem {
   imageUrl: string;
@@ -23,9 +24,10 @@ export class StoreComponent implements OnInit {
   visible: boolean = false;
   userMoney: number = 0;
   private userInventory: { [key: string]: number } = {};
-
+  @Output() storeStateChanged = new EventEmitter<boolean>();
   constructor(
     private dataService: DataService,
+    private storageService: StorageService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -89,10 +91,11 @@ export class StoreComponent implements OnInit {
   }
 
   toggle() {
-    if (!this.visible) {
+    this.visible = !this.visible;
+    this.storeStateChanged.emit(this.visible);
+    if (this.visible) {
       this.loadUserData();
     }
-    this.visible = !this.visible;
   }
 
   onBuy(item: StoreItem) {
@@ -110,10 +113,9 @@ export class StoreComponent implements OnInit {
         // Atualiza o inventário
         inventory[item.key] = (inventory[item.key] || 0) + 1;
         this.userInventory = inventory;
-        
-        // Salva as alterações usando o DataService
+          // Salva as alterações usando os serviços
         this.dataService.updateUserData(userData);
-        localStorage.setItem('inventory', JSON.stringify(inventory));
+        this.storageService.updateInventory(inventory);
       }
     }
   }
