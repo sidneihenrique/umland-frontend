@@ -96,7 +96,7 @@
         <button class="btn-icon filled" (click)="toggleSpeech()">
             <lucide-icon name="message-circle-question" class="lucide-icon"></lucide-icon>
         </button>
-        <button class="btn-icon filled" (click)="onSaveClick()">
+        <button class="btn-icon filled" (click)="onSaveClick()" [ngClass]="{ 'btn-disabled': saveDisabled }" [disabled]="saveDisabled">
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
     </div>
@@ -105,7 +105,10 @@
     <app-confirm-dialog [visible]="confirmDialogVisible" [title]="confirmDialogTitle" [message]="confirmDialogMessage"
         (confirm)="onConfirm()" (cancel)="onCancel()">
     </app-confirm-dialog>
-    <app-dialog-finished-gamephase *ngIf="finishedGamePhaseVisible" [accuracy]="accuracy">
+    <app-dialog-finished-gamephase 
+        *ngIf="finishedGamePhaseVisible" 
+        [accuracy]="accuracy"
+        (backToMenuEvent)="onBackToMenu()">
     </app-dialog-finished-gamephase>
 
 </div>

@@ -114,6 +114,11 @@ header .right {
     gap: 24px;
 }
 
+.btn-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 diagram-editor {
     width: 80%;
     height: 79vh;

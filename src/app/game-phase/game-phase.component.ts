@@ -69,6 +69,9 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   userData?: User;
   userLoadError: string = '';
 
+  // Save disabled
+  saveDisabled: boolean = false;
+
   // Todas as dicas possíveis
   private todasDicas: string[] = [
     "Use casos de uso para representar funcionalidades do sistema do ponto de vista do usuário.",
@@ -390,5 +393,10 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   setWatchCount(count: number) {
     localStorage.setItem('watch', count.toString());
     this.loadWatchCount();
+  }
+
+  onBackToMenu() {
+    this.finishedGamePhaseVisible = false;
+    this.saveDisabled = true;
   }
 }

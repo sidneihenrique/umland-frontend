@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnChanges, SimpleChanges, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges, Inject, PLATFORM_ID, Output, EventEmitter } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DataService } from '../../services/data.service';
@@ -15,6 +15,8 @@ export class DialogFinishedGamephaseComponent implements OnInit {
   @Input() accuracy: number = 0;
   reputationSum: number = 0;
   coinsSum: number = 0;
+
+  @Output() backToMenuEvent = new EventEmitter<void>();
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -72,6 +74,6 @@ export class DialogFinishedGamephaseComponent implements OnInit {
   }
 
   backToMenu () {
-    
+    this.backToMenuEvent.emit();
   }
 }
