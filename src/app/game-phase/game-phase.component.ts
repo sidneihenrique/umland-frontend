@@ -11,7 +11,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { StoreComponent } from "../store/store.component";
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/dialog-finished-gamephase.component";
-
+import { CarouselComponent } from '../utils/carousel/carousel.component';
 @Component({
   selector: 'game-phase',
   standalone: true,
@@ -23,7 +23,8 @@ import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/d
     HttpClientModule,
     RouterModule, 
     ConfirmDialogComponent, 
-    DialogFinishedGamephaseComponent],
+    DialogFinishedGamephaseComponent,
+    CarouselComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
@@ -63,10 +64,11 @@ export class GamePhaseComponent implements OnInit {
   ];
 
   // Mensagens do balão de fala
-  dialogo: string[] = [
-    "Olá! Como posso te ajudar hoje?",
-    "Lembre-se de revisar os conceitos básicos antes de começar.",
-    "Você pode navegar pelas dicas usando os botões de seta."
+  dialogCharacter: string[] = [
+    "Olá! Que bom te ver por aqui. Meu nome é Professor Arthur, e hoje eu tenho uma tarefa muito importante pra você",
+    "Estamos desenvolvendo um sistema para uma biblioteca universitária, e a coordenadora do projeto solicitou um levantamento dos requisitos funcionais. O problema é que precisamos criar um diagrama de casos de uso que represente as funcionalidades desse sistema, mas alguns membros da equipe estão com dificuldade de visualizar como organizar os atores e os casos de uso.",
+    "Seu desafio é construir esse diagrama corretamente. Você deve pensar nos usuários da biblioteca, como alunos, bibliotecários e professores, e nas funcionalidades que eles vão precisar: emprestar livros, devolver, renovar, cadastrar novos exemplares, gerar relatórios, etc",
+    "Lembre-se, se o diagrama estiver inconsistente, nossa equipe de desenvolvimento pode implementar coisas erradas! Então, capriche! Se tiver dúvidas, pode acessar as dicas rápidas no canto da tela. Boa sorte!"
   ];
 
   dicas: string[] = [];
@@ -77,6 +79,8 @@ export class GamePhaseComponent implements OnInit {
   isSpeaking = false;
   activeSpeechIndex = 0;
   characterState = 'hidden';
+
+  swiperCharacter?: Swiper;
 
   constructor(
     private router: Router,
@@ -163,27 +167,6 @@ export class GamePhaseComponent implements OnInit {
     }
   }
 
-  nextMessage() {
-    if (this.activeSlideIndex < this.dialogo.length - 1) {
-      this.activeSlideIndex++;
-    } else {
-      // Última mensagem - fecha o balão
-      this.isSpeaking = false;
-      setTimeout(() => {
-        this.characterState = 'hidden';
-        this.activeSlideIndex = 0;
-      }, 300); // Tempo para a animação de fadeOut
-    }
-  }
-
-  prevMessage() {
-    this.activeSlideIndex = Math.max(0, this.activeSlideIndex - 1);
-  }
-
-  get isLastMessage(): boolean {
-    return this.activeSlideIndex === this.dialogo.length - 1;
-  }
-
   private loadUserData(userId: string) {
     this.dataService.getUserById(userId).subscribe({
       next: (response: UserResponse) => {
@@ -194,6 +177,24 @@ export class GamePhaseComponent implements OnInit {
         this.userLoadError = 'Erro ao carregar dados do usuário';
         this.router.navigate(['/login']);
       }
+    });
+  }
+
+  private initializeCharacter(): void {
+     this.swiperCharacter = new Swiper(".swiper-character", {
+
+      direction: 'horizontal',
+
+      pagination: {
+        el: '.swiper-pagination',
+      },
+
+      // Navigation arrows
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+
     });
   }
 

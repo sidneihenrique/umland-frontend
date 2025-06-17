@@ -1,0 +1,60 @@
+.swiper {
+  width: 100%;
+  height: fit-content;
+}
+
+.swiper-wrapper {
+    display: flex;
+    height: fit-content;
+}
+
+.swiper-slide {
+    text-align: left;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: fit-content;
+
+}
+
+p {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--black);
+    margin: 0;
+
+    padding: 0 40px;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: all;
+    
+    width: 24px;
+    height: 24px;
+
+    z-index: 10;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after { 
+    color: var(--black);
+    font-size: 20px;
+}
+
+.swiper-horizontal > .swiper-pagination-bullets, 
+.swiper-pagination-bullets.swiper-pagination-horizontal, 
+.swiper-pagination-custom, .swiper-pagination-fraction {
+    bottom: var(--swiper-pagination-bottom, -2px);
+}
+
+.swiper-button-next, .swiper-rtl .swiper-button-prev {
+    right: var(--swiper-navigation-sides-offset, 0px);
+    left: auto;
+}
