@@ -263,10 +263,14 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   }
 
   exitGame() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('userId');
-    }
-    this.router.navigate(['/login']);
+    this.openConfirmDialog(
+      'Tem certeza que sair da fase?',
+      'Você voltará para o menu principal se fizer isto.',
+      () => {
+        this.router.navigate(['/map']);
+      }
+    );
+
   }
 
   get userMoney(): number {

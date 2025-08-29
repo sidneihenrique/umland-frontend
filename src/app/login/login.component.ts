@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { DataService } from '../../services/data.service';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +19,8 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
-    private dataService: DataService
+    private dataService: DataService,
+    private authService: AuthService
   ) { }
 
   private initializeUserData(userId: string) {
@@ -58,16 +60,20 @@ export class LoginComponent {
     // Remove espaços em branco e converte para minúsculas
     const normalizedUsername = this.username.trim().toLowerCase();
 
+    let userId = '1';
     if (normalizedUsername === 'maria') {
-      this.initializeUserData('33');
-    } else {
-      // Qualquer outro nome (ou vazio) loga como Tiago
-      this.initializeUserData('1');
+      userId = '33';
     }
+    
+    this.initializeUserData(userId);
+
+    // Faça login no AuthService (use o userId como token, ou qualquer string)
+    this.authService.login(userId);
+
 
     // Navega para a página do jogo
-    this.router.navigate(['/game']).then(
-      () => console.log('Navegação para game bem-sucedida'),
+    this.router.navigate(['/map']).then(
+      () => console.log('Navegação para o mapa bem-sucedida'),
       (error) => console.error('Erro na navegação:', error)
     );
   }

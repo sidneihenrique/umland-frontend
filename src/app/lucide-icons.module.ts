@@ -17,7 +17,9 @@ import {
   Save,
   TriangleAlert,
   CircleCheckBig,
-  RotateCcw
+  RotateCcw,
+  LogOut,
+  SquareCheck
 } from 'lucide-angular';
 
 @NgModule({
@@ -37,7 +39,9 @@ import {
     Save,
     TriangleAlert,
     CircleCheckBig,
-    RotateCcw
+    RotateCcw,
+    LogOut,
+    SquareCheck
   })],
   exports: [LucideAngularModule],
 })
