@@ -1,0 +1,20 @@
+<div class="node-wrapper" [ngClass]="{ 'locked': !game.unlocked, 'active': game.isCurrent}">
+    <div class="node" (click)="openGamePhase()">
+        <span>{{ game.title }}</span>
+    </div>
+    <img src="assets/uml-svg/arrow.svg" class="arrow" alt="arrow" *ngIf="!last"> 
+    <img [src]="game.character.filePath" [alt]="game.character.name" class="character">
+    <div class="user-icon" *ngIf="game.isCurrent">
+        <img src="assets/images/sid.jpeg" alt="">
+    </div>
+    <div class="hover" *ngIf="game.unlocked">
+        <div class="accuracy">
+            <lucide-icon name="square-check" class="lucide-icon" [size]="24" color="#00D819"></lucide-icon>
+            <span>{{ game.accuracy }}%</span>
+        </div>
+        <div class="reputation">
+            <span>+{{ game.reputation }}</span>
+            <lucide-icon name="sparkles" class="lucide-icon" [size]="20" color="#000000"></lucide-icon>
+        </div>
+    </div>
+</div>

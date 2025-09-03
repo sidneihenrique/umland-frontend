@@ -39,21 +39,8 @@
     </header>
 
     <div id="activity-diagram">
-        <div class="node-wrapper">
-            <div class="node" (click)="openGamePhase()">
-                <span>Explorar o Campus</span>
-                <img src="assets/characters/character_teacher_01.png" alt="Personagem">
-                <div class="hover">
-                    <div class="accuracy">
-                        <lucide-icon name="square-check" class="lucide-icon" [size]="16" color="#00D819"></lucide-icon>
-                        <span>88%</span>
-                    </div>
-                    <div class="reputation">
-                        <span>+140</span>
-                        <lucide-icon name="sparkles" class="lucide-icon" [size]="16" color="#000000"></lucide-icon>
-                    </div>
-                </div>
-            </div>
+        <div *ngFor="let game of games; let last = last">
+          <node-activity [game]="game" [last]="last"></node-activity>
         </div>
     </div>
 

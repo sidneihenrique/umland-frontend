@@ -1,0 +1,125 @@
+.node-wrapper {
+    width: fit-content;
+    position: relative;
+
+    cursor: pointer;
+}
+
+.node-wrapper.locked {
+    opacity: 0.5;
+}
+
+.node {
+    width: fit-content;
+
+    background: #D9D9D9;
+    border: 3px solid #B2B2B2;
+    border-radius: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    padding: 40px 20px;
+
+    transition: 0.5s;
+    
+}
+
+
+.node-wrapper.active .node {
+    border-color: var(--blue);
+}
+
+.node-wrapper.active .user-icon {
+    border-color: var(--blue);
+}
+
+.node-wrapper .hover {
+    opacity: 0;
+
+    position: absolute;
+    bottom: -32px;
+    left: 0;
+    bottom: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 16px;
+
+    transition: 0.5s;
+}
+
+.hover * {
+    font-weight: 700;
+}
+
+.hover .reputation {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hover .accuracy {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.node-wrapper:hover .node {
+    border-color: var(--black);
+
+    transition: 0.5s;
+}
+
+.node-wrapper:hover .hover {
+    opacity: 1;
+
+    bottom: -32px;
+
+    transition: 0.5s;
+}
+
+.node > span {
+    color: var(--black);
+    font-weight: 800;
+}
+
+.node-wrapper .character {
+    width: 70px;
+
+    position: absolute;
+
+    right: -44px;
+    bottom: 0;
+}
+
+.node-wrapper .user-icon {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+
+    object-fit: cover;
+    overflow: hidden;
+
+    border: 2px solid var(--black);
+
+    position: absolute;
+    left: -8px;
+    top: -8px;
+}
+
+.node-wrapper .user-icon img {
+    width: 100%;
+}
+
+.arrow {
+    width: 88px;
+    position: absolute;
+    right: -50%;
+    top: 50%;
+}
