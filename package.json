@@ -6,8 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:umland-frontend": "node dist/umland-frontend/server/server.mjs"
+    "test": "ng test"
+    
   },
   "private": true,
   "dependencies": {
