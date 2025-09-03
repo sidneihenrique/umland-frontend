@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject, PLATFORM_ID, Output, EventEmitter } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { StoreItemComponent } from "../store-item/store-item.component";
+import { StoreItemComponent } from "./store-item/store-item.component";
 import { DataService, User } from '../../services/data.service';
 import { StorageService } from '../../services/storage.service';
 
