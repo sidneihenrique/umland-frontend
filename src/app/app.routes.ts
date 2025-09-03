@@ -6,9 +6,14 @@ import { GameMapComponent } from './game-map/game-map.component';
 
 
 export const routes: Routes = [
-    { path: '', component: GamePhaseComponent },
+    { path: '', component: LoginComponent,
+      canActivate: [AuthGuard]
+     },
     { path: 'login', component: LoginComponent },
-    { path: 'map', component: GameMapComponent},
+    { path: 'map', 
+      component: GameMapComponent,
+      canActivate: [AuthGuard]
+    },
     { 
       path: 'game', 
       component: GamePhaseComponent,

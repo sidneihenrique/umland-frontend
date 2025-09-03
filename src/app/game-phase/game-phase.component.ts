@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreComponent } from "../store/store.component";
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/dialog-finished-gamephase.component";
+import { DialogFinishedGamephaseComponent } from "./dialog-finished-gamephase/dialog-finished-gamephase.component";
 import { CarouselComponent } from '../utils/carousel/carousel.component';
 
 @Component({
