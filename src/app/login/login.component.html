@@ -16,29 +16,33 @@
     <div class="logo-section">
         <img src="assets/images/logo.png" alt="Logo" class="logo">
     </div>
-    <div class="form-section">
-        <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
-            <div class="form-group">
-                <input type="text" 
-                       [(ngModel)]="username" 
-                       name="username" 
-                       placeholder="Username ou Email" 
-                       required>
-            </div>
-            <div class="form-group">
-                <input type="password" 
-                       [(ngModel)]="password" 
-                       name="password" 
-                       placeholder="Senha" 
-                       required>
-            </div>
-            @if (errorMessage) {
+    <div class="form-section-container">
+        <div class="form-section">
+            <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+                <div class="form-group">
+                    <input type="text" [(ngModel)]="username" name="username" placeholder="Username ou Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" [(ngModel)]="password" name="password" placeholder="Senha" required>
+                </div>
+                @if (errorMessage) {
                 <div class="error-message">{{ errorMessage }}</div>
-            }
-            <div class="form-actions">
-                <button type="button" class="forgot-password">Esqueci minha senha</button>
-                <button type="submit" class="login-button">Entrar</button>
+                }
+                <div class="form-actions">
+                    <button type="button" class="forgot-password">Esqueci minha senha</button>
+                    <button type="submit" class="login-button">Entrar</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="register-section">
+            <div class="register-card">
+                <div class="register-text-container form-group">
+                    <p class="register-text">Ainda não tem uma conta?</p>
+                    <p class="register-text">Cadastre-se agora!</p>
+                </div>
+                <button type="button" class="register-button">Cadastrar</button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
