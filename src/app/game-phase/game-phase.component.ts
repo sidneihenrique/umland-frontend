@@ -14,6 +14,7 @@ import { StoreComponent } from "../store/store.component";
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { DialogFinishedGamephaseComponent } from "./dialog-finished-gamephase/dialog-finished-gamephase.component";
 import { CarouselComponent } from '../utils/carousel/carousel.component';
+import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'game-phase',
@@ -27,7 +28,8 @@ import { CarouselComponent } from '../utils/carousel/carousel.component';
     RouterModule,
     ConfirmDialogComponent,
     DialogFinishedGamephaseComponent,
-    CarouselComponent],
+    CarouselComponent,
+    HeaderComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })

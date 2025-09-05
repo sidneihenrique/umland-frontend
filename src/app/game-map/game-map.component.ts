@@ -10,6 +10,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { NodeActivityComponent } from './node-activity/node-activity.component';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from '../header/header.component';
 
 export interface Character {
   name: string;
@@ -30,6 +31,7 @@ export interface Game {
   selector: 'game-map',
   standalone: true,
   imports: [
+    HeaderComponent,
     LucideIconsModule,
     RouterModule,
     ConfirmDialogComponent,
@@ -119,18 +121,15 @@ export class GameMapComponent implements OnInit{
     this.openConfirmDialog(
       'Tem certeza que deseja fazer logout?',
       'Você precisará fazer o login novamente caso deseje entrar',
-      () => {
-        if (isPlatformBrowser(this.platformId)) {
-          localStorage.removeItem('userId');
-        }
-        this.authService.logout();
-        this.router.navigate(['/login']);
-      }
     );
   }
 
   confirmLogout() {
-
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('userId');
+    }
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   onCancel() {
@@ -155,10 +154,9 @@ export class GameMapComponent implements OnInit{
     return this.userData?.name || '';
   }
 
-  openConfirmDialog(title: string, message: string, onConfirm: () => void) {
+  openConfirmDialog(title: string, message: string) {
     this.confirmDialogTitle = title;
     this.confirmDialogMessage = message;
-    this.confirmLogout = onConfirm;
     this.confirmDialogVisible = true;
   }
 
