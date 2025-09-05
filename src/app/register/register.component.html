@@ -1,3 +1,17 @@
+    <div class="login-background">
+        <div class="animated-line l1"></div>
+        <div class="animated-line l2"></div>
+        <div class="animated-line l3"></div>
+        <div class="animated-line l4"></div>
+        <div class="animated-letters">
+            <div class="letter-line letter-u"></div>
+            <div class="letter-line letter-u-bottom"></div>
+            <div class="letter-line letter-m"></div>
+            <div class="letter-line letter-m-mid"></div>
+            <div class="letter-line letter-l"></div>
+            <div class="letter-line letter-l-bottom"></div>
+        </div>
+    </div>
 <div class="register-container">
     <div class="register-card">
         <h2>Cadastro</h2>
@@ -33,8 +47,21 @@
                     Senhas não conferem.
                 </div>
             </div>
-            <button type="submit" [disabled]="!registerForm.valid">Cadastrar</button>
         </form>
+        <div class="character-selection">
+            <label>Escolha seu Personagem:</label>
+            <div class="character-list">
+                <div *ngFor="let character of characters" class="character-item"
+                     [class.selected]="selectedCharacter === character"
+                     (click)="selectCharacter(character)">
+                    <img [src]="character" alt="Character Image">
+                </div>
+            </div>
+            <div *ngIf="registerForm.get('personagem')?.invalid && registerForm.get('personagem')?.touched" class="error-message">
+                Por favor, selecione um personagem.
+            </div>
+        </div>
+        <button type="submit" [disabled]="!registerForm.valid">Cadastrar</button>
         <p class="login-link">Já tem uma conta? <a routerLink="/login">Faça login</a></p>
     </div>
 </div>
