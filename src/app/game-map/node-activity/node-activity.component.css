@@ -3,6 +3,8 @@
     position: relative;
 
     cursor: pointer;
+
+    user-select: none;
 }
 
 .node-wrapper.locked {

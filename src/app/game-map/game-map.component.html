@@ -7,7 +7,10 @@
 
     <div id="activity-diagram">
         <div *ngFor="let game of games; let last = last">
-          <node-activity [game]="game" [last]="last"></node-activity>
+        <node-activity 
+            [game]="game"
+            [last]="last">
+        </node-activity>
         </div>
     </div>
 

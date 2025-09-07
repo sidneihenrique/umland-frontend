@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output } from '@angular/core';
 import { LucideIconsModule } from '../../lucide-icons.module';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -30,6 +30,8 @@ export class NodeActivityComponent {
   }
 
   openGamePhase() {
-    this.router.navigate(['/game']);
+    if (this.game.unlocked) {
+      this.router.navigate(['/game', this.game.idPhase]);
+    }
   }
 }

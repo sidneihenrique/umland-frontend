@@ -18,6 +18,7 @@ export interface Character {
 }
 
 export interface Game {
+  idPhase: number;
   title: string;
   character: Character;
   unlocked: boolean;
@@ -57,6 +58,7 @@ export class GameMapComponent implements OnInit{
 
   games: Game[] = [
     {
+      idPhase: 1,
       title: 'Explorar o Campus',
       character: { name: 'Professor', filePath: 'assets/characters/character_teacher_01.png' },
       unlocked: true,
@@ -66,6 +68,7 @@ export class GameMapComponent implements OnInit{
       reputation: 140
     },
     {
+      idPhase: 2,
       title: 'Explorar o Campus',
       character: { name: 'Professor', filePath: 'assets/characters/character_teacher_01.png' },
       unlocked: true,
@@ -75,6 +78,7 @@ export class GameMapComponent implements OnInit{
       reputation: 0
     },
     {
+      idPhase: 3,
       title: 'Explorar o Campus',
       character: { name: 'Professor', filePath: 'assets/characters/character_teacher_01.png' },
       unlocked: false,

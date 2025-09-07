@@ -7,7 +7,7 @@
     <div class="user-icon" *ngIf="game.isCurrent">
         <img src="assets/images/sid.jpeg" alt="">
     </div>
-    <div class="hover" *ngIf="game.unlocked">
+    <div class="hover" *ngIf="game.unlocked && !game.isCurrent">
         <div class="accuracy">
             <lucide-icon name="square-check" class="lucide-icon" [size]="24" color="#00D819"></lucide-icon>
             <span>{{ game.accuracy }}%</span>

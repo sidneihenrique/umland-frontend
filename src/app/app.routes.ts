@@ -15,7 +15,7 @@ export const routes: Routes = [
       canActivate: [AuthGuard]
     },
     { 
-      path: 'game', 
+      path: 'game/:id', 
       component: GamePhaseComponent,
       canActivate: [AuthGuard] // <--- proteje a rota
     }
