@@ -23,6 +23,16 @@ export interface User {
     progressing: boolean;
 }
 
+export interface RegisterUser {
+    id: number;
+    nome: string;
+    email: string;
+    senha: string;
+    reputacao: number;
+    moedas: number;
+    faseAtual: string | null;
+}
+
 export interface ApiError {
     error: string;
     statusCode?: number;
@@ -44,11 +54,26 @@ export class DataService {
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
         // URL para SSR
-        this.baseUrl = 'http://api.example.com';
+        this.baseUrl = 'http://localhost:8080'; // Updated to localhost:8080
         if (isPlatformBrowser(this.platformId)) {
             this.baseUrl = (window as any).apiUrl || this.baseUrl;
         }
-    }    private getDefaultUserData(id: string): UserResponse | null {
+    }
+
+    registerUser(user: RegisterUser): Observable<any> {
+        const url = `${this.baseUrl}/api/usuarios/id/${user.id}`;
+        return this.http.put(url, user).pipe(
+            catchError(error => {
+                console.error('Error during user registration:', error);
+                throw {
+                    error: error.message || 'Failed to register user',
+                    statusCode: error.status
+                } as ApiError;
+            })
+        );
+    }
+
+    private getDefaultUserData(id: string): UserResponse | null {
         if (id === '1') {
             return {
                 user: {

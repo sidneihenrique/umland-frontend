@@ -1,0 +1,20 @@
+<div id="container">
+
+    <app-header 
+        (logoutEvent)="logout()"
+        [parentType]="'game-map'">
+    </app-header>
+
+    <div id="activity-diagram">
+        <div *ngFor="let game of games; let last = last">
+        <node-activity 
+            [game]="game"
+            [last]="last">
+        </node-activity>
+        </div>
+    </div>
+
+    <app-confirm-dialog [visible]="confirmDialogVisible" [title]="confirmDialogTitle" [message]="confirmDialogMessage"
+        (confirm)="confirmLogout()" (cancel)="onCancel()">
+    </app-confirm-dialog>
+</div>

@@ -1,7 +1,7 @@
-import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit, OnDestroy, Inject, PLATFORM_ID, Input } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { StorageService } from '../../services/storage.service';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
@@ -12,8 +12,10 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreComponent } from "../store/store.component";
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { DialogFinishedGamephaseComponent } from "../dialog-finished-gamephase/dialog-finished-gamephase.component";
+import { DialogFinishedGamephaseComponent } from "./dialog-finished-gamephase/dialog-finished-gamephase.component";
 import { CarouselComponent } from '../utils/carousel/carousel.component';
+import { HeaderComponent } from '../header/header.component';
+import { PhaseService, Phase } from '../../services/phase.service';
 
 @Component({
   selector: 'game-phase',
@@ -27,7 +29,8 @@ import { CarouselComponent } from '../utils/carousel/carousel.component';
     RouterModule,
     ConfirmDialogComponent,
     DialogFinishedGamephaseComponent,
-    CarouselComponent],
+    CarouselComponent,
+    HeaderComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
@@ -46,6 +49,9 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   private storeSubscription?: Subscription;
   private inventorySubscription?: Subscription;
   private startTime: number = 0;
+
+  @Input() phaseId!: number;
+  phase?: Phase;
   
   @ViewChild(StoreComponent) store!: StoreComponent;
   private userDataSubscription?: Subscription;
@@ -72,29 +78,15 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   // Save disabled
   saveDisabled: boolean = false;
 
-  // Todas as dicas possíveis
-  private todasDicas: string[] = [
-    "Use casos de uso para representar funcionalidades do sistema do ponto de vista do usuário.",
-    "Diagramas de classe mostram a estrutura estática do sistema com classes e relacionamentos.",
-    "Herança em UML é representada por uma seta com ponta vazia (triângulo).",
-    "Interfaces em UML são representadas com o estereótipo <<interface>>.",
-    "Diagramas de sequência são ótimos para mostrar a interação entre objetos ao longo do tempo.",
-    "Use notes (anotações) para adicionar comentários explicativos aos seus diagramas.",
-    "Mantenha seus diagramas simples e focados em um aspecto específico do sistema.",
-    "Diagramas de atividade são similares a fluxogramas e mostram o fluxo de processos."
-  ];
-
   // Mensagens do balão de fala
-  dialogCharacter: string[] = [
-    "Hoje temos um novo desafio pra você. O departamento acadêmico solicitou a modelagem de um sistema para gerenciamento de uma biblioteca universitária. A ideia é facilitar a vida dos alunos e dos bibliotecários, automatizando as atividades do dia a dia.",
-    "O sistema deverá permitir que os alunos possam realizar empréstimos de livros, devolver e renovar empréstimos, além de consultar a disponibilidade dos livros no acervo. Já o bibliotecário precisa ter acesso a funções administrativas, como cadastrar novos livros no sistema, remover livros do catálogo e gerar relatórios de empréstimos.",
-    "Ah, e fique atento! Existe uma dependência entre algumas funcionalidades. Por exemplo, para realizar um empréstimo, o sistema deve primeiro verificar se há exemplar disponível, o que é representado pelo relacionamento de inclusão (<<include>>) com Consultar disponibilidade.",
-    "Seu objetivo nessa fase é garantir que o diagrama de casos de uso esteja corretamente construído, com todos os casos de uso, atores e os relacionamentos necessários, como associações, dependências e inclusões, representando fielmente o funcionamento desse sistema de biblioteca.",
-    "Atenção: Caso o seu diagrama fique inconsistente — como esquecer de associar um ator ou não representar corretamente uma dependência — isso poderá impactar diretamente na compreensão dos desenvolvedores que vão usar esse modelo depois.",
-    "🛠️ Capriche, use as dicas rápidas se precisar, e mãos à obra!"
-  ];
-
-  dicas: string[] = [];
+  // dialogCharacter: string[] = [
+  //   "Hoje temos um novo desafio pra você. O departamento acadêmico solicitou a modelagem de um sistema para gerenciamento de uma biblioteca universitária. A ideia é facilitar a vida dos alunos e dos bibliotecários, automatizando as atividades do dia a dia.",
+  //   "O sistema deverá permitir que os alunos possam realizar empréstimos de livros, devolver e renovar empréstimos, além de consultar a disponibilidade dos livros no acervo. Já o bibliotecário precisa ter acesso a funções administrativas, como cadastrar novos livros no sistema, remover livros do catálogo e gerar relatórios de empréstimos.",
+  //   "Ah, e fique atento! Existe uma dependência entre algumas funcionalidades. Por exemplo, para realizar um empréstimo, o sistema deve primeiro verificar se há exemplar disponível, o que é representado pelo relacionamento de inclusão (<<include>>) com Consultar disponibilidade.",
+  //   "Seu objetivo nessa fase é garantir que o diagrama de casos de uso esteja corretamente construído, com todos os casos de uso, atores e os relacionamentos necessários, como associações, dependências e inclusões, representando fielmente o funcionamento desse sistema de biblioteca.",
+  //   "Atenção: Caso o seu diagrama fique inconsistente — como esquecer de associar um ator ou não representar corretamente uma dependência — isso poderá impactar diretamente na compreensão dos desenvolvedores que vão usar esse modelo depois.",
+  //   "🛠️ Capriche, use as dicas rápidas se precisar, e mãos à obra!"
+  // ];
 
   activeSlideIndex = 0;
   private swiper?: Swiper;
@@ -108,9 +100,10 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
     private dataService: DataService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private phaseService: PhaseService,
+    private route: ActivatedRoute
   ) {
-    this.dicas = this.sortearDicas(3);
   }
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -137,6 +130,23 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
         this.router.navigate(['/login']);
       }
     }
+
+    this.phaseId = Number(this.route.snapshot.paramMap.get('id'));
+
+    // Carregue os dados da fase do service
+    this.phaseService.getPhaseById(this.phaseId).subscribe(phase => {
+      if (phase) {
+        this.phase = phase;
+        console.log('Fase carregada:', this.phase);
+        // Use os dados da fase para popular o componente
+        // Se quiser usar diagramJSON:
+        // this.diagramJSON = phase.diagramJSON;
+      } else {
+        // Fase não encontrada, redirecione ou mostre erro
+        this.router.navigate(['/map']);
+      }
+    });
+
   }
 
   ngAfterViewInit() {
@@ -165,54 +175,12 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     }
   }
 
-  private sortearDicas(qtd: number): string[] {
-    // Embaralha o array e pega os primeiros 'qtd'
-    return this.todasDicas
-      .map(dica => ({ dica, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .slice(0, qtd)
-      .map(obj => obj.dica);
-  }
-
-  toggleDicas() {
-    this.isOpen = !this.isOpen;
-    if (this.isOpen) {
-      // Timeout para garantir que o DOM esteja atualizado
-      setTimeout(() => this.initSwiper(), 0);
-    } else {
-      this.destroySwiper();
+  toggleTips() {
+    if (this.diagramEditorComponentRef) {
+      this.diagramEditorComponentRef.toggleTips();
     }
   }
 
-  private initSwiper() {
-    // Destrói qualquer instância existente
-    this.destroySwiper();
-
-    // Configuração do Swiper
-    this.swiper = new Swiper('.clues-swiper', {
-      modules: [Navigation],
-      slidesPerView: 1,
-      spaceBetween: 10,
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-      },
-      on: {
-        slideChange: (swiper) => {
-          this.activeSlideIndex = swiper.activeIndex;
-        },
-        init: (swiper) => {
-          this.activeSlideIndex = swiper.activeIndex;
-        }
-      }
-    });
-  }
-  private destroySwiper() {
-    if (this.swiper) {
-      this.swiper.destroy(true, true);
-      this.swiper = undefined;
-    }
-  }
 
   toggleStore() {
     this.store.toggle();
@@ -265,10 +233,14 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   }
 
   exitGame() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('userId');
-    }
-    this.router.navigate(['/login']);
+    this.openConfirmDialog(
+      'Tem certeza que sair da fase?',
+      'Você voltará para o menu principal se fizer isto.',
+      () => {
+        this.router.navigate(['/map']);
+      }
+    );
+
   }
 
   get userMoney(): number {

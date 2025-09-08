@@ -1,0 +1,67 @@
+    <div class="login-background">
+        <div class="animated-line l1"></div>
+        <div class="animated-line l2"></div>
+        <div class="animated-line l3"></div>
+        <div class="animated-line l4"></div>
+        <div class="animated-letters">
+            <div class="letter-line letter-u"></div>
+            <div class="letter-line letter-u-bottom"></div>
+            <div class="letter-line letter-m"></div>
+            <div class="letter-line letter-m-mid"></div>
+            <div class="letter-line letter-l"></div>
+            <div class="letter-line letter-l-bottom"></div>
+        </div>
+    </div>
+<div class="register-container">
+    <div class="register-card">
+        <h2>Cadastro</h2>
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" formControlName="nome" placeholder="Seu nome">
+                <div *ngIf="registerForm.get('nome')?.invalid && registerForm.get('nome')?.touched" class="error-message">
+                    Nome é obrigatório.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" formControlName="email" placeholder="Seu email">
+                <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-message">
+                    Email é obrigatório e deve ser válido.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" formControlName="senha" placeholder="Sua senha">
+                <div *ngIf="registerForm.get('senha')?.invalid && registerForm.get('senha')?.touched" class="error-message">
+                    Senha é obrigatória e deve ter pelo menos 6 caracteres.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="confirmSenha">Confirmar Senha:</label>
+                <input type="password" id="confirmSenha" formControlName="confirmSenha" placeholder="Confirme sua senha">
+                <div *ngIf="registerForm.get('confirmSenha')?.invalid && registerForm.get('confirmSenha')?.touched" class="error-message">
+                    Confirmação de senha é obrigatória.
+                </div>
+                <div *ngIf="registerForm.hasError('mismatch') && registerForm.get('confirmSenha')?.touched" class="error-message">
+                    Senhas não conferem.
+                </div>
+            </div>
+        </form>
+        <div class="character-selection">
+            <label>Escolha seu Personagem:</label>
+            <div class="character-list">
+                <div *ngFor="let character of characters" class="character-item"
+                     [class.selected]="selectedCharacter === character"
+                     (click)="selectCharacter(character)">
+                    <img [src]="character" alt="Character Image">
+                </div>
+            </div>
+            <div *ngIf="registerForm.get('personagem')?.invalid && registerForm.get('personagem')?.touched" class="error-message">
+                Por favor, selecione um personagem.
+            </div>
+        </div>
+        <button type="submit" [disabled]="!registerForm.valid">Cadastrar</button>
+        <p class="login-link">Já tem uma conta? <a routerLink="/login">Faça login</a></p>
+    </div>
+</div>

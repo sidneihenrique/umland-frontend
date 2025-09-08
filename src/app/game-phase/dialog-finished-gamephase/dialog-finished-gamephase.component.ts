@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges, Inject, PLATFORM_ID, Output, EventEmitter } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { LucideIconsModule } from '../lucide-icons.module';
-import { DataService } from '../../services/data.service';
+import { LucideIconsModule } from '../../lucide-icons.module';
+import { DataService } from '../../../services/data.service';
 
 @Component({
   selector: 'app-dialog-finished-gamephase',

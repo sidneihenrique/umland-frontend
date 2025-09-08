@@ -1,0 +1,45 @@
+<header>
+    <div class="left">
+        <button class="btn-icon filled" id="exit" *ngIf="parentType === 'game-phase'" (click)="exitGame()">
+            <lucide-icon class="lucide-icon" name="X"></lucide-icon>
+        </button>
+        <button class="btn-icon log-out" *ngIf="parentType === 'game-map'" (click)="logout()">
+            <lucide-icon class="lucide-icon" name="log-out"></lucide-icon>
+        </button>
+        <button class="btn-icon" (click)="toggleStore()">
+            <lucide-icon class="lucide-icon" name="store"></lucide-icon>
+        </button>
+        <button class="btn-icon" (click)="true">
+            <lucide-icon class="lucide-icon" name="backpack"></lucide-icon>
+        </button>
+    </div>
+    <div class="game-timers" *ngIf="parentType === 'game-phase'">
+        <span class="game-time">{{currentTime}}</span>
+        <span class="watch-time" [class.active]="watchTime" [style.color]="'#00D819'">{{watchTime}}</span>
+    </div>
+    <div class="right">
+        <div class="money">
+            <lucide-icon name="circle-dollar-sign" class="lucide-icon" [size]="32"></lucide-icon>
+            <span class="amount">{{ userData?.money }}</span>
+        </div>
+        <div class="reputation">
+            <lucide-icon name="sparkles" class="lucide-icon" [size]="32"></lucide-icon>
+            <span class="amount">{{ userData?.reputation }}</span>
+            @if (userData?.progressing) {
+            <lucide-icon name="move-up-right" class="lucide-icon" [size]="16" color="#00D819"></lucide-icon>
+            } @else {
+            <lucide-icon name="move-down-right" class="lucide-icon" [size]="16" color="#FF0000"></lucide-icon>
+            }
+        </div>
+        <div class="user-info">
+            <div class="user-icon-wrapper">
+                <img 
+                    [src]="userData?.name === 'Tiago' ? 'assets/images/sid.jpeg' : userData?.name === 'Maria' ? 'assets/images/sida.jpg' : 'https://github.com/sidneihenrique.png'"
+                    [alt]="userData?.name">
+            </div>
+            <span class="user-name">{{ userData?.name }}</span>
+        </div>
+    </div>
+</header>
+
+<app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
