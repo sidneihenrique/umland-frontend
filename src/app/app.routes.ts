@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { GamePhaseComponent } from './game-phase/game-phase.component';
-import { AuthGuard } from './auth/auth-guard'; 
+import { AuthGuard } from './auth/auth-guard';
 import { GameMapComponent } from './game-map/game-map.component';
+import { RegisterComponent } from './register/register.component';
 
 
 export const routes: Routes = [
@@ -10,7 +11,8 @@ export const routes: Routes = [
       canActivate: [AuthGuard]
      },
     { path: 'login', component: LoginComponent },
-    { path: 'map', 
+    { path: 'register', component: RegisterComponent },
+    { path: 'map',
       component: GameMapComponent,
       canActivate: [AuthGuard]
     },

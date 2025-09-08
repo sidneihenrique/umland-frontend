@@ -157,6 +157,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
         this.loadWatchCount();
       }
     });
+
+    this.toggleSpeech();
   }
   ngOnDestroy() {
     if (this.timerInterval) {
