@@ -16,7 +16,7 @@
             <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
         </button>
 
-        <button class="btn-icon filled">
+        <button class="btn-icon filled" (click)="checkDiagram()">
             <lucide-icon name="book-check" class="lucide-icon"></lucide-icon>
         </button>
         
@@ -53,4 +53,11 @@
         (backToMenuEvent)="onBackToMenu()">
     </app-dialog-finished-gamephase>
 
+    <app-advise-modal 
+        [visible]="true" 
+        [title]="phase?.type?.title" 
+        [description]="phase?.type?.description" 
+        [videoSrc]="'/assets/videos/' + (phase?.type?.key ?? '') + '.mp4'">
+    </app-advise-modal>
+    
 </div>

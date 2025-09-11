@@ -33,7 +33,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   private initialJSON: any;
   
-  private correctJSON: any = null;
+  private correctsJSON: any[] = [];
   private graphJSONCorrect = new joint.dia.Graph();
   
 
@@ -61,7 +61,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   ) {}
   ngOnInit(): void {
     this.initialJSON = this.phase?.diagramJSON;
-    this.correctJSON = this.phase?.correctDiagramsJson[0];
+    this.correctsJSON = this.phase?.correctDiagramsJson || [];
   }
   
   ngAfterViewInit(): void {
@@ -512,90 +512,141 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
   // Cálcula se o graph do usuário está correto
   calculateGraphAccuracy(): number {
-    this.graphJSONCorrect = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
-    console.log('Correct JSON:', this.correctJSON);
-    this.graphJSONCorrect.fromJSON(this.correctJSON);
-    if (!this.graph || !this.graphJSONCorrect) {
+    if (!this.graph || !this.correctsJSON.length) {
       this.accuracyCalculated.emit(0);
       return 0;
     }
 
-    // Obtenha elementos e links do usuário e do modelo
-    const userElements = this.graph.getElements();
-    const userLinks = this.graph.getLinks();
-    const modelElements = this.graphJSONCorrect.getElements();
-    const modelLinks = this.graphJSONCorrect.getLinks();
+    let bestAccuracy = 0;
 
-    let totalChecks = 0;
-    let correctChecks = 0;
+    for (const correctJSON of this.correctsJSON) {
+      const graphJSONCorrect = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
+      graphJSONCorrect.fromJSON(correctJSON);
 
-    // --- Verificação de elementos ---
-    totalChecks += modelElements.length;
-    for (const modelElem of modelElements) {
-      const match = userElements.find(userElem =>
-        userElem.get('type') === modelElem.get('type') &&
-        (userElem.attr(['label', 'text']) || '') === (modelElem.attr(['label', 'text']) || '')
-      );
-      if (match) correctChecks++;
-    }
+      // Obtenha elementos e links do usuário e do modelo
+      const userElements = this.graph.getElements();
+      const userLinks = this.graph.getLinks();
+      const modelElements = graphJSONCorrect.getElements();
+      const modelLinks = graphJSONCorrect.getLinks();
 
-    // Penaliza elementos extras do usuário
-    if (userElements.length > modelElements.length) {
-      totalChecks += userElements.length - modelElements.length;
-      correctChecks -= (userElements.length - modelElements.length);
-    }
+      let totalChecks = 0;
+      let correctChecks = 0;
 
-    // Penaliza elementos ausentes do usuário
-    if (modelElements.length > userElements.length) {
-      totalChecks += modelElements.length - userElements.length;
-      // Não soma em correctChecks, pois já não foram encontrados
-    }
-
-    // --- Verificação de links ---
-    totalChecks += modelLinks.length;
-    for (const modelLink of modelLinks) {
-      const modelSource = modelLink.getSourceElement();
-      const modelTarget = modelLink.getTargetElement();
-      const modelLabel = modelLink.label(0)?.attrs?.['text']?.text || '';
-      const match = userLinks.find(userLink => {
-        const userSource = userLink.getSourceElement();
-        const userTarget = userLink.getTargetElement();
-        const userLabel = userLink.label(0)?.attrs?.['text']?.text || '';
-        return (
-          userLink.get('type') === modelLink.get('type') &&
-          userSource && modelSource &&
-          userTarget && modelTarget &&
-          (userSource.attr(['label', 'text']) || '') === (modelSource.attr(['label', 'text']) || '') &&
-          (userTarget.attr(['label', 'text']) || '') === (modelTarget.attr(['label', 'text']) || '') &&
-          userLabel === modelLabel
+      // --- Verificação de elementos ---
+      totalChecks += modelElements.length;
+      for (const modelElem of modelElements) {
+        const match = userElements.find(userElem =>
+          userElem.get('type') === modelElem.get('type') &&
+          (userElem.attr(['label', 'text']) || '') === (modelElem.attr(['label', 'text']) || '')
         );
-      });
-      if (match) correctChecks++;
+        if (match) correctChecks++;
+      }
+
+      // Penaliza elementos extras do usuário
+      if (userElements.length > modelElements.length) {
+        totalChecks += userElements.length - modelElements.length;
+        correctChecks -= (userElements.length - modelElements.length);
+      }
+
+      // Penaliza elementos ausentes do usuário
+      if (modelElements.length > userElements.length) {
+        totalChecks += modelElements.length - userElements.length;
+      }
+
+      // --- Verificação de links ---
+      totalChecks += modelLinks.length;
+      for (const modelLink of modelLinks) {
+        const modelSource = modelLink.getSourceElement();
+        const modelTarget = modelLink.getTargetElement();
+        const modelLabel = modelLink.label(0)?.attrs?.['text']?.text || '';
+        const match = userLinks.find(userLink => {
+          const userSource = userLink.getSourceElement();
+          const userTarget = userLink.getTargetElement();
+          const userLabel = userLink.label(0)?.attrs?.['text']?.text || '';
+          return (
+            userLink.get('type') === modelLink.get('type') &&
+            userSource && modelSource &&
+            userTarget && modelTarget &&
+            (userSource.attr(['label', 'text']) || '') === (modelSource.attr(['label', 'text']) || '') &&
+            (userTarget.attr(['label', 'text']) || '') === (modelTarget.attr(['label', 'text']) || '') &&
+            userLabel === modelLabel
+          );
+        });
+        if (match) correctChecks++;
+      }
+
+      // Penaliza links extras do usuário
+      if (userLinks.length > modelLinks.length) {
+        totalChecks += userLinks.length - modelLinks.length;
+        correctChecks -= (userLinks.length - modelLinks.length);
+      }
+
+      // Penaliza links ausentes do usuário
+      if (modelLinks.length > userLinks.length) {
+        totalChecks += modelLinks.length - userLinks.length;
+      }
+
+      // Garante que não fique negativo
+      correctChecks = Math.max(0, correctChecks);
+
+      // Calcula a porcentagem
+      const accuracy = totalChecks > 0 ? (correctChecks / totalChecks) * 100 : 0;
+      const finalAccuracy = Math.round(accuracy);
+
+      // Guarda o melhor resultado
+      if (finalAccuracy > bestAccuracy) {
+        bestAccuracy = finalAccuracy;
+      }
     }
 
-    // Penaliza links extras do usuário
-    if (userLinks.length > modelLinks.length) {
-      totalChecks += userLinks.length - modelLinks.length;
-      correctChecks -= (userLinks.length - modelLinks.length);
-    }
+    this.accuracyCalculated.emit(bestAccuracy);
+    return bestAccuracy;
+  }
 
-    // Penaliza links ausentes do usuário
-    if (modelLinks.length > userLinks.length) {
-      totalChecks += modelLinks.length - userLinks.length;
-      // Não soma em correctChecks, pois já não foram encontrados
-    }
+  checkUMLInconsistencies() {
+    if (!this.graph) return;
 
-    // Garante que não fique negativo
-    correctChecks = Math.max(0, correctChecks);
+    const elements = this.graph.getElements();
+    const links = this.graph.getLinks();
 
-    // Calcula a porcentagem
-    const accuracy = totalChecks > 0 ? (correctChecks / totalChecks) * 100 : 0;
-    const finalAccuracy = Math.round(accuracy);
-    
-    // Emite o evento com a acurácia calculada
-    this.accuracyCalculated.emit(finalAccuracy);
-    
-    return finalAccuracy;
+    // Primeiro, limpe todas as bordas vermelhas
+    elements.forEach(el => {
+      if (el.get('type') === 'custom.Actor') {
+        el.attr('body/stroke', 'none'); // ator sem borda
+        el.attr('body/strokeWidth', 0);
+      } else {
+        el.attr('body/stroke', '#000'); // volta para borda padrão
+        el.attr('body/strokeWidth', 1);
+      }
+    });
+
+    // Verifica inconsistências
+    elements.forEach(el => {
+      let inconsistent = false;
+
+      // 1. Elemento sem título
+      const label = el.attr(['label', 'text']);
+      if (!label || label.trim() === '') {
+        inconsistent = true;
+      }
+
+      // 2. Elemento sem conexão
+      const isConnected = links.some(link =>
+        link.getSourceElement() === el || link.getTargetElement() === el
+      );
+      if (!isConnected) {
+        inconsistent = true;
+      }
+
+      // Aplica borda vermelha se inconsistente
+      if (inconsistent) {
+        el.attr('body/stroke', '#FF0000');
+        el.attr('body/strokeWidth', 3);
+      }
+    });
+
+    // Opcional: pode retornar a lista de inconsistências se quiser mostrar em tela
+    // return elements.filter(el => el.attr('body/stroke') === '#FF0000');
   }
 
   toggleTips() {
