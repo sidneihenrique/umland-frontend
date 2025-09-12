@@ -18,6 +18,10 @@
 
         <button class="btn-icon filled" (click)="checkDiagram()">
             <lucide-icon name="book-check" class="lucide-icon"></lucide-icon>
+            <div class="count">
+                <lucide-icon *ngIf="phase?.level == 'EASY'" name="infinity" class="lucide-icon" color="white"></lucide-icon>
+                <span *ngIf="phase?.level != 'EASY'">{{ checkDiagramLeft }}</span>
+            </div>
         </button>
         
         <div class="character-container">

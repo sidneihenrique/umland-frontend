@@ -19,7 +19,8 @@ import {
   CircleCheckBig,
   RotateCcw,
   LogOut,
-  SquareCheck
+  SquareCheck,
+  Infinity
 } from 'lucide-angular';
 
 @NgModule({
@@ -41,7 +42,8 @@ import {
     CircleCheckBig,
     RotateCcw,
     LogOut,
-    SquareCheck
+    SquareCheck,
+    Infinity
   })],
   exports: [LucideAngularModule],
 })

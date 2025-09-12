@@ -55,6 +55,8 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
 
+  public inconsistencies: string[] = [];
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private dataService: DataService
@@ -606,28 +608,33 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   checkUMLInconsistencies() {
     if (!this.graph) return;
 
+    this.inconsistencies = []; // Limpa as mensagens anteriores
+
     const elements = this.graph.getElements();
     const links = this.graph.getLinks();
 
-    // Primeiro, limpe todas as bordas vermelhas
+    // Limpa bordas vermelhas
     elements.forEach(el => {
       if (el.get('type') === 'custom.Actor') {
-        el.attr('body/stroke', 'none'); // ator sem borda
+        el.attr('body/stroke', 'none');
         el.attr('body/strokeWidth', 0);
       } else {
-        el.attr('body/stroke', '#000'); // volta para borda padrão
-        el.attr('body/strokeWidth', 1);
+        el.attr('body/stroke', '#000');
+        el.attr('body/strokeWidth', 2);
       }
     });
 
     // Verifica inconsistências
     elements.forEach(el => {
       let inconsistent = false;
+      const label = el.attr(['label', 'text']);
+      const elType = el.get('type');
+      const elName = label || elType;
 
       // 1. Elemento sem título
-      const label = el.attr(['label', 'text']);
       if (!label || label.trim() === '') {
         inconsistent = true;
+        this.inconsistencies.push(`O elemento "${elType}" está sem título.`);
       }
 
       // 2. Elemento sem conexão
@@ -636,6 +643,19 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       );
       if (!isConnected) {
         inconsistent = true;
+        this.inconsistencies.push(`O elemento "${elName}" não está conectado a nenhum outro elemento.`);
+      }
+
+      // 3. Link sem destino
+      if (el.isLink() && !el.getTargetElement()) {
+        inconsistent = true;
+        this.inconsistencies.push(`O link "${elName}" não tem um destino definido.`);
+      }
+
+      // 4. Link sem origem
+      if (el.isLink() && !el.getSourceElement()) {
+        inconsistent = true;
+        this.inconsistencies.push(`O link "${elName}" não tem uma origem definida.`);
       }
 
       // Aplica borda vermelha se inconsistente

@@ -88,6 +88,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   activeSpeechIndex = 0;
   characterState = 'hidden';
 
+  checkDiagramLeft: number = 0; // Número de verificações restantes
+
   swiperCharacter?: Swiper;
   constructor(
     private router: Router,
@@ -137,6 +139,14 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
         this.router.navigate(['/map']);
       }
     });
+
+    if (this.phase?.level === 'EASY') {
+      this.checkDiagramLeft = Infinity;
+    } else if (this.phase?.level === 'MEDIUM') {
+      this.checkDiagramLeft = 3;
+    } else if (this.phase?.level === 'HARD') {
+      this.checkDiagramLeft = 0;
+    }
 
   }
 
@@ -368,6 +378,9 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   }
 
   checkDiagram() {
-    this.diagramEditorComponentRef.checkUMLInconsistencies();
+    if(this.checkDiagramLeft > 0) {
+      this.diagramEditorComponentRef.checkUMLInconsistencies();
+      this.checkDiagramLeft--;
+    }
   }
 }
