@@ -239,6 +239,9 @@ diagram-editor {
   position: absolute;
   right: 0;
   bottom: 0;
+  z-index: 10;
+
+  cursor: pointer;
 }
 
 /* Personagem */

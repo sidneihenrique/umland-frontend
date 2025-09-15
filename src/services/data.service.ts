@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { delay, map, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
+import { API_CONFIG } from '../config/api.config';
+import { User } from '../services/user.service'; 
+
 
 export interface UserResponse {
     user: User;
@@ -14,13 +17,6 @@ export interface Inventory {
     bomb: number;
     eraser: number;
     lamp: number;
-}
-
-export interface User {
-    name: string;
-    money: number;
-    reputation: number;
-    progressing: boolean;
 }
 
 export interface RegisterUser {
@@ -54,15 +50,15 @@ export class DataService {
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
         // URL para SSR
-        this.baseUrl = 'http://localhost:8080'; // Updated to localhost:8080
+        this.baseUrl = API_CONFIG.BASE_URL;
         if (isPlatformBrowser(this.platformId)) {
             this.baseUrl = (window as any).apiUrl || this.baseUrl;
         }
     }
 
     registerUser(user: RegisterUser): Observable<any> {
-        const url = `${this.baseUrl}/api/usuarios/id/${user.id}`;
-        return this.http.put(url, user).pipe(
+        const url = `${this.baseUrl}/usuarios/`;
+        return this.http.post(url, user).pipe(
             catchError(error => {
                 console.error('Error during user registration:', error);
                 throw {
@@ -74,37 +70,7 @@ export class DataService {
     }
 
     private getDefaultUserData(id: string): UserResponse | null {
-        if (id === '1') {
-            return {
-                user: {
-                    name: "Tiago",
-                    money: 200,
-                    reputation: 380,
-                    progressing: true
-                },
-                inventory: {
-                    watch: 0,
-                    bomb: 0,
-                    eraser: 0,
-                    lamp: 0
-                }
-            };
-        } else if (id === '33') {
-            return {
-                user: {
-                    name: "Maria",
-                    money: 25,
-                    reputation: 104,
-                    progressing: false
-                },
-                inventory: {
-                    watch: 0,
-                    bomb: 0,
-                    eraser: 0,
-                    lamp: 0
-                }
-            };
-        }
+        
         return null;
     }
 

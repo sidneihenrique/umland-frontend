@@ -20,12 +20,12 @@
     <div class="right">
         <div class="money">
             <lucide-icon name="circle-dollar-sign" class="lucide-icon" [size]="32"></lucide-icon>
-            <span class="amount">{{ userData?.money }}</span>
+            <span class="amount">{{ userData?.coins }}</span>
         </div>
         <div class="reputation">
             <lucide-icon name="sparkles" class="lucide-icon" [size]="32"></lucide-icon>
             <span class="amount">{{ userData?.reputation }}</span>
-            @if (userData?.progressing) {
+            @if (userData) {
             <lucide-icon name="move-up-right" class="lucide-icon" [size]="16" color="#00D819"></lucide-icon>
             } @else {
             <lucide-icon name="move-down-right" class="lucide-icon" [size]="16" color="#FF0000"></lucide-icon>

@@ -5,7 +5,8 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { StorageService } from '../../services/storage.service';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
-import { DataService, UserResponse, User } from '../../services/data.service';
+import { DataService, UserResponse } from '../../services/data.service';
+import { User } from '../../services/user.service';
 import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
 import { CommonModule } from '@angular/common';
@@ -245,7 +246,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   }
 
   get userMoney(): number {
-    return this.userData?.money || 0;
+    return this.userData?.coins || 0;
   }
 
   get userReputation(): number {
