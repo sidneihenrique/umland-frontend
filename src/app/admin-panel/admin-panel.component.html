@@ -24,7 +24,7 @@
       <div class="items-grid">
         <div *ngFor="let a of avatars; let i = index" class="item-card">
           <div class="item-image">
-            <img [src]="'http://localhost:9090/uploads/avatars/' + a.filePath" alt="Avatar" />
+            <img [src]="`${filesPath}/avatars/${a.filePath}`" alt="Avatar" />
           </div>
           <div class="item-actions">
             <button class="btn-edit" (click)="editAvatar(i)">✏️</button>
@@ -62,7 +62,7 @@
       <div class="items-grid">
         <div *ngFor="let c of characters; let i = index" class="item-card">
           <div class="item-image">
-            <img [src]="'http://localhost:9090/uploads/' + c.filePath" [alt]="c.name" />
+            <img [src]="`${filesPath}/characters/${c.filePath}`" [alt]="c.name" />
           </div>
           <div class="item-info">
             <h4>{{ c.name }}</h4>
@@ -156,7 +156,7 @@
       <div class="items-grid">
         <div *ngFor="let it of items; let i = index" class="item-card">
           <div class="item-image">
-            <img [src]="'http://localhost:9090/uploads/' + it.filePath" [alt]="it.title" />
+            <img [src]="`${filesPath}/items/${it.filePath}`" [alt]="it.title" />
           </div>
           <div class="item-info">
             <h4>{{ it.title }}</h4>

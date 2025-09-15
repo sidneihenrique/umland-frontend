@@ -19,7 +19,6 @@ export interface User {
   };
   gameMaps?: any[];
   progressing?: boolean; // Indica se a reputação está aumentando ou diminuindo
-  filesPath?: string;
 }
 
 export interface CreateUserRequest {
@@ -45,6 +44,11 @@ export class UserService {
   private apiUrl = API_CONFIG.BASE_URL;
 
   constructor(private http: HttpClient) { }
+
+  getCurrentUser(): User | null {
+    const userJson = localStorage.getItem('currentUser');
+    return userJson ? JSON.parse(userJson) as User : null;
+  }
 
   /**
    * Busca todos os usuários

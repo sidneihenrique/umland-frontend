@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap, map } from 'rxjs/operators';
+import { User } from '../../services/user.service';
 
 export interface LoginRequest {
   email: string;
@@ -10,11 +11,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
-  user: {
-    id: number;
-    username: string;
-    email?: string;
-  };
+  user: User;
 }
 
 export interface RegisterRequest {
@@ -46,11 +43,7 @@ export class AuthService {
             const user = users[0];
             return {
               token: 'tokenDefault', // Sua API não retorna token, então deixar vazio por ora
-              user: {
-                id: user.id,
-                username: user.name || user.email,
-                email: user.email
-              }
+              user: user
             };
           } else {
             throw new Error('Usuário não encontrado');
@@ -97,10 +90,15 @@ export class AuthService {
     }
   }
 
-  private setUser(user: any) {
+  private setUser(user: User) {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(this.userKey, JSON.stringify(user));
     }
+  }
+
+  public getCurrentUser(): User | null {
+    const userJson = localStorage.getItem(this.userKey);
+    return userJson ? JSON.parse(userJson) as User : null;
   }
 
   private clearAuth() {

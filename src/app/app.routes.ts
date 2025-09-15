@@ -21,11 +21,9 @@ export const routes: Routes = [
       path: 'game/:id', 
       component: GamePhaseComponent,
       canActivate: [AuthGuard] // <--- proteje a rota
+    },
+    {
+      path: 'admin',
+      component: AdminPanelComponent
     }
-      ,
-      {
-        path: 'admin',
-        component: AdminPanelComponent,
-        canActivate: [AuthGuard]
-      }
 ];

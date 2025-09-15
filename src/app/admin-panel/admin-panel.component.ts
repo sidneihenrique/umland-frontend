@@ -3,6 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminPanelService, Avatar, Character, Phase, Item } from '../../services/admin-panel.service';
+import { User } from '../../services/user.service';
+import { AuthService } from '../auth/auth.service';
 
 
 @Component({
@@ -36,10 +38,16 @@ export class AdminPanelComponent implements OnInit {
   characterPreview?: string;
   itemPreview?: string;
 
-  constructor(private adminService: AdminPanelService) {}
+  user?: User | null;
+  filesPath?: string;
+
+  constructor(private adminService: AdminPanelService, private authService: AuthService) {}
 
   ngOnInit() {
     this.loadAll();
+    this.user = this.authService.getCurrentUser();
+    console.log(this.user);
+    this.filesPath = 'http://localhost:9090/uploads/';
   }
 
   loadAll() {
@@ -90,7 +98,7 @@ export class AdminPanelComponent implements OnInit {
     const a = this.avatars[index];
     this.avatar = { ...a };
     this.editAvatarId = a.id;
-    this.avatarPreview = a.filePath ? `http://localhost:9090/uploads/${a.filePath}` : undefined;
+    this.avatarPreview = a.filePath ? `${this.filesPath}${a.filePath}` : undefined;
   }
   deleteAvatar(index: number) {
     const a = this.avatars[index];
@@ -140,7 +148,7 @@ export class AdminPanelComponent implements OnInit {
     const c = this.characters[index];
     this.character = { ...c };
     this.editCharacterId = c.id;
-    this.characterPreview = c.filePath ? `http://localhost:9090/uploads/${c.filePath}` : undefined;
+    this.characterPreview = c.filePath ? `${this.filesPath}${c.filePath}` : undefined;
   }
   deleteCharacter(index: number) {
     const c = this.characters[index];
@@ -217,7 +225,7 @@ export class AdminPanelComponent implements OnInit {
     const it = this.items[index];
     this.item = { ...it };
     this.editItemId = it.id;
-    this.itemPreview = it.filePath ? `http://localhost:9090/uploads/${it.filePath}` : undefined;
+    this.itemPreview = it.filePath ? `${this.filesPath}${it.filePath}` : undefined;
   }
   deleteItem(index: number) {
     const it = this.items[index];
