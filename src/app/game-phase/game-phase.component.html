@@ -19,8 +19,8 @@
         <button class="btn-icon filled" (click)="checkDiagram()">
             <lucide-icon name="book-check" class="lucide-icon"></lucide-icon>
             <div class="count">
-                <lucide-icon *ngIf="phase?.level == 'EASY'" name="infinity" class="lucide-icon" color="white"></lucide-icon>
-                <span *ngIf="phase?.level != 'EASY'">{{ checkDiagramLeft }}</span>
+                <lucide-icon *ngIf="phase?.mode == 'BASIC'" name="infinity" class="lucide-icon" color="white"></lucide-icon>
+                <span *ngIf="phase?.mode != 'BASIC'">{{ checkDiagramLeft }}</span>
             </div>
         </button>
         
@@ -28,7 +28,7 @@
             <!-- Balão de fala -->
             @if (isSpeaking) {
             <div class="speech-bubble">
-                <app-carousel [items]="phase?.character?.dialogCharacter || []"></app-carousel>
+                <app-carousel [items]="phase?.characterDialogues || []"></app-carousel>
             </div>
             }
 
@@ -46,7 +46,7 @@
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
     </div>
-    <diagram-editor #diagramEditor [phase]="phase"></diagram-editor>
+    <diagram-editor #diagramEditor [phase]="phase" [tips]="tips"></diagram-editor>
     <app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
     <app-confirm-dialog [visible]="confirmDialogVisible" [title]="confirmDialogTitle" [message]="confirmDialogMessage"
         (confirm)="onConfirm()" (cancel)="onCancel()">
@@ -59,9 +59,9 @@
 
     <app-advise-modal 
         [visible]="true" 
-        [title]="phase?.type?.title" 
-        [description]="phase?.type?.description" 
-        [videoSrc]="'/assets/videos/' + (phase?.type?.key ?? '') + '.mp4'">
+        [title]="getPhaseTitle()" 
+        [description]="getPhaseDescription()" 
+        [videoSrc]="getPhaseVideoSrc()">
     </app-advise-modal>
     
 </div>

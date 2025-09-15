@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
 import { Observable } from 'rxjs';
 import { tap, map } from 'rxjs/operators';
 import { User } from '../../services/user.service';
@@ -26,7 +27,9 @@ export class AuthService {
   private userKey: string = "authUser";
   private api = 'http://localhost:9090';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+              @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     // Criar query parameters
@@ -83,22 +86,25 @@ export class AuthService {
       );
   }
 
-  // Métodos auxiliares para gerenciar token e usuário
+  // ✅ Métodos auxiliares corrigidos com verificação de plataforma
   private setToken(token: string) {
-    if (typeof localStorage !== 'undefined') {
+    if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(this.tokenKey, token);
     }
   }
 
   private setUser(user: User) {
-    if (typeof localStorage !== 'undefined') {
+    if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(this.userKey, JSON.stringify(user));
     }
   }
 
   public getCurrentUser(): User | null {
-    const userJson = localStorage.getItem(this.userKey);
-    return userJson ? JSON.parse(userJson) as User : null;
+    if (isPlatformBrowser(this.platformId)) {
+      const userJson = localStorage.getItem(this.userKey);
+      return userJson ? JSON.parse(userJson) as User : null;
+    }
+    return null;
   }
 
   private clearAuth() {

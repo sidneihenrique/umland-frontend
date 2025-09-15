@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AdminPanelService, Avatar, Character, Phase, Item } from '../../services/admin-panel.service';
 import { User } from '../../services/user.service';
 import { AuthService } from '../auth/auth.service';
+import { TipService, Tip, CreateTipRequest } from '../../services/tip.service';
 
 
 @Component({
@@ -17,18 +18,21 @@ import { AuthService } from '../auth/auth.service';
 export class AdminPanelComponent implements OnInit {
   avatar: Avatar = {};
   character: Character = { name: '' };
-  phase: Phase = { title: '', description: '', type: 'BUILD' };
+  phase: Phase = { title: '', description: '', type: 'BUILD', characterId: undefined };
   item: Item = { title: '', description: '', price: 0 };
+  tip: CreateTipRequest = { tip: '' };
 
   avatars: Avatar[] = [];
   characters: Character[] = [];
   phases: Phase[] = [];
   items: Item[] = [];
+  tips: Tip[] = [];
 
   editAvatarId?: number;
   editCharacterId?: number;
   editPhaseId?: number;
   editItemId?: number;
+  editTipId?: number;
 
   avatarImageFile?: File;
   characterImageFile?: File;
@@ -41,7 +45,11 @@ export class AdminPanelComponent implements OnInit {
   user?: User | null;
   filesPath?: string;
 
-  constructor(private adminService: AdminPanelService, private authService: AuthService) {}
+  constructor(
+    private adminService: AdminPanelService, 
+    private authService: AuthService,
+    private tipService: TipService
+  ) {}
 
   ngOnInit() {
     this.loadAll();
@@ -55,6 +63,7 @@ export class AdminPanelComponent implements OnInit {
     this.adminService.getCharacters().subscribe(data => this.characters = data);
     this.adminService.getPhases().subscribe(data => this.phases = data);
     this.adminService.getItems().subscribe(data => this.items = data);
+    this.tipService.getAllTips().subscribe(data => this.tips = data);
   }
 
   // CRUD Avatar
@@ -159,22 +168,41 @@ export class AdminPanelComponent implements OnInit {
 
   // CRUD Phase
   onSubmitPhase() {
+    if (!this.phase.characterId) {
+      alert('Por favor, selecione um personagem para a fase.');
+      return;
+    }
+    
     if (this.editPhaseId != null) {
       this.adminService.updatePhase(this.editPhaseId, this.phase).subscribe(() => {
         this.loadAll();
-        this.phase = { title: '', description: '', type: 'BUILD' };
-        this.editPhaseId = undefined;
+        this.resetPhaseForm();
       });
     } else {
       this.adminService.createPhase(this.phase).subscribe(() => {
         this.loadAll();
-        this.phase = { title: '', description: '', type: 'BUILD' };
+        this.resetPhaseForm();
       });
     }
   }
+  
+  resetPhaseForm() {
+    this.phase = { title: '', description: '', type: 'BUILD', characterId: undefined };
+    this.editPhaseId = undefined;
+  }
+  
   editPhase(index: number) {
     const p = this.phases[index];
-    this.phase = { title: p.title, description: p.description, type: p.type };
+    this.phase = { 
+      title: p.title, 
+      description: p.description, 
+      type: p.type,
+      mode: p.mode,
+      maxTime: p.maxTime,
+      status: p.status,
+      characterId: p.character?.id || p.characterId,
+      diagramInitial: p.diagramInitial
+    };
     this.editPhaseId = p.id;
   }
   deletePhase(index: number) {
@@ -231,6 +259,60 @@ export class AdminPanelComponent implements OnInit {
     const it = this.items[index];
     if (it.id != null) {
       this.adminService.deleteItem(it.id).subscribe(() => this.loadAll());
+    }
+  }
+
+  // CRUD Tip
+  onSubmitTip() {
+    if (!this.tip.tip.trim()) {
+      alert('Por favor, digite uma dica.');
+      return;
+    }
+    
+    if (this.editTipId != null) {
+      this.tipService.updateTip(this.editTipId, this.tip).subscribe(() => {
+        this.loadAll();
+        this.resetTipForm();
+      });
+    } else {
+      this.tipService.createTip(this.tip).subscribe(() => {
+        this.loadAll();
+        this.resetTipForm();
+      });
+    }
+  }
+  
+  resetTipForm() {
+    this.tip = { tip: '' };
+    this.editTipId = undefined;
+  }
+  
+  editTip(index: number) {
+    const t = this.tips[index];
+    this.tip = { tip: t.tip };
+    this.editTipId = t.id;
+  }
+  
+  deleteTip(index: number) {
+    const t = this.tips[index];
+    if (t.id != null) {
+      this.tipService.deleteTip(t.id).subscribe(() => this.loadAll());
+    }
+  }
+
+  // Utility methods
+  formatTime(seconds: number): string {
+    if (!seconds) return 'N/A';
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${secs}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${secs}s`;
+    } else {
+      return `${secs}s`;
     }
   }
 }

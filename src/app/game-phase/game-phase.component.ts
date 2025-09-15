@@ -16,8 +16,9 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 import { DialogFinishedGamephaseComponent } from "./dialog-finished-gamephase/dialog-finished-gamephase.component";
 import { CarouselComponent } from '../utils/carousel/carousel.component';
 import { HeaderComponent } from '../header/header.component';
-import { PhaseService, Phase } from '../../services/phase.service';
+import { PhaseService, Phase, PHASE_TYPES, PhaseType } from '../../services/phase.service';
 import { AdviseModalComponent } from '../utils/advise-modal/advise-modal.component';
+import { TipService } from '../../services/tip.service';
 
 @Component({
   selector: 'game-phase',
@@ -56,6 +57,11 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
   @Input() phaseId!: number;
   phase?: Phase;
+
+  // ✅ Disponibilize o mapa para o template
+  phaseTypes = PHASE_TYPES;
+
+  tips: string[] = [];
   
   @ViewChild(StoreComponent) store!: StoreComponent;
   private userDataSubscription?: Subscription;
@@ -98,7 +104,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     private dataService: DataService,
     private storageService: StorageService,
     private phaseService: PhaseService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private tipService: TipService
   ) {
   }
   ngOnInit() {
@@ -122,6 +129,9 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
         // Carrega os dados iniciais
         this.loadUserData(userId);
+        this.tipService.getAllTips().subscribe((tips) => {
+          this.tips = tips.map(tip => tip.tip); // assuming Tip has a 'text' property
+        });
       } else {
         this.router.navigate(['/login']);
       }
@@ -141,11 +151,11 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
       }
     });
 
-    if (this.phase?.level === 'EASY') {
+    if (this.phase?.mode === 'BASIC') {
       this.checkDiagramLeft = Infinity;
-    } else if (this.phase?.level === 'MEDIUM') {
+    } else if (this.phase?.mode === 'INTERMEDIATE') {
       this.checkDiagramLeft = 3;
-    } else if (this.phase?.level === 'HARD') {
+    } else if (this.phase?.mode === 'ADVANCED') {
       this.checkDiagramLeft = 0;
     }
 
@@ -383,5 +393,26 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
       this.diagramEditorComponentRef.checkUMLInconsistencies();
       this.checkDiagramLeft--;
     }
+  }
+
+  // ✅ Método helper type-safe
+  getCurrentPhaseType(): PhaseType | null {
+    if (!this.phase?.type) return null;
+    
+    const typeKey = this.phase.type as keyof typeof PHASE_TYPES;
+    return this.phaseTypes[typeKey] || null;
+  }
+
+  // ✅ Métodos específicos para título e descrição
+  getPhaseTitle(): string {
+    return this.getCurrentPhaseType()?.title || 'Título não disponível';
+  }
+
+  getPhaseDescription(): string {
+    return this.getCurrentPhaseType()?.description || 'Descrição não disponível';
+  }
+
+  getPhaseVideoSrc(): string {
+    return `/assets/videos/${this.phase?.type || 'default'}.mp4`;
   }
 }

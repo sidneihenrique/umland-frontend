@@ -1,11 +1,25 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
 
 export interface Avatar { id?: number; filePath?: string; }
 export interface Character { id?: number; name: string; filePath?: string; }
-export interface Phase { id?: number; title: string; description: string; type: string; }
+export interface Phase { 
+  id?: number; 
+  title: string; 
+  description: string; 
+  type: string;
+  mode?: string;
+  maxTime?: number;
+  status?: string;
+  characterId?: number;
+  character?: { id: number; name: string; filePath: string };
+  gameMap?: { id: number; title: string; users: any[]; phases: string[] };
+  diagramInitial?: string;
+  correctDiagrams?: string[];
+  characterDialogues?: string[];
+}
 export interface Item { id?: number; title: string; description: string; price: number; filePath?: string; }
 
 @Injectable({ providedIn: 'root' })
@@ -63,10 +77,32 @@ export class AdminPanelService {
     return this.http.get<Phase[]>(`${this.api}/phases`);
   }
   createPhase(phase: Phase): Observable<Phase> {
-    return this.http.post<Phase>(`${this.api}/phases`, phase);
+    // Enviar como body JSON incluindo o characterId
+    const phaseData = {
+      title: phase.title,
+      description: phase.description,
+      type: phase.type,
+      mode: phase.mode || 'BASIC',
+      maxTime: phase.maxTime || 3600,
+      status: phase.status || 'AVAILABLE',
+      characterId: phase.characterId,
+      diagramInitial: phase.diagramInitial || ''
+    };
+    return this.http.post<Phase>(`${this.api}/phases`, phaseData);
   }
   updatePhase(id: number, phase: Phase): Observable<Phase> {
-    return this.http.put<Phase>(`${this.api}/phases/${id}`, phase);
+    // Enviar como body JSON incluindo o characterId
+    const phaseData = {
+      title: phase.title,
+      description: phase.description,
+      type: phase.type,
+      mode: phase.mode || 'BASIC',
+      maxTime: phase.maxTime || 3600,
+      status: phase.status || 'AVAILABLE',
+      characterId: phase.characterId,
+      diagramInitial: phase.diagramInitial || ''
+    };
+    return this.http.put<Phase>(`${this.api}/phases/${id}`, phaseData);
   }
   deletePhase(id: number): Observable<void> {
     return this.http.delete<void>(`${this.api}/phases/${id}`);
