@@ -20,6 +20,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   @Output() accuracyCalculated = new EventEmitter<number>();
 
   @Input() phase!: Phase | undefined;
+  @Input() tips!: string[] | undefined;
 
   tipsVisible: boolean = false;
   
@@ -62,8 +63,8 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     private dataService: DataService
   ) {}
   ngOnInit(): void {
-    this.initialJSON = this.phase?.diagramJSON;
-    this.correctsJSON = this.phase?.correctDiagramsJson || [];
+    this.initialJSON = this.phase?.diagramInitial;
+    this.correctsJSON = this.phase?.correctDiagrams || [];
   }
   
   ngAfterViewInit(): void {

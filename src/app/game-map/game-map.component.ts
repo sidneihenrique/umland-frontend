@@ -5,7 +5,8 @@ import { Subscription } from 'rxjs';
 import { StorageService } from '../../services/storage.service';
 import { StoreComponent } from "../store/store.component";
 import { AuthService } from '../auth/auth.service';
-import { DataService, User, UserResponse } from '../../services/data.service';
+import { DataService, UserResponse } from '../../services/data.service';
+import { User, UserService } from '../../services/user.service';
 import { Router, RouterModule } from '@angular/router';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { NodeActivityComponent } from './node-activity/node-activity.component';
@@ -93,6 +94,7 @@ export class GameMapComponent implements OnInit{
       private authService: AuthService,
       @Inject(PLATFORM_ID) private platformId: Object,
       private dataService: DataService,
+      private userService: UserService,
       private router: Router) {
 
   }
@@ -109,7 +111,7 @@ export class GameMapComponent implements OnInit{
         });
 
         // Carrega os dados iniciais
-        this.loadUserData(userId);
+        this.loadUserData(Number(userId));
       } else {
         this.router.navigate(['/login']);
       }
@@ -141,10 +143,10 @@ export class GameMapComponent implements OnInit{
   }
 
 
-  private loadUserData(userId: string) {
-    this.dataService.getUserById(userId).subscribe({
-      next: (response: UserResponse) => {
-        this.userData = response.user;
+  private loadUserData(userId: number) {
+    this.userService.getUserById(userId).subscribe({
+      next: (user: User) => {
+        this.userData = user;
       },
       error: (error) => {
         console.error('Erro ao carregar dados do usuário:', error);

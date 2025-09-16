@@ -13,9 +13,10 @@ import { AuthService } from '../auth/auth.service';
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-  username: string = '';
+  email: string = '';
   password: string = '';
   errorMessage: string = '';
+  isLoading: boolean = false;
 
   constructor(
     private router: Router,
@@ -23,58 +24,36 @@ export class LoginComponent {
     private authService: AuthService
   ) { }
 
-  private initializeUserData(userId: string) {
-    // Limpa dados antigos do localStorage
-    localStorage.clear();
-    
-    // Define o ID do usuário atual
-    localStorage.setItem('userId', userId);
-
-    // Inicializa os dados do usuário com base no ID
-    const userData = userId === '33' ? {
-      name: "Maria",
-      money: 25,
-      reputation: 104,
-      progressing: false
-    } : {
-      name: "Tiago",
-      money: 200,
-      reputation: 380,
-      progressing: true
-    };
-
-    // Inicializa o inventário padrão
-    const inventory = {
-      watch: 0,
-      bomb: 0,
-      eraser: 0,
-      lamp: 0
-    };
-
-    // Salva os dados no localStorage
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('inventory', JSON.stringify(inventory));
-  }
-
   onSubmit() {
-    // Remove espaços em branco e converte para minúsculas
-    const normalizedUsername = this.username.trim().toLowerCase();
-
-    let userId = '1';
-    if (normalizedUsername === 'maria') {
-      userId = '33';
+    if (!this.email || !this.password) {
+      this.errorMessage = 'Por favor, preencha todos os campos.';
+      return;
     }
-    
-    this.initializeUserData(userId);
 
-    // Faça login no AuthService (use o userId como token, ou qualquer string)
-    this.authService.login(userId);
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    const credentials = {
+      email: this.email.trim(),
+      password: this.password
+    };
 
 
-    // Navega para a página do jogo
-    this.router.navigate(['/map']).then(
-      () => console.log('Navegação para o mapa bem-sucedida'),
-      (error) => console.error('Erro na navegação:', error)
-    );
+    this.authService.login(credentials).subscribe({
+      next: (response) => {
+        this.router.navigate(['/map']).then(
+          () => console.log('Navegação para o mapa bem-sucedida'),
+          (error) => console.error('Erro na navegação:', error)
+        );
+      },
+      error: (error) => {
+        console.error('Erro no login:', error);
+        this.errorMessage = error.error?.message || 'Erro ao fazer login. Verifique suas credenciais.';
+        this.isLoading = false;
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
+    });
   }
 }

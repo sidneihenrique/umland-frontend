@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { DataService } from '../../services/data.service';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -15,10 +16,13 @@ export class RegisterComponent {
   registerForm: FormGroup;
   characters: string[] = [];
   selectedCharacter: string | null = null;
+  isLoading: boolean = false;
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
     private dataService: DataService,
+    private authService: AuthService,
     private router: Router
   ) {
     this.registerForm = this.fb.group({
@@ -59,26 +63,35 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.registerForm.valid) {
-      const { nome, email, senha, personagem } = this.registerForm.value;
-      const newUser = {
-        id: 0, // ID will be assigned by the backend
-        nome,
-        email,
-        senha,
-        reputacao: 1000, // Default reputation
-        moedas: 0, // Default coins
-        faseAtual: null, // No current phase initially
-        personagem // Add the selected character
+      this.isLoading = true;
+      this.errorMessage = '';
+
+      const { nome, email, senha } = this.registerForm.value;
+      const registerData = {
+        name: nome,
+        email: email,
+        password: senha
       };
-      this.dataService.registerUser(newUser).subscribe({
+
+      this.authService.register(registerData).subscribe({
         next: (response) => {
-          console.log('User registered successfully', response);
-          this.router.navigate(['/login']);
+          console.log('Usuário registrado com sucesso', response);
+          // Após registro bem-sucedido, redireciona para login
+          this.router.navigate(['/login'], { 
+            queryParams: { message: 'Registro realizado com sucesso! Faça login para continuar.' }
+          });
         },
         error: (error) => {
-          console.error('Error registering user', error);
+          console.error('Erro ao registrar usuário', error);
+          this.errorMessage = error.error?.message || 'Erro ao criar conta. Tente novamente.';
+          this.isLoading = false;
+        },
+        complete: () => {
+          this.isLoading = false;
         }
       });
+    } else {
+      this.errorMessage = 'Por favor, preencha todos os campos corretamente.';
     }
   }
 }
