@@ -2,13 +2,14 @@ import { Component, OnInit, EventEmitter, Input, Output, ViewChild, ViewContaine
 import { LucideIconsModule } from '../lucide-icons.module';
 import { StorageService } from '../../services/storage.service';
 import { StoreComponent } from "../store/store.component";
+import { BackpackComponent } from "../backpack/backpack.component";
 import { DataService, User, UserResponse } from '../../services/data.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
-  imports: [LucideIconsModule, StoreComponent, CommonModule],
+  imports: [LucideIconsModule, StoreComponent, BackpackComponent, CommonModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
@@ -24,6 +25,9 @@ export class HeaderComponent implements OnInit, OnDestroy{
 
   // Referência para o componente Store (loja de itens)
   @ViewChild(StoreComponent) store!: StoreComponent;
+
+  // Referência para o componente Backpack (mochila)
+  @ViewChild(BackpackComponent) backpack!: BackpackComponent;
 
   currentTime: string = '00:00:00';
   watchTime: string = '';
@@ -67,6 +71,12 @@ export class HeaderComponent implements OnInit, OnDestroy{
   toggleStore() {
     if (this.store) {
       this.store.toggle();
+    }
+  }
+
+  toggleBackpack() {
+    if (this.backpack) {
+      this.backpack.toggle();
     }
   }
   

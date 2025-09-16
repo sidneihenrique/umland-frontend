@@ -1,0 +1,43 @@
+<div class="backpack-overlay" [class.visible]="isOpen" (click)="close()">
+  <div class="backpack-dialog" (click)="$event.stopPropagation()">
+    <div class="backpack-header">
+      <div class="header-left">
+        <button class="btn-icon close-button" (click)="close()">
+          <lucide-icon name="x" class="lucide-icon"></lucide-icon>
+        </button>
+      </div>
+      <div class="title">
+        <lucide-icon name="backpack" class="lucide-icon" [size]="32" color="#FFFFFF"></lucide-icon>
+        <h2>MOCHILA</h2>
+      </div>
+    </div>
+    <div class="backpack-content">
+
+      <ng-container *ngFor="let item of backpackData?.items; let i = index">
+        <!-- Item slot -->
+        <div 
+          class="inventory-slot filled"
+          (mouseenter)="onItemHover(item)"
+          (mouseleave)="onItemLeave()">
+          <img [src]="item.imageUrl" [alt]="item.name">
+          <span class="quantity-badge" *ngIf="item.quantity > 1">{{ item.quantity }}</span>
+          
+          <!-- Slot expandível para descrição - filho do item -->
+          <div 
+            class="description-slot" 
+            [class.expanded]="hoveredItem === item">
+            <div class="description-content">
+              <h4>{{ item.name }}</h4>
+              <p>{{ item.description }}</p>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <div 
+        *ngFor="let slot of emptySlots" 
+        class="inventory-slot empty">
+      </div>
+    </div>
+  </div>
+</div>
