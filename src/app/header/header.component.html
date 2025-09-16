@@ -9,7 +9,7 @@
         <button class="btn-icon" (click)="toggleStore()">
             <lucide-icon class="lucide-icon" name="store"></lucide-icon>
         </button>
-        <button class="btn-icon" (click)="true">
+        <button class="btn-icon" (click)="toggleBackpack()">
             <lucide-icon class="lucide-icon" name="backpack"></lucide-icon>
         </button>
     </div>
@@ -43,3 +43,4 @@
 </header>
 
 <app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
+<app-backpack #backpack></app-backpack>
