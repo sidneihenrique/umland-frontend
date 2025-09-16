@@ -73,3 +73,38 @@
     align-items: center;
 }
 
+.inconsistency_indicator {
+    position: sticky;
+    top: 0;
+    left: 0;
+
+    padding: 16px;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+
+
+    z-index: 10;
+    backdrop-filter: blur(6px);
+}
+
+.inconsistency_indicator .lucide-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+    color: var(--red);
+}
+
+.inconsistency_indicator .right {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inconsistency_indicator p {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--red);
+}
+

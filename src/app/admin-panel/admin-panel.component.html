@@ -1,0 +1,273 @@
+<div class="admin-panel">
+  <h1>🛠️ Painel do Administrador</h1>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>👤 Cadastro de Avatar</h2>
+    </div>
+    <div class="card-content">
+      <form (ngSubmit)="onSubmitAvatar()" #avatarForm="ngForm" class="form">
+        <div class="file-input-container">
+          <label class="file-label">
+            <input type="file" accept="image/*" (change)="onAvatarImageChange($event)" required />
+            <span class="file-button">📷 Escolher Imagem</span>
+          </label>
+          <div *ngIf="avatarPreview" class="image-preview">
+            <img [src]="avatarPreview" alt="Preview" />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" [disabled]="!avatarImageFile">
+          {{ editAvatarId ? '✏️ Atualizar Avatar' : '💾 Salvar Avatar' }}
+        </button>
+      </form>
+      
+      <div class="items-grid">
+        <div *ngFor="let a of avatars; let i = index" class="item-card">
+          <div class="item-image">
+            <img [src]="`${filesPath}/avatars/${a.filePath}`" alt="Avatar" />
+          </div>
+          <div class="item-actions">
+            <button class="btn-edit" (click)="editAvatar(i)">✏️</button>
+            <button class="btn-delete" (click)="deleteAvatar(i)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>🎭 Cadastro de Personagem</h2>
+    </div>
+    <div class="card-content">
+      <form (ngSubmit)="onSubmitCharacter()" #characterForm="ngForm" class="form">
+        <div class="form-group">
+          <label>Nome do Personagem:</label>
+          <input type="text" name="name" [(ngModel)]="character.name" required class="form-input" />
+        </div>
+        <div class="file-input-container">
+          <label class="file-label">
+            <input type="file" accept="image/*" (change)="onCharacterImageChange($event)" required />
+            <span class="file-button">📷 Escolher Imagem</span>
+          </label>
+          <div *ngIf="characterPreview" class="image-preview">
+            <img [src]="characterPreview" alt="Preview" />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" [disabled]="!characterImageFile || !character.name">
+          {{ editCharacterId ? '✏️ Atualizar Personagem' : '💾 Salvar Personagem' }}
+        </button>
+      </form>
+      
+      <div class="items-grid">
+        <div *ngFor="let c of characters; let i = index" class="item-card">
+          <div class="item-image">
+            <img [src]="`${filesPath}/characters/${c.filePath}`" [alt]="c.name" />
+          </div>
+          <div class="item-info">
+            <h4>{{ c.name }}</h4>
+          </div>
+          <div class="item-actions">
+            <button class="btn-edit" (click)="editCharacter(i)">✏️</button>
+            <button class="btn-delete" (click)="deleteCharacter(i)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>🎮 Cadastro de Fase</h2>
+    </div>
+    <div class="card-content">
+      <form (ngSubmit)="onSubmitPhase()" #phaseForm="ngForm" class="form">
+        <div class="form-group">
+          <label>Título da Fase:</label>
+          <input type="text" name="title" [(ngModel)]="phase.title" required class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>Descrição:</label>
+          <textarea name="description" [(ngModel)]="phase.description" required class="form-textarea"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Personagem:</label>
+          <select name="characterId" [(ngModel)]="phase.characterId" required class="form-select">
+            <option value="">Selecione um personagem</option>
+            <option *ngFor="let char of characters" [value]="char.id">
+              🎭 {{ char.name }}
+            </option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo da Fase:</label>
+            <select name="type" [(ngModel)]="phase.type" required class="form-select">
+              <option value="BUILD">🔨 BUILD</option>
+              <option value="FIX">🔧 FIX</option>
+              <option value="COMPLETE">✅ COMPLETE</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Modo:</label>
+            <select name="mode" [(ngModel)]="phase.mode" required class="form-select">
+              <option value="BASIC">🟢 BÁSICO</option>
+              <option value="INTERMEDIATE">🟡 INTERMEDIÁRIO</option>
+              <option value="ADVANCED">🔴 AVANÇADO</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tempo Máximo (segundos):</label>
+            <input type="number" name="maxTime" [(ngModel)]="phase.maxTime" required class="form-input" min="60" />
+          </div>
+          <div class="form-group">
+            <label>Status:</label>
+            <select name="status" [(ngModel)]="phase.status" required class="form-select">
+              <option value="LOCKED">🔒 BLOQUEADA</option>
+              <option value="AVAILABLE">🔓 DISPONÍVEL</option>
+              <option value="COMPLETED">✅ COMPLETA</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Diagrama Inicial (JSON):</label>
+          <textarea name="diagramInitial" [(ngModel)]="phase.diagramInitial" class="form-textarea" 
+                    placeholder="Cole aqui o JSON do diagrama inicial..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary" [disabled]="!phase.title || !phase.description || !phase.characterId">
+          {{ editPhaseId ? '✏️ Atualizar Fase' : '💾 Salvar Fase' }}
+        </button>
+      </form>
+      
+      <div class="phases-list">
+        <div *ngFor="let p of phases; let i = index" class="phase-card expanded">
+          <div class="phase-header">
+            <div class="phase-type" [class]="'type-' + p.type.toLowerCase()">{{ p.type }}</div>
+            <div class="phase-mode" [class]="'mode-' + (p.mode || 'basic').toLowerCase()">
+              {{ p.mode || 'BASIC' }}
+            </div>
+            <div class="phase-status" [class]="'status-' + (p.status || 'available').toLowerCase()">
+              {{ p.status || 'AVAILABLE' }}
+            </div>
+          </div>
+          <div class="phase-info">
+            <h4>{{ p.title }}</h4>
+            <p>{{ p.description }}</p>
+            <div class="phase-details">
+              <div class="detail-item" *ngIf="p.maxTime">
+                <strong>⏱️ Tempo máximo:</strong> {{ formatTime(p.maxTime) }}
+              </div>
+              <div class="detail-item" *ngIf="p.character">
+                <strong>🎭 Personagem:</strong> {{ p.character.name }}
+              </div>
+              <div class="detail-item" *ngIf="p.gameMap">
+                <strong>🗺️ Mapa:</strong> {{ p.gameMap.title }}
+              </div>
+              <div class="detail-item" *ngIf="p.diagramInitial">
+                <strong>📊 Tem diagrama inicial:</strong> 
+                <span class="badge success">Sim</span>
+              </div>
+              <div class="detail-item" *ngIf="p.correctDiagrams && p.correctDiagrams.length > 0">
+                <strong>✅ Diagramas corretos:</strong> {{ p.correctDiagrams.length }}
+              </div>
+              <div class="detail-item" *ngIf="p.characterDialogues && p.characterDialogues.length > 0">
+                <strong>💬 Diálogos:</strong> {{ p.characterDialogues.length }}
+              </div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="btn-edit" (click)="editPhase(i)">✏️</button>
+            <button class="btn-delete" (click)="deletePhase(i)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>🛒 Cadastro de Item</h2>
+    </div>
+    <div class="card-content">
+      <form (ngSubmit)="onSubmitItem()" #itemForm="ngForm" class="form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Título do Item:</label>
+            <input type="text" name="title" [(ngModel)]="item.title" required class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>Preço (R$):</label>
+            <input type="number" name="price" [(ngModel)]="item.price" required class="form-input" min="0" step="0.01" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descrição:</label>
+          <textarea name="description" [(ngModel)]="item.description" required class="form-textarea"></textarea>
+        </div>
+        <div class="file-input-container">
+          <label class="file-label">
+            <input type="file" accept="image/*" (change)="onItemImageChange($event)" required />
+            <span class="file-button">📷 Escolher Imagem</span>
+          </label>
+          <div *ngIf="itemPreview" class="image-preview">
+            <img [src]="itemPreview" alt="Preview" />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" [disabled]="!itemImageFile || !item.title || !item.description">
+          {{ editItemId ? '✏️ Atualizar Item' : '💾 Salvar Item' }}
+        </button>
+      </form>
+      
+      <div class="items-grid">
+        <div *ngFor="let it of items; let i = index" class="item-card">
+          <div class="item-image">
+            <img [src]="`${filesPath}/items/${it.filePath}`" [alt]="it.title" />
+          </div>
+          <div class="item-info">
+            <h4>{{ it.title }}</h4>
+            <p>{{ it.description }}</p>
+            <div class="price">R$ {{ it.price | number:'1.2-2' }}</div>
+          </div>
+          <div class="item-actions">
+            <button class="btn-edit" (click)="editItem(i)">✏️</button>
+            <button class="btn-delete" (click)="deleteItem(i)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>💡 Cadastro de Dicas</h2>
+    </div>
+    <div class="card-content">
+      <form (ngSubmit)="onSubmitTip()" #tipForm="ngForm" class="form">
+        <div class="form-group">
+          <label>Dica:</label>
+          <textarea name="tip" [(ngModel)]="tip.tip" required class="form-textarea" 
+                    placeholder="Digite aqui a dica para os jogadores..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary" [disabled]="!tip.tip">
+          {{ editTipId ? '✏️ Atualizar Dica' : '💾 Salvar Dica' }}
+        </button>
+      </form>
+      
+      <div class="tips-list">
+        <div *ngFor="let t of tips; let i = index" class="tip-card">
+          <div class="tip-icon">💡</div>
+          <div class="tip-content">
+            <p>{{ t.tip }}</p>
+            <small class="tip-id">ID: {{ t.id }}</small>
+          </div>
+          <div class="item-actions">
+            <button class="btn-edit" (click)="editTip(i)">✏️</button>
+            <button class="btn-delete" (click)="deleteTip(i)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

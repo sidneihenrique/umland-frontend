@@ -20,7 +20,7 @@
         <div class="form-section">
             <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
                 <div class="form-group">
-                    <input type="text" [(ngModel)]="username" name="username" placeholder="Username ou Email" required>
+                    <input type="email" [(ngModel)]="email" name="email" placeholder="E-mail" required>
                 </div>
                 <div class="form-group">
                     <input type="password" [(ngModel)]="password" name="password" placeholder="Senha" required>
@@ -30,7 +30,9 @@
                 }
                 <div class="form-actions">
                     <button type="button" class="forgot-password">Esqueci minha senha</button>
-                    <button type="submit" class="login-button">Entrar</button>
+                    <button type="submit" class="login-button" [disabled]="isLoading">
+                        {{ isLoading ? 'Entrando...' : 'Entrar' }}
+                    </button>
                 </div>
             </form>
         </div>

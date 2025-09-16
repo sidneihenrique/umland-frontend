@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { GamePhaseComponent } from './game-phase/game-phase.component';
 import { AuthGuard } from './auth/auth-guard';
+import { AdminPanelComponent } from './admin-panel/admin-panel.component';
 import { GameMapComponent } from './game-map/game-map.component';
 import { RegisterComponent } from './register/register.component';
 
@@ -20,5 +21,9 @@ export const routes: Routes = [
       path: 'game/:id', 
       component: GamePhaseComponent,
       canActivate: [AuthGuard] // <--- proteje a rota
+    },
+    {
+      path: 'admin',
+      component: AdminPanelComponent
     }
 ];

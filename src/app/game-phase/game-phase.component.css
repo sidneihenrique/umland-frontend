@@ -239,6 +239,9 @@ diagram-editor {
   position: absolute;
   right: 0;
   bottom: 0;
+  z-index: 10;
+
+  cursor: pointer;
 }
 
 /* Personagem */
@@ -267,7 +270,7 @@ diagram-editor {
   border-radius: 20px;
   padding: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 2;
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -326,7 +329,6 @@ diagram-editor {
     align-items: center !important;
     justify-content: center !important;
     font-weight: bold !important;
-    z-index: 1000 !important;
 }
 
 header .watch-time {
@@ -338,4 +340,37 @@ header .watch-time {
 
 header .watch-time.active {
     opacity: 1;
+}
+
+.btn-icon {
+    position: relative;
+}
+
+.btn-icon .count {
+    position: absolute;
+    bottom: -8px;
+    left: -8px;
+    background-color: var(--red);
+    color: var(--white);
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.btn-icon .count .lucide-icon {
+    width: 12px;
+    height: 12px;
+    color: var(--white);
+    stroke-width: 2px;
+}
+
+.btn-icon .count span {
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--white);
 }

@@ -2,13 +2,16 @@ import { Component, OnInit, EventEmitter, Input, Output, ViewChild, ViewContaine
 import { LucideIconsModule } from '../lucide-icons.module';
 import { StorageService } from '../../services/storage.service';
 import { StoreComponent } from "../store/store.component";
-import { DataService, User, UserResponse } from '../../services/data.service';
+import { BackpackComponent } from "../backpack/backpack.component";
+import { DataService, UserResponse } from '../../services/data.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { UserService } from '../../services/user.service';
+import { User } from '../../services/user.service';
 
 @Component({
   selector: 'app-header',
-  imports: [LucideIconsModule, StoreComponent, CommonModule],
+  imports: [LucideIconsModule, StoreComponent, BackpackComponent, CommonModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
@@ -25,6 +28,9 @@ export class HeaderComponent implements OnInit, OnDestroy{
   // Referência para o componente Store (loja de itens)
   @ViewChild(StoreComponent) store!: StoreComponent;
 
+  // Referência para o componente Backpack (mochila)
+  @ViewChild(BackpackComponent) backpack!: BackpackComponent;
+
   currentTime: string = '00:00:00';
   watchTime: string = '';
   private timerInterval: any;
@@ -37,11 +43,12 @@ export class HeaderComponent implements OnInit, OnDestroy{
 
   constructor(
     private dataService: DataService,
+    private userService: UserService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadUserData(localStorage.getItem('userId'));
+    this.loadUserData(Number(localStorage.getItem('userId')));
     if (this.parentType === 'game-phase') {
       this.startTimer();
     }
@@ -69,16 +76,24 @@ export class HeaderComponent implements OnInit, OnDestroy{
       this.store.toggle();
     }
   }
+
+  toggleBackpack() {
+    if (this.backpack) {
+      this.backpack.toggle();
+    }
+  }
   
   onStoreStateChanged(isOpen: boolean) {
     this.storeToggleEvent.emit(isOpen);
   }
 
-  private loadUserData(userId: string | null) {
+  private loadUserData(userId: number | null) {
     if(userId) {
-      this.dataService.getUserById(userId).subscribe({
-        next: (response: UserResponse) => {
-          this.userData = response.user;
+      this.userService.getUserById(userId).subscribe({
+        next: (user: User) => {
+          this.userData = user;
+          console.log('user', this.userData);
+
         },
         error: (error) => {
           console.error('Erro ao carregar dados do usuário:', error);
@@ -91,6 +106,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
       this.router.navigate(['/login']);
     }
 
+    console.log('user', this.userData);
   }
 
   private startTimer() {

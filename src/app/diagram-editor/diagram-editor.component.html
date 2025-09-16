@@ -32,6 +32,13 @@
 
     <div class="wrapper-board">
 
+        <div class="inconsistency_indicator" *ngIf="inconsistencies.length > 0">
+            <lucide-icon name="triangle-alert" class="lucide-icon"></lucide-icon>
+            <div class="inconsistencies">
+                <p *ngFor="let inconsistency of inconsistencies">{{inconsistency}}</p>
+            </div>
+        </div>
+
         <div class="clues-content" *ngIf="tipsVisible">
             <!-- Título -->
             <span class="clues-title">
@@ -40,7 +47,7 @@
             </span>
 
             <!-- Swiper Container -->
-            <app-carousel [items]="phase?.tips || []"></app-carousel>
+            <app-carousel [items]="tips || []"></app-carousel>
             
         </div>
         

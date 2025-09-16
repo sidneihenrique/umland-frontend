@@ -9,7 +9,7 @@
         <button class="btn-icon" (click)="toggleStore()">
             <lucide-icon class="lucide-icon" name="store"></lucide-icon>
         </button>
-        <button class="btn-icon" (click)="true">
+        <button class="btn-icon" (click)="toggleBackpack()">
             <lucide-icon class="lucide-icon" name="backpack"></lucide-icon>
         </button>
     </div>
@@ -20,12 +20,12 @@
     <div class="right">
         <div class="money">
             <lucide-icon name="circle-dollar-sign" class="lucide-icon" [size]="32"></lucide-icon>
-            <span class="amount">{{ userData?.money }}</span>
+            <span class="amount">{{ userData?.coins }}</span>
         </div>
         <div class="reputation">
             <lucide-icon name="sparkles" class="lucide-icon" [size]="32"></lucide-icon>
             <span class="amount">{{ userData?.reputation }}</span>
-            @if (userData?.progressing) {
+            @if (userData) {
             <lucide-icon name="move-up-right" class="lucide-icon" [size]="16" color="#00D819"></lucide-icon>
             } @else {
             <lucide-icon name="move-down-right" class="lucide-icon" [size]="16" color="#FF0000"></lucide-icon>
@@ -43,3 +43,4 @@
 </header>
 
 <app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
+<app-backpack #backpack></app-backpack>

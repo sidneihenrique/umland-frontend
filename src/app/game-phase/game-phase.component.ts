@@ -5,7 +5,8 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { StorageService } from '../../services/storage.service';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
-import { DataService, UserResponse, User } from '../../services/data.service';
+import { DataService, UserResponse } from '../../services/data.service';
+import { User } from '../../services/user.service';
 import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
 import { CommonModule } from '@angular/common';
@@ -15,7 +16,9 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 import { DialogFinishedGamephaseComponent } from "./dialog-finished-gamephase/dialog-finished-gamephase.component";
 import { CarouselComponent } from '../utils/carousel/carousel.component';
 import { HeaderComponent } from '../header/header.component';
-import { PhaseService, Phase } from '../../services/phase.service';
+import { PhaseService, Phase, PHASE_TYPES, PhaseType } from '../../services/phase.service';
+import { AdviseModalComponent } from '../utils/advise-modal/advise-modal.component';
+import { TipService } from '../../services/tip.service';
 
 @Component({
   selector: 'game-phase',
@@ -30,7 +33,8 @@ import { PhaseService, Phase } from '../../services/phase.service';
     ConfirmDialogComponent,
     DialogFinishedGamephaseComponent,
     CarouselComponent,
-    HeaderComponent],
+    HeaderComponent,
+    AdviseModalComponent],
   templateUrl: './game-phase.component.html',
   styleUrl: './game-phase.component.css'
 })
@@ -49,9 +53,15 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   private storeSubscription?: Subscription;
   private inventorySubscription?: Subscription;
   private startTime: number = 0;
+  private visibleAdviseTypePhase: boolean = true;
 
   @Input() phaseId!: number;
   phase?: Phase;
+
+  // ✅ Disponibilize o mapa para o template
+  phaseTypes = PHASE_TYPES;
+
+  tips: string[] = [];
   
   @ViewChild(StoreComponent) store!: StoreComponent;
   private userDataSubscription?: Subscription;
@@ -78,22 +88,14 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   // Save disabled
   saveDisabled: boolean = false;
 
-  // Mensagens do balão de fala
-  // dialogCharacter: string[] = [
-  //   "Hoje temos um novo desafio pra você. O departamento acadêmico solicitou a modelagem de um sistema para gerenciamento de uma biblioteca universitária. A ideia é facilitar a vida dos alunos e dos bibliotecários, automatizando as atividades do dia a dia.",
-  //   "O sistema deverá permitir que os alunos possam realizar empréstimos de livros, devolver e renovar empréstimos, além de consultar a disponibilidade dos livros no acervo. Já o bibliotecário precisa ter acesso a funções administrativas, como cadastrar novos livros no sistema, remover livros do catálogo e gerar relatórios de empréstimos.",
-  //   "Ah, e fique atento! Existe uma dependência entre algumas funcionalidades. Por exemplo, para realizar um empréstimo, o sistema deve primeiro verificar se há exemplar disponível, o que é representado pelo relacionamento de inclusão (<<include>>) com Consultar disponibilidade.",
-  //   "Seu objetivo nessa fase é garantir que o diagrama de casos de uso esteja corretamente construído, com todos os casos de uso, atores e os relacionamentos necessários, como associações, dependências e inclusões, representando fielmente o funcionamento desse sistema de biblioteca.",
-  //   "Atenção: Caso o seu diagrama fique inconsistente — como esquecer de associar um ator ou não representar corretamente uma dependência — isso poderá impactar diretamente na compreensão dos desenvolvedores que vão usar esse modelo depois.",
-  //   "🛠️ Capriche, use as dicas rápidas se precisar, e mãos à obra!"
-  // ];
-
   activeSlideIndex = 0;
   private swiper?: Swiper;
 
   isSpeaking = false;
   activeSpeechIndex = 0;
   characterState = 'hidden';
+
+  checkDiagramLeft: number = 0; // Número de verificações restantes
 
   swiperCharacter?: Swiper;
   constructor(
@@ -102,7 +104,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     private dataService: DataService,
     private storageService: StorageService,
     private phaseService: PhaseService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private tipService: TipService
   ) {
   }
   ngOnInit() {
@@ -126,6 +129,9 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
         // Carrega os dados iniciais
         this.loadUserData(userId);
+        this.tipService.getAllTips().subscribe((tips) => {
+          this.tips = tips.map(tip => tip.tip); // assuming Tip has a 'text' property
+        });
       } else {
         this.router.navigate(['/login']);
       }
@@ -138,14 +144,20 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
       if (phase) {
         this.phase = phase;
         console.log('Fase carregada:', this.phase);
-        // Use os dados da fase para popular o componente
-        // Se quiser usar diagramJSON:
-        // this.diagramJSON = phase.diagramJSON;
+        
       } else {
         // Fase não encontrada, redirecione ou mostre erro
         this.router.navigate(['/map']);
       }
     });
+
+    if (this.phase?.mode === 'BASIC') {
+      this.checkDiagramLeft = Infinity;
+    } else if (this.phase?.mode === 'INTERMEDIATE') {
+      this.checkDiagramLeft = 3;
+    } else if (this.phase?.mode === 'ADVANCED') {
+      this.checkDiagramLeft = 0;
+    }
 
   }
 
@@ -244,7 +256,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   }
 
   get userMoney(): number {
-    return this.userData?.money || 0;
+    return this.userData?.coins || 0;
   }
 
   get userReputation(): number {
@@ -372,5 +384,35 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   onBackToMenu() {
     this.finishedGamePhaseVisible = false;
     this.saveDisabled = true;
+
+    this.router.navigate(['/map']);
+  }
+
+  checkDiagram() {
+    if(this.checkDiagramLeft > 0) {
+      this.diagramEditorComponentRef.checkUMLInconsistencies();
+      this.checkDiagramLeft--;
+    }
+  }
+
+  // ✅ Método helper type-safe
+  getCurrentPhaseType(): PhaseType | null {
+    if (!this.phase?.type) return null;
+    
+    const typeKey = this.phase.type as keyof typeof PHASE_TYPES;
+    return this.phaseTypes[typeKey] || null;
+  }
+
+  // ✅ Métodos específicos para título e descrição
+  getPhaseTitle(): string {
+    return this.getCurrentPhaseType()?.title || 'Título não disponível';
+  }
+
+  getPhaseDescription(): string {
+    return this.getCurrentPhaseType()?.description || 'Descrição não disponível';
+  }
+
+  getPhaseVideoSrc(): string {
+    return `/assets/videos/${this.phase?.type || 'default'}.mp4`;
   }
 }
