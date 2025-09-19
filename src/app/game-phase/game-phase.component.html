@@ -32,8 +32,8 @@
             </div>
             }
 
-            <!-- Personagem -->
-            <img [src]="phase?.character?.filePath"
+            <!-- ✅ Personagem usando URL correta -->
+            <img [src]="getCharacterImageUrl()"
                 [alt]="phase?.character?.name"
                 class="character"
                 [class.speaking]="isSpeaking"
@@ -46,11 +46,15 @@
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
     </div>
+    
     <diagram-editor #diagramEditor [phase]="phase" [tips]="tips"></diagram-editor>
+
     <app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
+
     <app-confirm-dialog [visible]="confirmDialogVisible" [title]="confirmDialogTitle" [message]="confirmDialogMessage"
         (confirm)="onConfirm()" (cancel)="onCancel()">
     </app-confirm-dialog>
+
     <app-dialog-finished-gamephase 
         *ngIf="finishedGamePhaseVisible" 
         [accuracy]="accuracy"

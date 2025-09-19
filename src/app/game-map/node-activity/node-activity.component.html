@@ -5,7 +5,7 @@
     <img src="assets/uml-svg/arrow.svg" class="arrow" alt="arrow" *ngIf="!last"> 
     <!-- ✅ Usando método que constrói URL correta -->
     <img [src]="getCharacterImageUrl()" [alt]="phase.phase.character.name" class="character">
-    <div class="user-icon" *ngIf="phase.status === 'AVAILABLE'">
+    <div class="user-icon" *ngIf="phase.isCurrent">
         <img src="assets/images/sid.jpeg" alt="">
     </div>
     <div class="hover" *ngIf="phase.status === 'AVAILABLE'">

@@ -20,6 +20,8 @@ import { PhaseService, Phase, PHASE_TYPES, PhaseType } from '../../services/phas
 import { AdviseModalComponent } from '../utils/advise-modal/advise-modal.component';
 import { TipService } from '../../services/tip.service';
 
+import { FileUrlBuilder } from '../../config/files.config';
+
 @Component({
   selector: 'game-phase',
   standalone: true,
@@ -109,6 +111,15 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     private userService: UserService
   ) {
   }
+
+  // ✅ Método para construir URL correta da imagem do character
+  getCharacterImageUrl(): string {
+    if (this.phase?.character?.filePath) {
+      return FileUrlBuilder.character(this.phase.character.filePath);
+    }
+    return 'assets/characters/character_teacher_01.png'; // Fallback
+  }
+
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       const userId = localStorage.getItem('userId');
@@ -144,22 +155,22 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     this.phaseService.getPhaseById(this.phaseId).subscribe(phase => {
       if (phase) {
         this.phase = phase;
-        this.phase.character.filePath = 'assets/images/characters/character_teacher_01.png';
         console.log('Fase carregada:', this.phase);
+
+        if (this.phase?.mode === "BASIC") {
+          this.checkDiagramLeft = Infinity;
+        } else if (this.phase?.mode === "INTERMEDIATE") {
+          this.checkDiagramLeft = 3;
+        } else if (this.phase?.mode === "ADVANCED") {
+          this.checkDiagramLeft = 0;
+        }
         
       } else {
         // Fase não encontrada, redirecione ou mostre erro
-        // this.router.navigate(['/map']);
+        this.router.navigate(['/map']);
       }
     });
 
-    if (this.phase?.mode === 'BASIC') {
-      this.checkDiagramLeft = Infinity;
-    } else if (this.phase?.mode === 'INTERMEDIATE') {
-      this.checkDiagramLeft = 3;
-    } else if (this.phase?.mode === 'ADVANCED') {
-      this.checkDiagramLeft = 0;
-    }
 
   }
 
@@ -173,8 +184,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     });
 
     this.toggleSpeech();
-
   }
+
   ngOnDestroy() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
@@ -195,7 +206,6 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
       this.diagramEditorComponentRef.toggleTips();
     }
   }
-
 
   toggleStore() {
     this.store.toggle();
@@ -366,7 +376,9 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
   private padNumber(num: number): string {
     return num.toString().padStart(2, '0');
-  }  private loadWatchCount() {
+  }
+
+  private loadWatchCount() {
     const inventoryJson = localStorage.getItem('inventory');
     if (inventoryJson) {
       const inventory = JSON.parse(inventoryJson);
@@ -387,12 +399,13 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   onBackToMenu() {
     this.finishedGamePhaseVisible = false;
     this.saveDisabled = true;
-
     this.router.navigate(['/map']);
   }
 
   checkDiagram() {
+    console.log('Tentando verificar diagrama, tentativas restantes:', this.checkDiagramLeft);
     if(this.checkDiagramLeft > 0) {
+      console.log('Verificando diagrama, tentativas restantes:', this.checkDiagramLeft);
       this.diagramEditorComponentRef.checkUMLInconsistencies();
       this.checkDiagramLeft--;
     }

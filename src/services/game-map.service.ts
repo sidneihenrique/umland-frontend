@@ -14,6 +14,7 @@ export interface PhaseUser {
   reputation: number;
   coins: number;
   accuracy?: number;
+  isCurrent?: boolean;
 }
 
 // Interface para GameMap
