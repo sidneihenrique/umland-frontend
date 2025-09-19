@@ -47,7 +47,7 @@ export interface CreatePhaseRequest {
     id: number;
     title: string;
     users: User[];
-    phases: string[];
+    phases: Phase[];
   };
   diagramInitial: string;
   correctDiagrams: string[];
@@ -70,7 +70,7 @@ export interface UpdatePhaseRequest {
     id: number;
     title: string;
     users: User[];
-    phases: string[];
+    phases: Phase[];
   };
   diagramInitial?: string;
   correctDiagrams?: string[];

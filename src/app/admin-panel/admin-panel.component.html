@@ -82,7 +82,7 @@
     </div>
   </div>
 
-  <!-- ✅ Seção Phase - TOTALMENTE CORRIGIDA -->
+  <!-- ✅ Seção Phase - COM CAMPO DE FALAS -->
   <div class="card">
     <div class="card-header">
       <h2>🎮 Cadastro de Fase</h2>
@@ -133,7 +133,6 @@
           </select>
         </div>
 
-        <!-- ✅ NOVO: Campo GameMap -->
         <div class="form-group">
           <label>GameMap:</label>
           <select name="gameMapId" [(ngModel)]="phase.gameMap.id" required class="form-select">
@@ -142,6 +141,90 @@
               🗺️ {{ gameMap.title }}
             </option>
           </select>
+        </div>
+
+        <!-- ✅ NEW: Seção de Falas do Personagem -->
+        <div class="form-group">
+          <label>💬 Falas do Personagem:</label>
+          
+          <!-- Campo para adicionar/editar fala -->
+          <div class="dialogue-input-container">
+            <div class="dialogue-input-row">
+              <textarea 
+                [(ngModel)]="newDialogue" 
+                name="newDialogue"
+                placeholder="Digite uma fala do personagem..."
+                class="form-textarea dialogue-input"
+                rows="2"></textarea>
+              <div class="dialogue-buttons">
+                <button type="button" 
+                        (click)="addDialogue()" 
+                        class="btn-dialogue add"
+                        [disabled]="!newDialogue.trim()">
+                  {{ editingDialogueIndex >= 0 ? '✏️' : '➕' }}
+                </button>
+                <button type="button" 
+                        (click)="cancelEditDialogue()" 
+                        class="btn-dialogue cancel"
+                        *ngIf="editingDialogueIndex >= 0">
+                  ❌
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lista de falas adicionadas -->
+          <div class="dialogues-list" *ngIf="phase.characterDialogues.length > 0">
+            <div *ngFor="let dialogue of phase.characterDialogues; let i = index" class="dialogue-item" [class.editing]="editingDialogueIndex === i">
+              
+              <div class="dialogue-number">{{ i + 1 }}</div>
+              
+              <div class="dialogue-content">
+                <p>{{ dialogue }}</p>
+              </div>
+              
+              <div class="dialogue-actions">
+                <!-- Mover para cima -->
+                <button type="button" 
+                        (click)="moveDialogueUp(i)" 
+                        class="btn-dialogue move"
+                        [disabled]="i === 0"
+                        title="Mover para cima">
+                  ⬆️
+                </button>
+                
+                <!-- Mover para baixo -->
+                <button type="button" 
+                        (click)="moveDialogueDown(i)" 
+                        class="btn-dialogue move"
+                        [disabled]="i === phase.characterDialogues.length - 1"
+                        title="Mover para baixo">
+                  ⬇️
+                </button>
+                
+                <!-- Editar -->
+                <button type="button" 
+                        (click)="editDialogue(i)" 
+                        class="btn-dialogue edit"
+                        title="Editar fala">
+                  ✏️
+                </button>
+                
+                <!-- Remover -->
+                <button type="button" 
+                        (click)="removeDialogue(i)" 
+                        class="btn-dialogue remove"
+                        title="Remover fala">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contador de falas -->
+          <div class="dialogues-counter" *ngIf="phase.characterDialogues.length > 0">
+            <small>{{ phase.characterDialogues.length }} fala(s) adicionada(s)</small>
+          </div>
         </div>
 
         <div class="form-group">

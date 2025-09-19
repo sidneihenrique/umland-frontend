@@ -1,17 +1,18 @@
-    <div class="login-background">
-        <div class="animated-line l1"></div>
-        <div class="animated-line l2"></div>
-        <div class="animated-line l3"></div>
-        <div class="animated-line l4"></div>
-        <div class="animated-letters">
-            <div class="letter-line letter-u"></div>
-            <div class="letter-line letter-u-bottom"></div>
-            <div class="letter-line letter-m"></div>
-            <div class="letter-line letter-m-mid"></div>
-            <div class="letter-line letter-l"></div>
-            <div class="letter-line letter-l-bottom"></div>
-        </div>
+<div class="login-background">
+    <div class="animated-line l1"></div>
+    <div class="animated-line l2"></div>
+    <div class="animated-line l3"></div>
+    <div class="animated-line l4"></div>
+    <div class="animated-letters">
+        <div class="letter-line letter-u"></div>
+        <div class="letter-line letter-u-bottom"></div>
+        <div class="letter-line letter-m"></div>
+        <div class="letter-line letter-m-mid"></div>
+        <div class="letter-line letter-l"></div>
+        <div class="letter-line letter-l-bottom"></div>
     </div>
+</div>
+
 <div class="register-container">
     <div class="register-card">
         <h2>Cadastro</h2>
@@ -48,22 +49,38 @@
                 </div>
             </div>
         </form>
+
+        <!-- ✅ Seção de seleção de avatar atualizada -->
         <div class="character-selection">
-            <label>Escolha seu Personagem:</label>
-            <div class="character-list">
-                <div *ngFor="let character of characters" class="character-item"
-                     [class.selected]="selectedCharacter === character"
-                     (click)="selectCharacter(character)">
-                    <img [src]="character" alt="Character Image">
+            <label>Escolha seu Avatar:</label>
+            
+            <!-- ✅ Loading state -->
+            <div *ngIf="isLoadingAvatars" class="loading-avatars">
+                <p>🔄 Carregando avatares...</p>
+            </div>
+
+            <!-- ✅ Lista de avatares -->
+            <div *ngIf="!isLoadingAvatars" class="character-list">
+                <div *ngFor="let avatar of avatars" 
+                     class="character-item"
+                     [class.selected]="selectedAvatar?.id === avatar.id || selectedAvatar?.filePath === avatar.filePath"
+                     (click)="selectAvatar(avatar)">
+                    <img [src]="getAvatarImageUrl(avatar)" 
+                         [alt]="'Avatar ' + (avatar.id || avatar.filePath)"
+                         (error)="onImageError($event)">
                 </div>
             </div>
-            <div *ngIf="registerForm.get('personagem')?.invalid && registerForm.get('personagem')?.touched" class="error-message">
-                Por favor, selecione um personagem.
+            
+            <!-- ✅ Validação de avatar -->
+            <div *ngIf="registerForm.get('avatar')?.invalid && registerForm.get('avatar')?.touched" class="error-message">
+                Por favor, selecione um avatar.
             </div>
         </div>
         
-        <!-- ✅ Conecte o botão ao form usando a propriedade 'form' -->
-        <button type="submit" form="registerForm" [disabled]="!registerForm.valid || isLoading">
+        <!-- ✅ Botão com validação atualizada -->
+        <button type="submit" 
+                form="registerForm" 
+                [disabled]="!registerForm.valid || isLoading || !selectedAvatar">
             {{ isLoading ? 'Cadastrando...' : 'Cadastrar' }}
         </button>
         

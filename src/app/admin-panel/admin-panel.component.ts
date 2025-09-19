@@ -61,6 +61,10 @@ export class AdminPanelComponent implements OnInit {
     tip: '' 
   };
 
+  // ✅ NEW: Campos para gerenciar falas do personagem
+  newDialogue: string = '';
+  editingDialogueIndex: number = -1;
+
   // ✅ Data arrays
   avatars: Avatar[] = [];
   characters: Character[] = [];
@@ -375,9 +379,13 @@ export class AdminPanelComponent implements OnInit {
       },
       diagramInitial: '',
       correctDiagrams: [],
-      characterDialogues: []
+      characterDialogues: [] // ✅ Limpar falas
     };
     this.editPhaseId = undefined;
+    
+    // ✅ Limpar campos de falas
+    this.newDialogue = '';
+    this.editingDialogueIndex = -1;
   }
   
   editPhase(index: number) {
@@ -526,6 +534,72 @@ export class AdminPanelComponent implements OnInit {
         next: () => this.loadTips(),
         error: (error) => console.error('Erro ao deletar tip:', error)
       });
+    }
+  }
+
+  // ✅ NEW: Métodos para gerenciar falas do personagem
+  addDialogue() {
+    if (this.newDialogue.trim()) {
+      if (this.editingDialogueIndex >= 0) {
+        // Editando fala existente
+        this.phase.characterDialogues[this.editingDialogueIndex] = this.newDialogue.trim();
+        this.editingDialogueIndex = -1;
+      } else {
+        // Adicionando nova fala
+        this.phase.characterDialogues.push(this.newDialogue.trim());
+      }
+      this.newDialogue = '';
+    }
+  }
+
+  editDialogue(index: number) {
+    this.newDialogue = this.phase.characterDialogues[index];
+    this.editingDialogueIndex = index;
+  }
+
+  removeDialogue(index: number) {
+    this.phase.characterDialogues.splice(index, 1);
+    // Se estava editando esta fala, cancelar edição
+    if (this.editingDialogueIndex === index) {
+      this.cancelEditDialogue();
+    } else if (this.editingDialogueIndex > index) {
+      // Ajustar índice se estava editando uma fala posterior
+      this.editingDialogueIndex--;
+    }
+  }
+
+  cancelEditDialogue() {
+    this.newDialogue = '';
+    this.editingDialogueIndex = -1;
+  }
+
+  moveDialogueUp(index: number) {
+    if (index > 0) {
+      const temp = this.phase.characterDialogues[index];
+      this.phase.characterDialogues[index] = this.phase.characterDialogues[index - 1];
+      this.phase.characterDialogues[index - 1] = temp;
+      
+      // Ajustar índice de edição se necessário
+      if (this.editingDialogueIndex === index) {
+        this.editingDialogueIndex = index - 1;
+      } else if (this.editingDialogueIndex === index - 1) {
+        this.editingDialogueIndex = index;
+      }
+    }
+  }
+
+  moveDialogueDown(index: number) {
+    if (index < this.phase.characterDialogues.length - 1) {
+      const temp = this.phase.characterDialogues[index];
+      this.phase.characterDialogues[index] = this.phase.characterDialogues[index + 1];
+      this.phase.characterDialogues[index + 1] = temp;
+      
+      // Ajustar índice de edição se necessário
+      if (this.editingDialogueIndex === index) {
+        this.editingDialogueIndex = index + 1;
+      } else if (this.editingDialogueIndex === index + 1) {
+        this.editingDialogueIndex = index;
+      }
     }
   }
 

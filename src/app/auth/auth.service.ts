@@ -19,6 +19,7 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
+  idAvatar: string; // ID do avatar selecionado
 }
 
 @Injectable({ providedIn: 'root' })
@@ -71,7 +72,7 @@ export class AuthService {
       .set('name', userData.name)
       .set('email', userData.email)
       .set('password', userData.password)
-      .set('idAvatar', '1'); // ID padrão do avatar, ou permitir escolha
+      .set('idAvatar', userData.idAvatar); 
 
     // ✅ Enviar null no body e params como query parameters
     return this.http.post(`${this.api}/users`, null, { params });

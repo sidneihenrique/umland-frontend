@@ -1,4 +1,4 @@
- .admin-panel {
+.admin-panel {
   max-width: 1200px;
   margin: 2rem auto;
   padding: 2rem;
@@ -423,6 +423,188 @@
   color: #0c5460;
 }
 
+/* ✅ Estilos para seção de falas do personagem */
+.dialogue-input-container {
+  margin-top: 0.5rem;
+}
+
+.dialogue-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.dialogue-input {
+  flex: 1;
+  resize: vertical;
+}
+
+.dialogue-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.btn-dialogue {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-dialogue.add {
+  background: #28a745;
+  color: white;
+}
+
+.btn-dialogue.add:hover:not(:disabled) {
+  background: #218838;
+}
+
+.btn-dialogue.cancel {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-dialogue.cancel:hover {
+  background: #5a6268;
+}
+
+.btn-dialogue:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dialogues-list {
+  margin-top: 1rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dialogue-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+  border-bottom: 1px solid #e1e5e9;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.dialogue-item:last-child {
+  border-bottom: none;
+}
+
+.dialogue-item:hover {
+  background: #f8f9fa;
+}
+
+.dialogue-item.editing {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.dialogue-number {
+  width: 30px;
+  height: 30px;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+.dialogue-content {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.dialogue-content p {
+  margin: 0;
+  line-height: 1.4;
+  color: #333;
+  word-wrap: break-word;
+}
+
+.dialogue-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.btn-dialogue.move {
+  background: #17a2b8;
+  color: white;
+  width: 32px;
+  height: 32px;
+  font-size: 0.8rem;
+}
+
+.btn-dialogue.move:hover:not(:disabled) {
+  background: #138496;
+}
+
+.btn-dialogue.edit {
+  background: #ffc107;
+  color: #333;
+  width: 32px;
+  height: 32px;
+}
+
+.btn-dialogue.edit:hover {
+  background: #e0a800;
+}
+
+.btn-dialogue.remove {
+  background: #dc3545;
+  color: white;
+  width: 32px;
+  height: 32px;
+}
+
+.btn-dialogue.remove:hover {
+  background: #c82333;
+}
+
+.dialogues-counter {
+  margin-top: 0.5rem;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 1rem;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+/* Responsivo */
 @media (max-width: 768px) {
   .admin-panel {
     padding: 1rem;
@@ -463,5 +645,23 @@
   .tip-icon {
     margin-right: 0;
     margin-bottom: 0.5rem;
+  }
+
+  .dialogue-input-row {
+    flex-direction: column;
+  }
+  
+  .dialogue-buttons {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  
+  .dialogue-item {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .dialogue-actions {
+    justify-content: center;
   }
 }

@@ -34,8 +34,10 @@
         <div class="user-info">
             <div class="user-icon-wrapper">
                 <img 
-                    [src]="userData?.name === 'Tiago' ? 'assets/images/sid.jpeg' : userData?.name === 'Maria' ? 'assets/images/sida.jpg' : 'https://github.com/sidneihenrique.png'"
-                    [alt]="userData?.name">
+                    [src]="getUserAvatarUrl()"
+                    [alt]="userData?.name || 'Avatar do usuário'"
+                    (error)="onAvatarImageError($event)"
+                    class="user-avatar">
             </div>
             <span class="user-name">{{ userData?.name }}</span>
         </div>
