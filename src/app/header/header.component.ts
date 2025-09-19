@@ -9,6 +9,8 @@ import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user.service';
 import { User } from '../../services/user.service';
 
+import { FileUrlBuilder } from '../../config/files.config';
+
 @Component({
   selector: 'app-header',
   imports: [LucideIconsModule, StoreComponent, BackpackComponent, CommonModule],
@@ -156,6 +158,26 @@ export class HeaderComponent implements OnInit, OnDestroy{
 
   private padNumber(num: number): string {
     return num.toString().padStart(2, '0');
+  }
+
+    // ✅ Método para construir URL do avatar do usuário
+  getUserAvatarUrl(): string {
+    if (!this.userData?.avatar?.filePath) {
+      // Fallback para avatar padrão
+      return 'assets/images/characters/default-avatar.png';
+    }
+    
+    // Usar FileUrlBuilder para construir URL correta
+    return FileUrlBuilder.avatar(this.userData.avatar.filePath);
+  }
+
+  // ✅ Método para tratar erro de carregamento da imagem
+  onAvatarImageError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    if (imgElement && imgElement.src !== 'assets/images/characters/default-avatar.png') {
+      console.warn('Failed to load user avatar:', imgElement.src);
+      imgElement.src = 'assets/images/characters/default-avatar.png';
+    }
   }
 
 }

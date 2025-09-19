@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
+import { Avatar } from './phase.service';
 
 export interface User {
   id: number;
@@ -10,9 +11,7 @@ export interface User {
   password?: string; // Opcional para não exposição
   reputation: number;
   coins: number;
-  avatar: {
-    filePath: string;
-  };
+  avatar?: Avatar;
   inventory?: {
     id: number;
     items: any[];
@@ -152,5 +151,10 @@ export class UserService {
         }
       });
     });
+  }
+
+   // ✅ NOVO: Método para buscar todos os avatares
+  getAllAvatars(): Observable<Avatar[]> {
+    return this.http.get<Avatar[]>(`${this.apiUrl}/avatars`);
   }
 }
