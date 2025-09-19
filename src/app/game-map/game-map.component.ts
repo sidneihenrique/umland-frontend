@@ -13,21 +13,9 @@ import { NodeActivityComponent } from './node-activity/node-activity.component';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../header/header.component';
 
-export interface Character {
-  name: string;
-  filePath: string;
-}
-
-export interface Game {
-  idPhase: number;
-  title: string;
-  character: Character;
-  unlocked: boolean;
-  isCurrent: boolean;
-  finished: boolean;
-  accuracy: number;
-  reputation: number;
-}
+// ✅ Imports atualizados - usando PhaseUser diretamente
+import { GameMapService, PhaseUser } from '../../services/game-map.service';
+import { Phase, Character } from '../../services/phase.service';
 
 @Component({
   selector: 'game-map',
@@ -43,7 +31,7 @@ export interface Game {
   templateUrl: './game-map.component.html',
   styleUrl: './game-map.component.css'
 })
-export class GameMapComponent implements OnInit{
+export class GameMapComponent implements OnInit {
 
   // User data
   userData?: User;
@@ -57,52 +45,28 @@ export class GameMapComponent implements OnInit{
   confirmDialogMessage: string = '';
   private confirmCallback: (() => void) | null = null;
 
-  games: Game[] = [
-    {
-      idPhase: 1,
-      title: 'Explorar o Campus',
-      character: { name: 'Professor', filePath: 'assets/characters/character_teacher_01.png' },
-      unlocked: true,
-      isCurrent: false,
-      finished: true,
-      accuracy: 88,
-      reputation: 140
-    },
-    {
-      idPhase: 2,
-      title: 'Explorar o Campus',
-      character: { name: 'Professor', filePath: 'assets/characters/character_teacher_01.png' },
-      unlocked: true,
-      isCurrent: true,
-      finished: false,
-      accuracy: 0,
-      reputation: 0
-    },
-    {
-      idPhase: 3,
-      title: 'Explorar o Campus',
-      character: { name: 'Professor', filePath: 'assets/characters/character_teacher_01.png' },
-      unlocked: false,
-      isCurrent: false,
-      finished: false,
-      accuracy: 0,
-      reputation: 0
-    }
-  ];
+  // ✅ Usando PhaseUser diretamente
+  phaseUsers: PhaseUser[] = [];
+  gameMapId: number = 1; // ID do GameMap - você pode fazer isso dinâmico
+  userId: number = 0; // ID do usuário logado
+  isLoadingPhases: boolean = false;
+  phasesError: string = '';
 
   constructor(
-      private authService: AuthService,
-      @Inject(PLATFORM_ID) private platformId: Object,
-      private dataService: DataService,
-      private userService: UserService,
-      private router: Router) {
-
-  }
+    private authService: AuthService,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private dataService: DataService,
+    private userService: UserService,
+    private router: Router,
+    private gameMapService: GameMapService
+  ) {}
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      const userId = localStorage.getItem('userId');
-      if (userId) {
+      const userIdStr = localStorage.getItem('userId');
+      if (userIdStr) {
+        this.userId = Number(userIdStr);
+        
         // Inscreve-se nas atualizações de dados do usuário
         this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
           if (userData) {
@@ -111,13 +75,180 @@ export class GameMapComponent implements OnInit{
         });
 
         // Carrega os dados iniciais
-        this.loadUserData(Number(userId));
+        this.loadUserData(this.userId);
+        
+        // ✅ Carrega as fases do GameMap para este usuário
+        this.loadPhaseUsers();
       } else {
         this.router.navigate(['/login']);
       }
     }
   }
 
+  // ✅ Método renomeado e simplificado
+  public loadPhaseUsers() {
+    this.isLoadingPhases = true;
+    this.phasesError = '';
+    
+    console.log(`🗺️ Carregando fases do GameMap ID: ${this.gameMapId} para usuário ID: ${this.userId}`);
+    
+    this.gameMapService.getAllPhasesByUser(this.gameMapId, this.userId).subscribe({
+      next: (phaseUsers: PhaseUser[]) => {
+        console.log('✅ PhaseUsers carregadas:', phaseUsers);
+        this.phaseUsers = phaseUsers;
+        this.isLoadingPhases = false;
+      },
+      error: (error) => {
+        console.error('❌ Erro ao carregar fases:', error);
+        this.isLoadingPhases = false;
+        
+        if (error.status === 404) {
+          this.phasesError = 'GameMap não encontrado ou usuário sem fases';
+        } else {
+          this.phasesError = 'Erro ao carregar fases do mapa';
+        }
+        
+        // ✅ Fallback para dados estáticos se a API falhar
+        this.loadStaticPhaseUsers();
+      }
+    });
+  }
+
+  // ✅ Fallback usando PhaseUser diretamente
+  private loadStaticPhaseUsers() {
+    console.log('📝 Carregando dados estáticos como fallback');
+    this.phaseUsers = [
+      {
+        id: 1,
+        phase: {
+          id: 1,
+          title: 'Explorar o Campus',
+          description: 'Primeira fase do jogo',
+          type: 'BUILD',
+          mode: 'BASIC',
+          maxTime: 3600,
+          character: { 
+            id: 1, 
+            name: 'Professor', 
+            filePath: 'character_teacher_01.png' 
+          },
+          gameMap: {
+            id: 1,
+            title: 'Campus Virtual',
+            users: [],
+            phases: []
+          },
+          diagramInitial: '',
+          correctDiagrams: [],
+          characterDialogues: []
+        },
+        user: this.userData!,
+        status: 'COMPLETED',
+        reputation: 140,
+        coins: 50
+      },
+      {
+        id: 2,
+        phase: {
+          id: 2,
+          title: 'Construir Diagrama',
+          description: 'Segunda fase do jogo',
+          type: 'BUILD',
+          mode: 'BASIC',
+          maxTime: 3600,
+          character: { 
+            id: 1, 
+            name: 'Professor', 
+            filePath: 'character_teacher_01.png' 
+          },
+          gameMap: {
+            id: 1,
+            title: 'Campus Virtual',
+            users: [],
+            phases: []
+          },
+          diagramInitial: '',
+          correctDiagrams: [],
+          characterDialogues: []
+        },
+        user: this.userData!,
+        status: 'AVAILABLE',
+        reputation: 0,
+        coins: 0
+      },
+      {
+        id: 3,
+        phase: {
+          id: 3,
+          title: 'Corrigir Erros',
+          description: 'Terceira fase do jogo',
+          type: 'FIX',
+          mode: 'INTERMEDIATE',
+          maxTime: 2400,
+          character: { 
+            id: 1, 
+            name: 'Professor', 
+            filePath: 'character_teacher_01.png' 
+          },
+          gameMap: {
+            id: 1,
+            title: 'Campus Virtual',
+            users: [],
+            phases: []
+          },
+          diagramInitial: '',
+          correctDiagrams: [],
+          characterDialogues: []
+        },
+        user: this.userData!,
+        status: 'LOCKED',
+        reputation: 0,
+        coins: 0
+      }
+    ];
+  }
+
+  // ✅ Métodos auxiliares usando PhaseUser
+  isPhaseUnlocked(phaseUser: PhaseUser): boolean {
+    return phaseUser.status === 'AVAILABLE' || phaseUser.status === 'COMPLETED';
+  }
+
+  isPhaseFinished(phaseUser: PhaseUser): boolean {
+    return phaseUser.status === 'COMPLETED';
+  }
+
+  isCurrentPhase(phaseUser: PhaseUser): boolean {
+    return phaseUser.status === 'AVAILABLE';
+  }
+
+  calculateAccuracy(phaseUser: PhaseUser): number {
+    if (phaseUser.status === 'COMPLETED') {
+      // Exemplo: accuracy baseado na reputation (pode ajustar a fórmula)
+      return Math.min(Math.round((phaseUser.reputation / 200) * 100), 100);
+    }
+    return 0;
+  }
+
+  getCharacterImagePath(phaseUser: PhaseUser): string {
+    return `http://localhost:9090/uploads/characters/${phaseUser.phase.character.filePath}`;
+  }
+
+  // ✅ Método para atualizar GameMap ID dinamicamente
+  setGameMapId(newGameMapId: number) {
+    this.gameMapId = newGameMapId;
+    this.loadPhaseUsers();
+  }
+
+  // ✅ Método para atualizar User ID dinamicamente (se necessário)
+  setUserId(newUserId: number) {
+    this.userId = newUserId;
+    this.loadPhaseUsers();
+  }
+
+  // ✅ Método para recarregar dados quando necessário
+  refreshPhaseUsers() {
+    this.loadPhaseUsers();
+  }
 
   toggleStore() {
     this.store.toggle();
@@ -142,7 +273,6 @@ export class GameMapComponent implements OnInit{
     this.confirmDialogVisible = false;
   }
 
-
   private loadUserData(userId: number) {
     this.userService.getUserById(userId).subscribe({
       next: (user: User) => {
@@ -166,8 +296,13 @@ export class GameMapComponent implements OnInit{
     this.confirmDialogVisible = true;
   }
 
-  openGamePhase(){
+  openGamePhase() {
     this.router.navigate(["/game"]);
   }
 
+  ngOnDestroy() {
+    if (this.userDataSubscription) {
+      this.userDataSubscription.unsubscribe();
+    }
+  }
 }
