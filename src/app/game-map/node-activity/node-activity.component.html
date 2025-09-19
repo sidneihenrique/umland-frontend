@@ -1,19 +1,20 @@
-<div class="node-wrapper" [ngClass]="{ 'locked': !game.unlocked, 'active': game.isCurrent}">
+<div class="node-wrapper" [ngClass]="{ 'locked': phase.status === 'LOCKED', 'active': phase.status === 'AVAILABLE'}">
     <div class="node" (click)="openGamePhase()">
-        <span>{{ game.title }}</span>
+        <span>{{ phase.phase.title }}</span>
     </div>
     <img src="assets/uml-svg/arrow.svg" class="arrow" alt="arrow" *ngIf="!last"> 
-    <img [src]="game.character.filePath" [alt]="game.character.name" class="character">
-    <div class="user-icon" *ngIf="game.isCurrent">
+    <!-- ✅ Usando método que constrói URL correta -->
+    <img [src]="getCharacterImageUrl()" [alt]="phase.phase.character.name" class="character">
+    <div class="user-icon" *ngIf="phase.status === 'AVAILABLE'">
         <img src="assets/images/sid.jpeg" alt="">
     </div>
-    <div class="hover" *ngIf="game.unlocked && !game.isCurrent">
+    <div class="hover" *ngIf="phase.status === 'AVAILABLE'">
         <div class="accuracy">
             <lucide-icon name="square-check" class="lucide-icon" [size]="24" color="#00D819"></lucide-icon>
-            <span>{{ game.accuracy }}%</span>
+            <span>{{ phase.accuracy }}%</span>
         </div>
         <div class="reputation">
-            <span>+{{ game.reputation }}</span>
+            <span>+{{ phase.reputation }}</span>
             <lucide-icon name="sparkles" class="lucide-icon" [size]="20" color="#000000"></lucide-icon>
         </div>
     </div>

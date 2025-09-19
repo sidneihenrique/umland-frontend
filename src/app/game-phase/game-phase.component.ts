@@ -6,7 +6,7 @@ import { StorageService } from '../../services/storage.service';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
 import { DataService, UserResponse } from '../../services/data.service';
-import { User } from '../../services/user.service';
+import { User, UserService } from '../../services/user.service';
 import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
 import { CommonModule } from '@angular/common';
@@ -105,7 +105,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     private storageService: StorageService,
     private phaseService: PhaseService,
     private route: ActivatedRoute,
-    private tipService: TipService
+    private tipService: TipService,
+    private userService: UserService
   ) {
   }
   ngOnInit() {
@@ -133,7 +134,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
           this.tips = tips.map(tip => tip.tip); // assuming Tip has a 'text' property
         });
       } else {
-        this.router.navigate(['/login']);
+        // this.router.navigate(['/login']);
       }
     }
 
@@ -143,11 +144,12 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     this.phaseService.getPhaseById(this.phaseId).subscribe(phase => {
       if (phase) {
         this.phase = phase;
+        this.phase.character.filePath = 'assets/images/characters/character_teacher_01.png';
         console.log('Fase carregada:', this.phase);
         
       } else {
         // Fase não encontrada, redirecione ou mostre erro
-        this.router.navigate(['/map']);
+        // this.router.navigate(['/map']);
       }
     });
 
@@ -171,6 +173,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     });
 
     this.toggleSpeech();
+
   }
   ngOnDestroy() {
     if (this.timerInterval) {
@@ -214,14 +217,14 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   }
 
   private loadUserData(userId: string) {
-    this.dataService.getUserById(userId).subscribe({
-      next: (response: UserResponse) => {
-        this.userData = response.user;
+    this.userService.getUserById(Number(userId)).subscribe({
+      next: (response: User) => {
+        this.userData = response;
       },
       error: (error) => {
         console.error('Erro ao carregar dados do usuário:', error);
         this.userLoadError = 'Erro ao carregar dados do usuário';
-        this.router.navigate(['/login']);
+        // this.router.navigate(['/login']);
       }
     });
   }

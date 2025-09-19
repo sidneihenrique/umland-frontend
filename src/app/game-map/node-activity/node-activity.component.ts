@@ -2,7 +2,9 @@ import { Component, Input, Output } from '@angular/core';
 import { LucideIconsModule } from '../../lucide-icons.module';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Game } from '../game-map.component';
+import { PhaseUser } from '../../../services/game-map.service';
+// ✅ Import da configuração global
+import { FileUrlBuilder } from '../../../config/files.config';
 
 export interface Character {
   name: string;
@@ -22,16 +24,21 @@ export interface Character {
 })
 export class NodeActivityComponent {
 
-  @Input() game!: Game;
+  @Input() phase!: PhaseUser;
   @Input() last!: boolean;
 
   constructor(private router: Router) {
 
   }
 
+  // ✅ Método para construir URL correta da imagem do character
+  getCharacterImageUrl(): string {
+    return FileUrlBuilder.character(this.phase.phase.character.filePath);
+  }
+
   openGamePhase() {
-    if (this.game.unlocked) {
-      this.router.navigate(['/game', this.game.idPhase]);
+    if (this.phase.status === 'AVAILABLE' || this.phase.status === 'COMPLETED') {
+      this.router.navigate(['/game', this.phase.phase.id]);
     }
   }
 }

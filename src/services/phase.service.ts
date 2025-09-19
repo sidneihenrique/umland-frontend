@@ -1,52 +1,34 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { User } from './user.service';
+import { GameMap } from './game-map.service';
 import { API_CONFIG } from '../config/api.config';
 
-// Interface para Avatar (reutilizando a estrutura)
-export interface Avatar {
-  filePath: string;
-}
-
-// Interface para User (simplificada para Phase)
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  password: string;
-  reputation: number;
-  coins: number;
-  avatar: Avatar;
+export interface Avatar { 
+  id?: number; 
+  filePath?: string; 
 }
 
 // Interface para Character
 export interface Character {
-  id: number;
+  id?: number;
   name: string;
   filePath: string;
 }
 
-// Interface para GameMap
-export interface GameMap {
-  id: number;
-  title: string;
-  users: User[];
-  phases: string[];
-}
-
-// ✅ Interface Phase ajustada para corresponder à API
 export interface Phase {
-  id: number;
+  id?: number;
   title: string;
+  description?: string;
   type: 'BUILD' | 'FIX' | 'COMPLETE';
   mode: 'BASIC' | 'INTERMEDIATE' | 'ADVANCED';
   maxTime: number;
-  status: 'LOCKED' | 'AVAILABLE' | 'COMPLETED';
-  character: Character;
+  character: Character
   gameMap: GameMap;
-  diagramInitial: string;           // JSON como string
-  correctDiagrams: string[];        // Array de JSONs como strings
-  characterDialogues: string[];     // Array de diálogos como strings
+  diagramInitial: string;
+  correctDiagrams: string[];
+  characterDialogues: string[];
 }
 
 // Interface para criar Phase (sem ID)

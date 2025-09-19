@@ -6,11 +6,11 @@
     </app-header>
 
     <div id="activity-diagram">
-        <div *ngFor="let game of games; let last = last">
-        <node-activity 
-            [game]="game"
-            [last]="last">
-        </node-activity>
+        <div *ngFor="let phaseUser of phaseUsers; let last = last">
+            <node-activity 
+                [phase]="phaseUser"
+                [last]="last">
+            </node-activity>
         </div>
     </div>
 
