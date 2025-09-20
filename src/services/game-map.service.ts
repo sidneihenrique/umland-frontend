@@ -15,6 +15,7 @@ export interface PhaseUser {
   coins: number;
   accuracy?: number;
   current?: boolean;
+  userDiagram?: string;
 }
 
 // Interface para GameMap

@@ -54,7 +54,6 @@ export class RegisterComponent implements OnInit {
 
     this.userService.getAllAvatars().subscribe({
       next: (avatars: Avatar[]) => {
-        console.log('✅ Avatares carregados:', avatars);
         this.avatars = avatars;
         
         // Selecionar primeiro avatar por padrão se existir

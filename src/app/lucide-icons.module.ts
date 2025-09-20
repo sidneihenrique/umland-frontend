@@ -20,7 +20,11 @@ import {
   RotateCcw,
   LogOut,
   SquareCheck,
-  Infinity
+  Infinity,
+  Loader2,
+  CloudUpload,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-angular';
 
 @NgModule({
@@ -43,7 +47,11 @@ import {
     RotateCcw,
     LogOut,
     SquareCheck,
-    Infinity
+    Infinity,
+    Loader2,
+    CloudUpload,
+    ToggleLeft,
+    ToggleRight
   })],
   exports: [LucideAngularModule],
 })

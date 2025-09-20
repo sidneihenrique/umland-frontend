@@ -8,6 +8,10 @@ import { LucideIconsModule } from '../lucide-icons.module';
 import { DataService } from '../../services/data.service';
 import { CarouselComponent } from '../utils/carousel/carousel.component';
 import { Phase } from '../../services/phase.service';
+import { PhaseUser } from '../../services/game-map.service';
+
+import '../utils/uml-shapes'; // ← Isso garante que o registro aconteça
+
 
 @Component({
   standalone: true,
@@ -19,7 +23,7 @@ import { Phase } from '../../services/phase.service';
 export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() accuracyCalculated = new EventEmitter<number>();
 
-  @Input() phase!: Phase | undefined;
+  @Input() phaseUser!: PhaseUser | undefined;
   @Input() tips!: string[] | undefined;
 
   tipsVisible: boolean = false;
@@ -62,22 +66,46 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     @Inject(PLATFORM_ID) private platformId: Object,
     private dataService: DataService
   ) {}
+
   ngOnInit(): void {
-    this.initialJSON = this.phase?.diagramInitial;
-    this.correctsJSON = this.phase?.correctDiagrams || [];
+    // ❌ REMOVER toda a lógica de verificação de phaseUser daqui
+    // O GamePhaseComponent vai chamar initializeJointJS() quando tiver os dados
+    console.log('🔧 DiagramEditor ngOnInit - aguardando dados...');
   }
   
   ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.initializeJointJS();
-    }
+    // ❌ REMOVER a inicialização automática
+    // if (isPlatformBrowser(this.platformId)) {
+    //   this.initializeJointJS();
+    // }
+    
+    // ✅ Apenas log para debug
+    console.log('🔧 DiagramEditor ngAfterViewInit - pronto para receber dados');
   }
 
-  private initializeJointJS(): void {
-    this.graph = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
+  public initializeJointJS(): void {
+    // ✅ Verificar se os dados estão disponíveis antes de inicializar
+    if (!this.phaseUser) {
+      console.warn('⚠️ PhaseUser não disponível ainda, aguardando...');
+      return;
+    }
 
-    // Popula o graph com o modelo salvo em JSON caso a fase tenha um diagrama inicial
-    if(this.initialJSON) {
+    console.log('🔧 Inicializando JointJS com phaseUser:', this.phaseUser);
+
+        // ✅ Criar namespace completo incluindo as classes customizadas
+    const cellNamespace = {
+      ...joint.shapes,
+      custom: (joint.shapes as any).custom || {}
+    };
+
+    // ✅ Configurar dados do diagrama
+    this.setupDiagramData();
+
+    this.graph = new joint.dia.Graph({}, { cellNamespace: cellNamespace });
+
+    // ✅ Popula o graph APENAS se tiver dados
+    if (this.initialJSON) {
+      console.log('📊 Carregando diagrama inicial:', this.initialJSON);
       this.graph.fromJSON(this.initialJSON);
     }
 
@@ -685,4 +713,60 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
+  // ✅ Adicionar método público para obter JSON do diagrama atual
+  public getCurrentDiagramJSON(): any {
+    if (!this.graph) {
+      return null;
+    }
+    
+    try {
+      return this.graph.toJSON();
+    } catch (error) {
+      console.error('Erro ao obter JSON do diagrama:', error);
+      return null;
+    }
+  }
+
+  // ✅ Método privado para configurar dados do diagrama
+  private setupDiagramData(): void {
+    if (!this.phaseUser) {
+      console.warn('⚠️ PhaseUser não disponível para setupDiagramData');
+      return;
+    }
+
+    console.log('🔍 Configurando dados do diagrama:', {
+      phaseUser: this.phaseUser,
+      hasUserDiagram: !!this.phaseUser.userDiagram,
+      userDiagramContent: this.phaseUser.userDiagram
+    });
+
+    if (this.phaseUser.userDiagram) {
+      console.log('✅ Carregando diagrama do usuário:', this.phaseUser.userDiagram);
+      try {
+        this.initialJSON = JSON.parse(this.phaseUser.userDiagram);
+      } catch (error) {
+        console.error('❌ Erro ao fazer parse do userDiagram:', error);
+        this.initialJSON = this.phaseUser.phase?.diagramInitial;
+      }
+    } else {
+      console.warn('⚠️ Nenhum diagrama do usuário encontrado, usando diagrama inicial da fase.');
+      this.initialJSON = this.phaseUser.phase?.diagramInitial;
+    }
+    
+    this.correctsJSON = this.phaseUser.phase?.correctDiagrams || [];
+  }
+
+  // ✅ Método público para verificar se está inicializado
+  public isInitialized(): boolean {
+    return !!(this.graph && this.paper);
+  }
+
+  // ✅ Método público para reinicializar se necessário
+  public reinitialize(): void {
+    if (this.isInitialized()) {
+      console.log('🔄 Reinicializando DiagramEditor...');
+      this.ngOnDestroy(); // Limpa recursos antigos
+    }
+    this.initializeJointJS(); // Inicializa novamente
+  }
 }
