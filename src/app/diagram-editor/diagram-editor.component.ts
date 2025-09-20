@@ -92,16 +92,19 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
     console.log('🔧 Inicializando JointJS com phaseUser:', this.phaseUser);
 
-        // ✅ Criar namespace completo incluindo as classes customizadas
-    const cellNamespace = {
-      ...joint.shapes,
-      custom: (joint.shapes as any).custom || {}
-    };
-
     // ✅ Configurar dados do diagrama
     this.setupDiagramData();
 
+    // ✅ CORRIGIR: Criar namespace que inclui as classes customizadas
+    const cellNamespace = {
+      ...joint.shapes,
+      custom: (joint.shapes as any).custom
+    };
+
     this.graph = new joint.dia.Graph({}, { cellNamespace: cellNamespace });
+
+    // ✅ Debug para verificar se as classes estão disponíveis
+    console.log('cellNamespace', cellNamespace);
 
     // ✅ Popula o graph APENAS se tiver dados
     if (this.initialJSON) {
@@ -122,6 +125,33 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       drawGrid: true,
       defaultLink: new joint.shapes.standard.Link(),
     });
+
+    // ✅ ADICIONE ESTE DEBUG APÓS CRIAR O PAPER:
+    setTimeout(() => {
+      console.log('🔧 Debug SVG - Elementos no diagrama:');
+      this.graph?.getElements().forEach(element => {
+        console.log('Element:', element.get('type'), element.attr(['label', 'text']));
+        
+        // Se for um ator, testar o SVG
+        if (element.get('type') === 'custom.Actor') {
+          const svgPath = element.attr(['actor', 'xlink:href']);
+          console.log('🎭 SVG path do ator:', svgPath);
+          
+          // Testar se o SVG carrega
+          const testImg = new Image();
+          testImg.onload = () => console.log('✅ SVG ator carregado com sucesso');
+          testImg.onerror = () => console.error('❌ SVG ator falhou ao carregar');
+          testImg.src = svgPath || 'assets/uml-svg/actor.svg';
+        }
+      });
+      
+      // Debug dos elementos DOM gerados
+      const svgElements = this.paperContainer.nativeElement.querySelectorAll('image');
+      console.log('🖼️ Elementos <image> encontrados:', svgElements.length);
+      svgElements.forEach((img: Element, i: number) => {
+        console.log(`Image ${i}:`, (img as SVGImageElement).getAttribute('xlink:href'), (img as SVGImageElement).getBoundingClientRect());
+      });
+    }, 1000);
 
 
     container.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
@@ -741,7 +771,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     });
 
     if (this.phaseUser.userDiagram) {
-      console.log('✅ Carregando diagrama do usuário:', this.phaseUser.userDiagram);
+      //console.log('✅ Carregando diagrama do usuário:', this.phaseUser.userDiagram);
       try {
         this.initialJSON = JSON.parse(this.phaseUser.userDiagram);
       } catch (error) {
