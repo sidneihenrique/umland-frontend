@@ -178,6 +178,12 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
         
         // ✅ Iniciar salvamento automático após carregar a fase
         this.startAutoSave();
+
+        // ✅ ADICIONAR: Inicializar speech APÓS ter os dados da fase
+        setTimeout(() => {
+          this.toggleSpeech();
+        }, 100); // Pequeno delay para garantir que o template foi atualizado
+        
       } else {
         // Fase não encontrada, redirecione ou mostre erro
         this.router.navigate(['/map']);
@@ -210,8 +216,6 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
         this.loadWatchCount();
       }
     });
-
-    this.toggleSpeech();
   }
 
   ngOnDestroy() {
