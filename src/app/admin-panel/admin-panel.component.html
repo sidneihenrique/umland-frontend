@@ -1,8 +1,21 @@
 <div class="admin-panel">
   <h1>🛠️ Painel do Administrador</h1>
 
-  <!-- ✅ Seção Avatar - CORRIGIDA -->
-  <div class="card">
+    <!-- ✅ ADICIONAR: Navegação de tabs -->
+  <div class="tabs-navigation">
+    <button 
+      *ngFor="let tab of tabs" 
+      class="tab-button"
+      [class.active]="activeTab === tab.id"
+      (click)="setActiveTab(tab.id)">
+      {{ tab.icon }} {{ tab.name }}
+    </button>
+  </div>
+
+  <!-- ✅ MODIFICAR: Envolver cada seção com *ngIf -->
+  
+  <!-- Avatar Tab -->
+  <div *ngIf="activeTab === 'avatars'" class="card">
     <div class="card-header">
       <h2>👤 Cadastro de Avatar</h2>
     </div>
@@ -38,8 +51,8 @@
     </div>
   </div>
 
-  <!-- ✅ Seção Character - CORRIGIDA -->
-  <div class="card">
+  <!-- Character Tab -->
+  <div *ngIf="activeTab === 'characters'" class="card">
     <div class="card-header">
       <h2>🎭 Cadastro de Personagem</h2>
     </div>
@@ -82,8 +95,8 @@
     </div>
   </div>
 
-  <!-- ✅ Seção Phase - COM CAMPO DE FALAS -->
-  <div class="card">
+  <!-- Phase Tab -->
+  <div *ngIf="activeTab === 'phases'" class="card">
     <div class="card-header">
       <h2>🎮 Cadastro de Fase</h2>
     </div>
@@ -311,8 +324,8 @@
     </div>
   </div>
 
-  <!-- ✅ Seção Item - CORRIGIDA -->
-  <div class="card">
+  <!-- Item Tab -->
+  <div *ngIf="activeTab === 'items'" class="card">
     <div class="card-header">
       <h2>🛒 Cadastro de Item</h2>
     </div>
@@ -368,8 +381,8 @@
     </div>
   </div>
 
-  <!-- ✅ Seção Tip - CORRIGIDA -->
-  <div class="card">
+  <!-- Tip Tab -->
+  <div *ngIf="activeTab === 'tips'" class="card">
     <div class="card-header">
       <h2>💡 Cadastro de Dicas</h2>
     </div>

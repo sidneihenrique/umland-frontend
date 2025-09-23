@@ -102,11 +102,28 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   selectedGameMapId: number = 0;
   selectedCharacterId: number = 0;
 
+  // ✅ ADICIONAR: Controle de tabs
+  activeTab: string = 'avatars'; // Tab ativa por padrão
+  
+  // Definir as tabs disponíveis
+  tabs = [
+    { id: 'avatars', name: 'Avatars', icon: '👤' },
+    { id: 'characters', name: 'Personagens', icon: '🎭' },
+    { id: 'phases', name: 'Fases', icon: '🎮' },
+    { id: 'items', name: 'Items', icon: '🛒' },
+    { id: 'tips', name: 'Dicas', icon: '💡' }
+  ];
+
   constructor(
     private adminService: AdminPanelService, 
     private authService: AuthService,
     private tipService: TipService
   ) {}
+
+  // ✅ ADICIONAR: Método para trocar de tab
+  setActiveTab(tabId: string): void {
+    this.activeTab = tabId;
+  }
 
   // ✅ Métodos utilitários para URLs de imagem
   getAvatarImageUrl(fileName: string): string {

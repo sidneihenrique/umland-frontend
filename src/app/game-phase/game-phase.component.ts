@@ -203,7 +203,6 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
           });
         } else {
           console.warn('PhaseUser não encontrado para fase e usuário:', this.phaseId, this.userData?.id);
-          console.warn('PhaseUser não encontrada para ID:', this.phaseId);
         }
       });
 
