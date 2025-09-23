@@ -40,7 +40,6 @@ export class NodeActivityComponent implements OnInit{
   }
 
   ngOnInit() {
-    console.log('NodeActivityComponent initialized with phase:', this.phase);
     this.loadUserData();
   }
 
@@ -63,7 +62,6 @@ export class NodeActivityComponent implements OnInit{
         this.userService.getUserById(Number(userId)).subscribe({
           next: (user: User) => {
             this.userData = user;
-            console.log('✅ Dados do usuário carregados no node-activity:', this.userData);
           },
           error: (error) => {
             console.error('❌ Erro ao carregar dados do usuário no node-activity:', error);

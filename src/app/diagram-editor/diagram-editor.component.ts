@@ -68,32 +68,23 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   ) {}
 
   ngOnInit(): void {
-    // ❌ REMOVER toda a lógica de verificação de phaseUser daqui
     // O GamePhaseComponent vai chamar initializeJointJS() quando tiver os dados
-    console.log('🔧 DiagramEditor ngOnInit - aguardando dados...');
   }
   
   ngAfterViewInit(): void {
-    // ❌ REMOVER a inicialização automática
-    // if (isPlatformBrowser(this.platformId)) {
-    //   this.initializeJointJS();
-    // }
     
-    // ✅ Apenas log para debug
-    console.log('🔧 DiagramEditor ngAfterViewInit - pronto para receber dados');
   }
 
-  public initializeJointJS(): void {
+  public initializeJointJS(phase?: Phase): void {
     // ✅ Verificar se os dados estão disponíveis antes de inicializar
-    if (!this.phaseUser) {
-      console.warn('⚠️ PhaseUser não disponível ainda, aguardando...');
-      return;
-    }
-
-    console.log('🔧 Inicializando JointJS com phaseUser:', this.phaseUser);
-
-    // ✅ Configurar dados do diagrama
-    this.setupDiagramData();
+    if(phase) {
+      console.log('🔧 Inicializando JointJS com Phase fornecido:', phase);
+      // Configurando dados do diagrama com PhaseUser fornecido
+      this.setupDiagramData(phase);
+    } else if (!phase) {
+      console.log('Iniciando JointJS sem Phase, usando dados padrão ou vazios');
+      this.setupDiagramData();
+    } 
 
     // ✅ CORRIGIR: Criar namespace que inclui as classes customizadas
     const cellNamespace = {
@@ -102,9 +93,6 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     };
 
     this.graph = new joint.dia.Graph({}, { cellNamespace: cellNamespace });
-
-    // ✅ Debug para verificar se as classes estão disponíveis
-    console.log('cellNamespace', cellNamespace);
 
     // ✅ Popula o graph APENAS se tiver dados
     if (this.initialJSON) {
@@ -126,33 +114,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       defaultLink: new joint.shapes.standard.Link(),
     });
 
-    // ✅ ADICIONE ESTE DEBUG APÓS CRIAR O PAPER:
-    setTimeout(() => {
-      console.log('🔧 Debug SVG - Elementos no diagrama:');
-      this.graph?.getElements().forEach(element => {
-        console.log('Element:', element.get('type'), element.attr(['label', 'text']));
-        
-        // Se for um ator, testar o SVG
-        if (element.get('type') === 'custom.Actor') {
-          const svgPath = element.attr(['actor', 'xlink:href']);
-          console.log('🎭 SVG path do ator:', svgPath);
-          
-          // Testar se o SVG carrega
-          const testImg = new Image();
-          testImg.onload = () => console.log('✅ SVG ator carregado com sucesso');
-          testImg.onerror = () => console.error('❌ SVG ator falhou ao carregar');
-          testImg.src = svgPath || 'assets/uml-svg/actor.svg';
-        }
-      });
-      
-      // Debug dos elementos DOM gerados
-      const svgElements = this.paperContainer.nativeElement.querySelectorAll('image');
-      console.log('🖼️ Elementos <image> encontrados:', svgElements.length);
-      svgElements.forEach((img: Element, i: number) => {
-        console.log(`Image ${i}:`, (img as SVGImageElement).getAttribute('xlink:href'), (img as SVGImageElement).getBoundingClientRect());
-      });
-    }, 1000);
-
+    this.paper.initialize();
 
     container.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
 
@@ -743,6 +705,13 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
+  public clearDiagram() {
+    if (this.graph) {
+      this.graph.clear();
+      this.reinitialize();
+    }
+  }
+
   // ✅ Adicionar método público para obter JSON do diagrama atual
   public getCurrentDiagramJSON(): any {
     if (!this.graph) {
@@ -758,32 +727,38 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   // ✅ Método privado para configurar dados do diagrama
-  private setupDiagramData(): void {
-    if (!this.phaseUser) {
-      console.warn('⚠️ PhaseUser não disponível para setupDiagramData');
-      return;
-    }
+  private setupDiagramData(phase?: Phase): void {
+    
+    if(!phase) {
+      console.log('🔍 Configurando dados do diagrama no AdminPanel (sem PhaseUser)');
+      // No admin panel, não há dados iniciais
+      this.initialJSON = null;
+      this.correctsJSON = [];
+    } else if (phase.diagramInitial) {
+      console.log('🔍 Configurando dados do diagrama com Phase:', phase);
+      this.initialJSON = JSON.parse(phase.diagramInitial);
+    }  else if (this.phaseUser) {
+      console.log('🔍 Configurando dados do diagrama com PhaseUser:', this.phaseUser.phase);
 
-    console.log('🔍 Configurando dados do diagrama:', {
-      phaseUser: this.phaseUser,
-      hasUserDiagram: !!this.phaseUser.userDiagram,
-      userDiagramContent: this.phaseUser.userDiagram
-    });
-
-    if (this.phaseUser.userDiagram) {
-      //console.log('✅ Carregando diagrama do usuário:', this.phaseUser.userDiagram);
-      try {
-        this.initialJSON = JSON.parse(this.phaseUser.userDiagram);
-      } catch (error) {
-        console.error('❌ Erro ao fazer parse do userDiagram:', error);
+      if (this.phaseUser?.userDiagram) {
+        try {
+          this.initialJSON = JSON.parse(this.phaseUser.userDiagram);
+        } catch (error) {
+          console.error('❌ Erro ao fazer parse do userDiagram:', error);
+          this.initialJSON = this.phaseUser.phase?.diagramInitial;
+        }
+      } else if (!this.phaseUser?.userDiagram && this.phaseUser?.phase?.diagramInitial) {
+        console.warn('⚠️ Nenhum diagrama do usuário encontrado, usando diagrama inicial da fase.');
         this.initialJSON = this.phaseUser.phase?.diagramInitial;
       }
-    } else {
-      console.warn('⚠️ Nenhum diagrama do usuário encontrado, usando diagrama inicial da fase.');
-      this.initialJSON = this.phaseUser.phase?.diagramInitial;
     }
-    
-    this.correctsJSON = this.phaseUser.phase?.correctDiagrams || [];
+
+
+    if(this.phaseUser) {
+      this.correctsJSON = this.phaseUser.phase?.correctDiagrams || [];
+    } else {
+      this.correctsJSON = [];
+    }
   }
 
   // ✅ Método público para verificar se está inicializado
@@ -792,11 +767,11 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   // ✅ Método público para reinicializar se necessário
-  public reinitialize(): void {
-    if (this.isInitialized()) {
-      console.log('🔄 Reinicializando DiagramEditor...');
-      this.ngOnDestroy(); // Limpa recursos antigos
+  public reinitialize(phase?: Phase): void {
+    if(phase) {
+      this.initializeJointJS(phase); // Inicializa novamente
+    } else {
+      this.initializeJointJS(); // Inicializa novamente
     }
-    this.initializeJointJS(); // Inicializa novamente
   }
 }

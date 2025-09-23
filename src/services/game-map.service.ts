@@ -40,12 +40,8 @@ export class GameMapService {
    * @returns Observable<PhaseUser[]> - Lista de PhaseUser do GameMap para o usuário
    */
   getAllPhasesByUser(gameMapId: number, userId: number): Observable<PhaseUser[]> {
-    console.log(`🗺️ Buscando fases do GameMap ID: ${gameMapId} para usuário ID: ${userId}`);
-    
     const params = new HttpParams().set('userId', userId.toString());
     const url = `${this.apiUrl}/gamemaps/${gameMapId}/phases`;
-    
-    console.log(`🔗 URL: ${url}?userId=${userId}`);
     
     return this.http.get<PhaseUser[]>(url, { params });
   }

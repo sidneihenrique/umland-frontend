@@ -18,8 +18,8 @@ export class PhaseUserService {
    * @param id - ID da PhaseUser
    * @returns Observable<PhaseUser>
    */
-  getById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/phase-users/${id}`);
+  getByPhaseAndUserId(phaseId: number, userId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/phase-users/by-phase-and-user?phaseId=${phaseId}&userId=${userId}`);
   }
 
   /**

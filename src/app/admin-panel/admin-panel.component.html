@@ -125,7 +125,7 @@
 
         <div class="form-group">
           <label>Personagem:</label>
-          <select name="characterId" [(ngModel)]="phase.character.id" required class="form-select">
+          <select name="characterId" [(ngModel)]="selectedCharacterId" required class="form-select">
             <option value="0">Selecione um personagem</option>
             <option *ngFor="let char of characters" [value]="char.id">
               🎭 {{ char.name }}
@@ -135,7 +135,7 @@
 
         <div class="form-group">
           <label>GameMap:</label>
-          <select name="gameMapId" [(ngModel)]="phase.gameMap.id" required class="form-select">
+          <select name="gameMapId" [(ngModel)]="selectedGameMapId" required class="form-select">
             <option value="0">Selecione um GameMap</option>
             <option *ngFor="let gameMap of gameMaps" [value]="gameMap.id">
               🗺️ {{ gameMap.title }}
@@ -228,13 +228,32 @@
         </div>
 
         <div class="form-group">
-          <label>Diagrama Inicial (JSON):</label>
-          <textarea name="diagramInitial" [(ngModel)]="phase.diagramInitial" class="form-textarea" rows="4"
-                    placeholder='{"nodes": [], "edges": []}'></textarea>
+          <label>Diagrama Inicial:</label>
+          
+          <!-- ✅ SUBSTITUIR por: Seção simples do editor -->
+          <div class="diagram-editor-section">
+            <div class="diagram-controls">
+              <button type="button" 
+                      (click)="saveDiagramToPhase()" 
+                      class="btn-diagram save">
+                💾 Salvar Diagrama
+              </button>
+              
+              <button type="button" 
+                      (click)="clearDiagram()" 
+                      class="btn-diagram clear">
+                🗑️ Limpar Diagrama
+              </button>
+            </div>
+            
+            <!-- Editor de diagramas -->
+            <diagram-editor #diagramEditor></diagram-editor>
+          </div>
         </div>
 
+
         <button type="submit" class="btn-primary" 
-                [disabled]="!phase.title || !phase.character.id || phase.character.id === 0 || !phase.gameMap.id || phase.gameMap.id === 0">
+                [disabled]="!phase.title || !selectedCharacterId || !selectedGameMapId">
           {{ editPhaseId ? '✏️ Atualizar Fase' : '💾 Salvar Fase' }}
         </button>
         <button type="button" (click)="resetPhaseForm()" class="btn-secondary">🔄 Limpar</button>

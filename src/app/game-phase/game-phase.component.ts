@@ -166,7 +166,6 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     this.phaseService.getPhaseById(this.phaseId).subscribe(phase => {
       if (phase) {
         this.phase = phase;
-        console.log('Fase carregada:', this.phase);
 
         if (this.phase?.mode === "BASIC") {
           this.checkDiagramLeft = Infinity;
@@ -183,25 +182,27 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           this.toggleSpeech();
         }, 100); // Pequeno delay para garantir que o template foi atualizado
-        
+
       } else {
         // Fase não encontrada, redirecione ou mostre erro
         this.router.navigate(['/map']);
       }
     });
 
-    this.phaseUserService.getById(this.phaseId).subscribe(phaseUser => {
+    const userId = localStorage.getItem('userId');
+
+    this.phaseUserService.getByPhaseAndUserId(this.phaseId, Number(userId)).subscribe(phaseUser => {
         if (phaseUser) {
           this.phaseUser = phaseUser;
-          console.log('✅ PhaseUser carregada:', this.phaseUser);
           
           // ✅ Só inicializar o diagrama DEPOIS de ter os dados
           setTimeout(() => {
             if (this.diagramEditorComponentRef) {
-              this.diagramEditorComponentRef.initializeJointJS();
+              this.diagramEditorComponentRef.initializeJointJS(this.phaseUser?.phase);
             }
           });
         } else {
+          console.warn('PhaseUser não encontrado para fase e usuário:', this.phaseId, this.userData?.id);
           console.warn('PhaseUser não encontrada para ID:', this.phaseId);
         }
       });
@@ -272,13 +273,15 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
       const diagramString = JSON.stringify(diagramJson);
       
       console.log('💾 Iniciando salvamento automático...', {
-        phaseId: this.phaseId,
+        phaseUserId: this.phaseId,
         diagramSize: diagramString.length
       });
 
+      let phaseUserId = this.phaseUser?.id || -1;
+
       // Assumindo que o phaseUserId é o mesmo que phaseId por simplicidade
       // Em um cenário real, você precisaria buscar o PhaseUser correto
-      this.phaseUserService.updateUserDiagram(this.phaseId, diagramString).subscribe({
+      this.phaseUserService.updateUserDiagram(phaseUserId, diagramString).subscribe({
         next: () => {
           this.isSaving = false;
           this.lastSaveTime = new Date();
@@ -524,10 +527,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     if (inventoryJson) {
       const inventory = JSON.parse(inventoryJson);
       this.watchCount = inventory['watch'] || 0;
-      console.log('Watch count loaded from inventory:', this.watchCount);
     } else {
       this.watchCount = 0;
-      console.log('No inventory found, watch count set to 0');
     }
   }
 

@@ -7,7 +7,8 @@
             class="btn-icon filled"
             draggable="true" 
             (dragstart)="onDragStart($event, 'actor')"
-            (click)="addElement('actor')"    
+            (click)="addElement('actor')"
+            type="button"    
         >
             <img src="assets/icons/actor.svg" alt="">
         </button>
@@ -16,16 +17,17 @@
             draggable="true" 
             (dragstart)="onDragStart($event, 'usecase')"
             (click)="addElement('usecase')"    
+            type="button"
         >
             <img src="assets/icons/use_case.svg" alt="">
         </button>
-        <button class="btn-icon filled" (click)="addLink('extend')">
+        <button class="btn-icon filled" (click)="addLink('extend')" type="button">
             <img src="assets/icons/extend.svg" alt="">
         </button>
-        <button class="btn-icon filled" (click)="addLink('include')">
+        <button class="btn-icon filled" (click)="addLink('include')" type="button">
             <img src="assets/icons/include.svg" alt="">
         </button>
-        <button class="btn-icon filled" (click)="addLink('dependency')">
+        <button class="btn-icon filled" (click)="addLink('dependency')" type="button">
             <img src="assets/icons/dependency.svg" alt="">
         </button>
     </div>

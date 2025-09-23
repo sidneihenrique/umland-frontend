@@ -89,12 +89,9 @@ export class GameMapComponent implements OnInit {
   public loadPhaseUsers() {
     this.isLoadingPhases = true;
     this.phasesError = '';
-    
-    console.log(`🗺️ Carregando fases do GameMap ID: ${this.gameMapId} para usuário ID: ${this.userId}`);
-    
+        
     this.gameMapService.getAllPhasesByUser(this.gameMapId, this.userId).subscribe({
       next: (phaseUsers: PhaseUser[]) => {
-        console.log('✅ PhaseUsers carregadas:', phaseUsers);
         this.phaseUsers = phaseUsers;
         this.isLoadingPhases = false;
       },

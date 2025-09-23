@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminPanelService, Item } from '../../services/admin-panel.service';
@@ -10,14 +10,17 @@ import { TipService, Tip, CreateTipRequest } from '../../services/tip.service';
 // ✅ Import da configuração global
 import { FILES_CONFIG, FileUrlBuilder } from '../../config/files.config';
 
+// ✅ Import do componente de editor de diagramas
+import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
+
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DiagramEditorComponent],
   templateUrl: './admin-panel.component.html',
   styleUrls: ['./admin-panel.component.css']
 })
-export class AdminPanelComponent implements OnInit {
+export class AdminPanelComponent implements OnInit, AfterViewInit {
   
   // ✅ Form models corrigidos
   avatar: Avatar = {};
@@ -93,6 +96,12 @@ export class AdminPanelComponent implements OnInit {
   user?: User | null;
   filesPath: string = FILES_CONFIG.BASE_URL;
 
+  @ViewChild('diagramEditor') diagramEditorComponentRef!: DiagramEditorComponent;
+
+  // ✅ ADICIONAR: Propriedades auxiliares para seleção
+  selectedGameMapId: number = 0;
+  selectedCharacterId: number = 0;
+
   constructor(
     private adminService: AdminPanelService, 
     private authService: AuthService,
@@ -115,7 +124,15 @@ export class AdminPanelComponent implements OnInit {
   ngOnInit() {
     this.loadAll();
     this.user = this.authService.getCurrentUser();
-    console.log('Current user:', this.user);
+  }
+
+  ngAfterViewInit() {
+    if(this.diagramEditorComponentRef){
+      this.diagramEditorComponentRef.initializeJointJS();
+      console.log('✅ DiagramEditor inicializado:', this.diagramEditorComponentRef.isInitialized());
+    } else {
+      console.warn('⚠️ DiagramEditor reference não disponível');
+    }
   }
 
   // ✅ Load all data
@@ -144,8 +161,11 @@ export class AdminPanelComponent implements OnInit {
 
   loadPhases() {
     this.adminService.getPhases().subscribe({
-      next: (data) => this.phases = data,
-      error: (error) => console.error('Erro ao carregar phases:', error)
+      next: (data) => {
+        this.phases = data;
+        console.log('Phases carregadas:', this.phases);
+      },
+        error: (error) => console.error('Erro ao carregar phases:', error)
     });
   }
 
@@ -302,23 +322,19 @@ export class AdminPanelComponent implements OnInit {
 
   // ✅ CRUD Phase - CORRIGIDO
   onSubmitPhase() {
-    if (!this.phase.character.id || this.phase.character.id === 0) {
+    if (!this.selectedCharacterId || this.selectedCharacterId === 0) {
       alert('Por favor, selecione um personagem para a fase.');
       return;
     }
 
-    if (!this.phase.gameMap.id || this.phase.gameMap.id === 0) {
+    if (!this.selectedGameMapId || this.selectedGameMapId === 0) {
       alert('Por favor, selecione um GameMap para a fase.');
       return;
     }
     
-    // ✅ Converter para number antes da busca
-    const characterId = Number(this.phase.character.id);
-    const gameMapId = Number(this.phase.gameMap.id);
-    
     // Buscar dados completos do character e gameMap selecionados
-    const selectedCharacter = this.characters.find(c => c.id === characterId);
-    const selectedGameMap = this.gameMaps.find(gm => gm.id === gameMapId);
+    const selectedCharacter = this.characters.find(c => c.id === Number(this.selectedCharacterId));
+    const selectedGameMap = this.gameMaps.find(gm => gm.id === Number(this.selectedGameMapId));
 
     if (!selectedCharacter) {
       alert('Personagem selecionado não encontrado.');
@@ -379,16 +395,28 @@ export class AdminPanelComponent implements OnInit {
       },
       diagramInitial: '',
       correctDiagrams: [],
-      characterDialogues: [] // ✅ Limpar falas
+      characterDialogues: []
     };
+    
+    // ✅ ADICIONAR: Resetar IDs auxiliares
+    this.selectedCharacterId = 0;
+    this.selectedGameMapId = 0;
+    
     this.editPhaseId = undefined;
     
-    // ✅ Limpar campos de falas
+    // Limpar campos de falas
     this.newDialogue = '';
     this.editingDialogueIndex = -1;
+
+    // Reinicializar diagrama vazio
+    if (this.diagramEditorComponentRef?.isInitialized()) {
+      console.log('🔄 Reinicializando DiagramEditor vazio (reset form)');
+      this.diagramEditorComponentRef.reinitialize();
+    }
   }
   
   editPhase(index: number) {
+    console.log(this.phases);
     const p = this.phases[index];
     this.phase = { 
       id: p.id,
@@ -412,7 +440,36 @@ export class AdminPanelComponent implements OnInit {
       correctDiagrams: p.correctDiagrams || [],
       characterDialogues: p.characterDialogues || []
     };
+    
+    // ✅ ADICIONAR: Setar IDs auxiliares para os selects
+    this.selectedCharacterId = p.character?.id || 0;
+    this.selectedGameMapId = p.gameMap?.id || 0;
+
+    console.log("Selected GameMap ID:", this.selectedGameMapId);
+    
     this.editPhaseId = p.id;
+
+    // ✅ CORRIGIR: Validar dados antes de reinicializar
+    if (this.diagramEditorComponentRef?.isInitialized()) {
+      console.log('🔄 Reinicializando DiagramEditor com fase:', p);
+      
+      // ✅ Garantir que diagramInitial seja válido
+      if (p.diagramInitial) {
+        try {
+          // Configurando JSON
+          const diagramJSON = JSON.parse(p.diagramInitial);
+          if (diagramJSON.cells) {
+            this.diagramEditorComponentRef.reinitialize(p);
+          }
+        } catch (error) {
+          console.warn('⚠️ Erro no JSON, reinicializando vazio:', error);
+          this.diagramEditorComponentRef.reinitialize();
+        }
+      } else {
+        console.log('📊 Sem diagrama inicial, reinicializando vazio');
+        this.diagramEditorComponentRef.reinitialize();
+      }
+    }
   }
 
   deletePhase(index: number) {
@@ -600,6 +657,39 @@ export class AdminPanelComponent implements OnInit {
       } else if (this.editingDialogueIndex === index + 1) {
         this.editingDialogueIndex = index;
       }
+    }
+  }
+
+  // ✅ ADICIONAR: Métodos simples para gerenciar o diagrama
+  saveDiagramToPhase() {
+    if (!this.diagramEditorComponentRef?.isInitialized()) {
+      alert('⚠️ Editor não está inicializado');
+      return;
+    }
+
+    const currentJSON = this.diagramEditorComponentRef.getCurrentDiagramJSON();
+    
+    if (currentJSON && currentJSON.cells && currentJSON.cells.length > 0) {
+      this.phase.diagramInitial = JSON.stringify(currentJSON);
+      alert('✅ Diagrama salvo!');
+      console.log('Diagrama salvo:', currentJSON);
+    } else {
+      alert('⚠️ Adicione elementos ao diagrama antes de salvar');
+    }
+  }
+
+  clearDiagram() {
+    if (!this.diagramEditorComponentRef?.isInitialized()) {
+      console.log('Diagrama limpo via método do componente');
+    }
+
+    if (confirm('🗑️ Limpar o diagrama?')) {
+      this.diagramEditorComponentRef.clearDiagram();
+      
+      // Limpa o JSON salvo
+      this.phase.diagramInitial = '';
+      
+      alert('🗑️ Diagrama limpo!');
     }
   }
 

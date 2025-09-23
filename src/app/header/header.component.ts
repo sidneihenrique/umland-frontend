@@ -94,7 +94,6 @@ export class HeaderComponent implements OnInit, OnDestroy{
       this.userService.getUserById(userId).subscribe({
         next: (user: User) => {
           this.userData = user;
-          console.log('user', this.userData);
 
         },
         error: (error) => {
@@ -108,7 +107,6 @@ export class HeaderComponent implements OnInit, OnDestroy{
       this.router.navigate(['/login']);
     }
 
-    console.log('user', this.userData);
   }
 
   private startTimer() {
