@@ -240,30 +240,126 @@
           </div>
         </div>
 
+        <!-- ✅ EDITOR 1: Para diagrama inicial -->
         <div class="form-group">
           <label>Diagrama Inicial:</label>
           
-          <!-- ✅ SUBSTITUIR por: Seção simples do editor -->
           <div class="diagram-editor-section">
             <div class="diagram-controls">
               <button type="button" 
                       (click)="saveDiagramToPhase()" 
                       class="btn-diagram save">
-                💾 Salvar Diagrama
+                💾 Salvar Diagrama Inicial
               </button>
               
               <button type="button" 
                       (click)="clearDiagram()" 
                       class="btn-diagram clear">
-                🗑️ Limpar Diagrama
+                🗑️ Limpar Diagrama Inicial
               </button>
             </div>
             
-            <!-- Editor de diagramas -->
-            <diagram-editor #diagramEditor></diagram-editor>
+            <!-- ✅ PRIMEIRO EDITOR: Diagrama inicial -->
+            <diagram-editor #diagramEditorInitial></diagram-editor>
           </div>
         </div>
 
+        <!-- ✅ EDITOR 2: Para diagramas corretos -->
+        <div class="form-group">
+          <label>📊 Diagramas Corretos:</label>
+          
+          <div class="diagram-editor-section">
+            <div class="diagram-controls">
+              <button type="button" 
+                      (click)="saveCorrectDiagram()" 
+                      class="btn-diagram save">
+                {{ editingCorrectDiagramIndex >= 0 ? '✏️ Atualizar Diagrama' : '➕ Adicionar como Correto' }}
+              </button>
+              
+              <button type="button" 
+                      (click)="cancelEditCorrectDiagram()" 
+                      class="btn-diagram cancel"
+                      *ngIf="editingCorrectDiagramIndex >= 0">
+                ❌ Cancelar Edição
+              </button>
+              
+              <button type="button" 
+                      (click)="clearCorrectDiagram()" 
+                      class="btn-diagram clear">
+                🗑️ Limpar Editor
+              </button>
+            </div>
+            
+            <!-- Indicador de modo de edição -->
+            <div class="editing-indicator" *ngIf="editingCorrectDiagramIndex >= 0">
+              <span class="indicator-text">
+                ✏️ Editando diagrama correto #{{ editingCorrectDiagramIndex + 1 }}
+              </span>
+            </div>
+            
+            <!-- ✅ SEGUNDO EDITOR: Diagramas corretos -->
+            <diagram-editor #diagramEditorCorrect></diagram-editor>
+          </div>
+          
+          <!-- ✅ Lista de diagramas corretos cadastrados (continua igual) -->
+          <div class="correct-diagrams-list" *ngIf="phase.correctDiagrams.length > 0">
+            <h4>📋 Diagramas Corretos Cadastrados:</h4>
+            
+            <div *ngFor="let diagram of phase.correctDiagrams; let i = index" 
+                 class="correct-diagram-item" 
+                 [class.editing]="editingCorrectDiagramIndex === i">
+              
+              <div class="diagram-number">{{ i + 1 }}</div>
+              
+              <div class="diagram-info">
+                <div class="diagram-preview">
+                  {{ getCorrectDiagramPreview(diagram) }}
+                </div>
+              </div>
+              
+              <div class="diagram-actions">
+                <!-- Mover para cima -->
+                <button type="button" 
+                        (click)="moveCorrectDiagramUp(i)" 
+                        class="btn-diagram-action move"
+                        [disabled]="i === 0"
+                        title="Mover para cima">
+                  ⬆️
+                </button>
+                
+                <!-- Mover para baixo -->
+                <button type="button" 
+                        (click)="moveCorrectDiagramDown(i)" 
+                        class="btn-diagram-action move"
+                        [disabled]="i === phase.correctDiagrams.length - 1"
+                        title="Mover para baixo">
+                  ⬇️
+                </button>
+                
+                <!-- Editar -->
+                <button type="button" 
+                        (click)="editCorrectDiagram(i)" 
+                        class="btn-diagram-action edit"
+                        title="Editar diagrama">
+                  ✏️
+                </button>
+                
+                <!-- Remover -->
+                <button type="button" 
+                        (click)="removeCorrectDiagram(i)" 
+                        class="btn-diagram-action remove"
+                        title="Remover diagrama">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contador de diagramas corretos -->
+          <div class="correct-diagrams-counter" *ngIf="phase.correctDiagrams.length > 0">
+            <small>{{ phase.correctDiagrams.length }} diagrama(s) correto(s) cadastrado(s)</small>
+          </div>
+        </div>
 
         <button type="submit" class="btn-primary" 
                 [disabled]="!phase.title || !selectedCharacterId || !selectedGameMapId">

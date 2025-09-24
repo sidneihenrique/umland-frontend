@@ -29,7 +29,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   tipsVisible: boolean = false;
   
   private paper: joint.dia.Paper | null = null;
-  private graph: joint.dia.Graph | null = null;
+  public graph: joint.dia.Graph | null = null;
   private zoomLevel: number = 1;
   private readonly zoomMin: number = 0.2;
   private readonly zoomMax: number = 3;
@@ -706,7 +706,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   public clearDiagram() {
-    if (this.graph) {
+    if (this.isInitialized() && this.graph) {
       this.graph.clear();
       this.reinitialize();
     }

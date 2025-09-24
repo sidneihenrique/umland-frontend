@@ -707,6 +707,158 @@ diagram-editor {
   border-radius: 2px;
 }
 
+/* ✅ ADICIONAR: Estilos para diagramas corretos */
+.btn-diagram.cancel {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-diagram.cancel:hover {
+  background: #5a6268;
+}
+
+.editing-indicator {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.indicator-text {
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.correct-diagrams-list {
+  margin-top: 1.5rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.correct-diagrams-list h4 {
+  background: #f8f9fa;
+  margin: 0;
+  padding: 1rem;
+  color: #333;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.correct-diagram-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e1e5e9;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.correct-diagram-item:last-child {
+  border-bottom: none;
+}
+
+.correct-diagram-item:hover {
+  background: #f8f9fa;
+}
+
+.correct-diagram-item.editing {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.diagram-number {
+  width: 35px;
+  height: 35px;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+.diagram-info {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.diagram-preview {
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.diagram-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.btn-diagram-action {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-diagram-action.move {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-diagram-action.move:hover:not(:disabled) {
+  background: #138496;
+  transform: scale(1.1);
+}
+
+.btn-diagram-action.edit {
+  background: #ffc107;
+  color: #333;
+}
+
+.btn-diagram-action.edit:hover {
+  background: #e0a800;
+  transform: scale(1.1);
+}
+
+.btn-diagram-action.remove {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-diagram-action.remove:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+.btn-diagram-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.correct-diagrams-counter {
+  margin-top: 1rem;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
   .admin-panel {
