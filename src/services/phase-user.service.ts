@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
+import { PhaseUser } from './game-map.service';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +33,21 @@ export class PhaseUserService {
     return this.http.patch<void>(`${this.apiUrl}/phase-users/${id}/user-diagram`, userDiagram, {
       headers: {
         'Content-Type': 'application/json'  // ✅ Mudança aqui
+      }
+    });
+  }
+
+    /**
+   * ✅ NOVO: Atualiza uma PhaseUser completa
+   * PUT /phase-users/{id}
+   * @param id - ID da PhaseUser
+   * @param phaseUser - Objeto PhaseUser completo para atualizar
+   * @returns Observable<PhaseUser> - PhaseUser atualizada
+   */
+  updatePhaseUser(id: number, phaseUser: PhaseUser): Observable<PhaseUser> {
+    return this.http.put<PhaseUser>(`${this.apiUrl}/phase-users/${id}`, phaseUser, {
+      headers: {
+        'Content-Type': 'application/json'
       }
     });
   }

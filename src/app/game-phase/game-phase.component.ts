@@ -300,12 +300,12 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
   // ✅ Método público para salvamento manual
   public manualSaveDiagram(): void {
-    if (this.isSaving) {
-      console.log('⏳ Salvamento já em andamento...');
-      return;
+    try {
+      this.accuracy = this.diagramEditorComponentRef.calculateGraphAccuracy();
+      console.log('Acurácia calculada para salvamento manual:', this.accuracy);
+    } catch (error) {
+      console.error('❌ Erro ao calcular acurácia:', error);
     }
-
-    this.autoSaveDiagram();
   }
 
   // ✅ Método para obter status do último salvamento

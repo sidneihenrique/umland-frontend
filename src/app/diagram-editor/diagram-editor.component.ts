@@ -547,8 +547,9 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     let bestAccuracy = 0;
 
     for (const correctJSON of this.correctsJSON) {
+      const formattedCorrectJSON = JSON.parse(correctJSON); // Parse para garantir que é um objeto
       const graphJSONCorrect = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
-      graphJSONCorrect.fromJSON(correctJSON);
+      graphJSONCorrect.fromJSON(formattedCorrectJSON);
 
       // Obtenha elementos e links do usuário e do modelo
       const userElements = this.graph.getElements();
@@ -748,7 +749,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         }
       } else if (!phaseUser?.userDiagram && phaseUser?.phase?.diagramInitial) {
         console.warn('⚠️ Nenhum diagrama do usuário encontrado, usando diagrama inicial da fase.');
-        this.initialJSON = phaseUser.phase?.diagramInitial;
+        this.initialJSON = JSON.parse(phaseUser.phase?.diagramInitial);
       }
     } else {
       this.initialJSON = null;
