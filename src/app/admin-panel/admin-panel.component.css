@@ -604,6 +604,261 @@
   transform: translateY(-2px);
 }
 
+/* ✅ Estilos simples para o editor */
+.diagram-editor-section {
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f8f9fa;
+  margin-top: 0.5rem;
+  height: 500px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.diagram-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-diagram {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-diagram.save {
+  background: #28a745;
+  color: white;
+}
+
+.btn-diagram.save:hover {
+  background: #218838;
+}
+
+.btn-diagram.clear {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-diagram.clear:hover {
+  background: #c82333;
+}
+
+diagram-editor {
+    width: 100%;
+    height: 100%;
+}
+
+/* ✅ ADICIONAR: Estilos para navegação de tabs */
+.tabs-navigation {
+  background: white;
+  border-radius: 16px;
+  padding: 0.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #6c757d;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.tab-button:hover {
+  background: #f8f9fa;
+  color: #495057;
+  transform: translateY(-2px);
+}
+
+.tab-button.active {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border-radius: 2px;
+}
+
+/* ✅ ADICIONAR: Estilos para diagramas corretos */
+.btn-diagram.cancel {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-diagram.cancel:hover {
+  background: #5a6268;
+}
+
+.editing-indicator {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.indicator-text {
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.correct-diagrams-list {
+  margin-top: 1.5rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.correct-diagrams-list h4 {
+  background: #f8f9fa;
+  margin: 0;
+  padding: 1rem;
+  color: #333;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.correct-diagram-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e1e5e9;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.correct-diagram-item:last-child {
+  border-bottom: none;
+}
+
+.correct-diagram-item:hover {
+  background: #f8f9fa;
+}
+
+.correct-diagram-item.editing {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.diagram-number {
+  width: 35px;
+  height: 35px;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+.diagram-info {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.diagram-preview {
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.diagram-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.btn-diagram-action {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-diagram-action.move {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-diagram-action.move:hover:not(:disabled) {
+  background: #138496;
+  transform: scale(1.1);
+}
+
+.btn-diagram-action.edit {
+  background: #ffc107;
+  color: #333;
+}
+
+.btn-diagram-action.edit:hover {
+  background: #e0a800;
+  transform: scale(1.1);
+}
+
+.btn-diagram-action.remove {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-diagram-action.remove:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+.btn-diagram-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.correct-diagrams-counter {
+  margin-top: 1rem;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
   .admin-panel {
@@ -663,5 +918,16 @@
   
   .dialogue-actions {
     justify-content: center;
+  }
+
+  .tabs-navigation {
+    padding: 0.25rem;
+    gap: 0.25rem;
+  }
+  
+  .tab-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    min-width: 100px;
   }
 }

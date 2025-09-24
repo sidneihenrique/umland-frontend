@@ -94,7 +94,6 @@ export class HeaderComponent implements OnInit, OnDestroy{
       this.userService.getUserById(userId).subscribe({
         next: (user: User) => {
           this.userData = user;
-          console.log('user', this.userData);
 
         },
         error: (error) => {
@@ -108,7 +107,6 @@ export class HeaderComponent implements OnInit, OnDestroy{
       this.router.navigate(['/login']);
     }
 
-    console.log('user', this.userData);
   }
 
   private startTimer() {
@@ -173,11 +171,11 @@ export class HeaderComponent implements OnInit, OnDestroy{
 
   // ✅ Método para tratar erro de carregamento da imagem
   onAvatarImageError(event: Event): void {
-    const imgElement = event.target as HTMLImageElement;
-    if (imgElement && imgElement.src !== 'assets/images/characters/default-avatar.png') {
-      console.warn('Failed to load user avatar:', imgElement.src);
-      imgElement.src = 'assets/images/characters/default-avatar.png';
-    }
+    // const imgElement = event.target as HTMLImageElement;
+    // if (imgElement && imgElement.src !== 'assets/images/characters/default-avatar.png') {
+    //   console.warn('Failed to load user avatar:', imgElement.src);
+    //   imgElement.src = 'assets/images/characters/default-avatar.png';
+    // }
   }
 
 }

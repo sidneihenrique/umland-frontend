@@ -374,3 +374,85 @@ header .watch-time.active {
     font-weight: bold;
     color: var(--white);
 }
+
+/* ✅ Estilos para indicador de salvamento automático */
+.auto-save-indicator {
+    width: fit-content;
+    margin-left: calc(32px + 48px);
+
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #666;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.auto-save-indicator.saving {
+  background: rgba(255, 248, 220, 0.95);
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.auto-save-indicator.enabled {
+  border-color: #28a745;
+}
+
+.save-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.save-icon {
+  color: #28a745;
+  transition: color 0.3s ease;
+}
+
+.save-icon.spinning {
+  animation: spin 1s linear infinite;
+  color: #ffc107;
+}
+
+.save-text {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.toggle-autosave {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.toggle-autosave:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .auto-save-indicator {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  
+  .save-text {
+    display: none;
+  }
+}

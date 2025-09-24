@@ -19,7 +19,9 @@ import { HeaderComponent } from '../header/header.component';
 import { PhaseService, Phase, PHASE_TYPES, PhaseType } from '../../services/phase.service';
 import { AdviseModalComponent } from '../utils/advise-modal/advise-modal.component';
 import { TipService } from '../../services/tip.service';
-
+// ✅ Import do PhaseUserService
+import { PhaseUserService } from '../../services/phase-user.service';
+import { PhaseUser } from '../../services/game-map.service';
 import { FileUrlBuilder } from '../../config/files.config';
 
 @Component({
@@ -44,10 +46,12 @@ import { FileUrlBuilder } from '../../config/files.config';
 export class GamePhaseComponent implements OnInit, OnDestroy {
   isOpen = false;
   currentTime: string = '00:00:00';
-  watchTime: string = '';  // Additional timer for watch bonus time
+  watchTime: string = '';
   watchCount: number = 0;
   private timerInterval: any;
   private watchTimerInterval: any;
+  // ✅ Timer para salvamento automático
+  private autoSaveInterval: any;
   private timerPaused: boolean = false;
   private pausedTime: number = 0;
   private watchStartTime: number = 0;
@@ -58,7 +62,13 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   private visibleAdviseTypePhase: boolean = true;
 
   @Input() phaseId!: number;
+  phaseUser?: PhaseUser;
   phase?: Phase;
+
+  // ✅ Estado do salvamento automático
+  isSaving: boolean = false;
+  lastSaveTime: Date | null = null;
+  autoSaveEnabled: boolean = true;
 
   // ✅ Disponibilize o mapa para o template
   phaseTypes = PHASE_TYPES;
@@ -108,7 +118,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     private phaseService: PhaseService,
     private route: ActivatedRoute,
     private tipService: TipService,
-    private userService: UserService
+    private userService: UserService,
+    private phaseUserService: PhaseUserService
   ) {
   }
 
@@ -155,7 +166,6 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     this.phaseService.getPhaseById(this.phaseId).subscribe(phase => {
       if (phase) {
         this.phase = phase;
-        console.log('Fase carregada:', this.phase);
 
         if (this.phase?.mode === "BASIC") {
           this.checkDiagramLeft = Infinity;
@@ -165,12 +175,36 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
           this.checkDiagramLeft = 0;
         }
         
+        // ✅ Iniciar salvamento automático após carregar a fase
+        this.startAutoSave();
+
+        // ✅ ADICIONAR: Inicializar speech APÓS ter os dados da fase
+        setTimeout(() => {
+          this.toggleSpeech();
+        }, 100); // Pequeno delay para garantir que o template foi atualizado
+
       } else {
         // Fase não encontrada, redirecione ou mostre erro
         this.router.navigate(['/map']);
       }
     });
 
+    const userId = localStorage.getItem('userId');
+
+    this.phaseUserService.getByPhaseAndUserId(this.phaseId, Number(userId)).subscribe(phaseUser => {
+        if (phaseUser) {
+          this.phaseUser = phaseUser;
+          
+          // ✅ Só inicializar o diagrama DEPOIS de ter os dados
+          setTimeout(() => {
+            if (this.diagramEditorComponentRef) {
+              this.diagramEditorComponentRef.initializeJointJS(this.phaseUser?.phase);
+            }
+          });
+        } else {
+          console.warn('PhaseUser não encontrado para fase e usuário:', this.phaseId, this.userData?.id);
+        }
+      });
 
   }
 
@@ -182,13 +216,15 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
         this.loadWatchCount();
       }
     });
-
-    this.toggleSpeech();
   }
 
   ngOnDestroy() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
+    }
+    // ✅ Limpar timer de salvamento automático
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval);
     }
     if (this.userDataSubscription) {
       this.userDataSubscription.unsubscribe();
@@ -198,6 +234,113 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     }
     if (this.inventorySubscription) {
       this.inventorySubscription.unsubscribe();
+    }
+  }
+
+  // ✅ Iniciar salvamento automático a cada 30 segundos
+  private startAutoSave(): void {
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval);
+    }
+
+    this.autoSaveInterval = setInterval(() => {
+      if (this.autoSaveEnabled && !this.isSaving) {
+        this.autoSaveDiagram();
+      }
+    }, 30000); // 30 segundos
+
+    console.log('🔄 Salvamento automático iniciado (30s)');
+  }
+
+  // ✅ Método para salvamento automático
+  private autoSaveDiagram(): void {
+    if (!this.diagramEditorComponentRef || !this.phaseId) {
+      console.warn('⚠️ Editor ou fase não disponível para salvamento');
+      return;
+    }
+
+    try {
+      // Obter JSON atual do diagrama
+      const diagramJson = this.diagramEditorComponentRef.getCurrentDiagramJSON();
+      
+      if (!diagramJson) {
+        console.warn('⚠️ Diagrama vazio, pulando salvamento');
+        return;
+      }
+
+      this.isSaving = true;
+      const diagramString = JSON.stringify(diagramJson);
+      
+      console.log('💾 Iniciando salvamento automático...', {
+        phaseUserId: this.phaseId,
+        diagramSize: diagramString.length
+      });
+
+      let phaseUserId = this.phaseUser?.id || -1;
+
+      // Assumindo que o phaseUserId é o mesmo que phaseId por simplicidade
+      // Em um cenário real, você precisaria buscar o PhaseUser correto
+      this.phaseUserService.updateUserDiagram(phaseUserId, diagramString).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.lastSaveTime = new Date();
+          console.log('✅ Diagrama salvo automaticamente:', this.lastSaveTime.toLocaleTimeString());
+        },
+        error: (error) => {
+          this.isSaving = false;
+          console.error('❌ Erro no salvamento automático:', error);
+        }
+      });
+
+    } catch (error) {
+      this.isSaving = false;
+      console.error('❌ Erro ao processar diagrama para salvamento:', error);
+    }
+  }
+
+  // ✅ Método público para salvamento manual
+  public manualSaveDiagram(): void {
+    if (this.isSaving) {
+      console.log('⏳ Salvamento já em andamento...');
+      return;
+    }
+
+    this.autoSaveDiagram();
+  }
+
+  // ✅ Método para obter status do último salvamento
+  getLastSaveText(): string {
+    if (this.isSaving) {
+      return 'Salvando...';
+    }
+    
+    if (this.lastSaveTime) {
+      const now = new Date();
+      const diffInSeconds = Math.floor((now.getTime() - this.lastSaveTime.getTime()) / 1000);
+      
+      if (diffInSeconds < 60) {
+        return `Salvo há ${diffInSeconds}s`;
+      } else {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `Salvo há ${minutes}min`;
+      }
+    }
+    
+    return 'Não salvo';
+  }
+
+  // ✅ Alternar salvamento automático
+  toggleAutoSave(): void {
+    this.autoSaveEnabled = !this.autoSaveEnabled;
+    
+    if (this.autoSaveEnabled) {
+      this.startAutoSave();
+      console.log('✅ Salvamento automático ativado');
+    } else {
+      if (this.autoSaveInterval) {
+        clearInterval(this.autoSaveInterval);
+      }
+      console.log('❌ Salvamento automático desativado');
     }
   }
 
@@ -313,8 +456,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
       'Tem certeza que deseja salvar?',
       'Essa ação irá salvar seu progresso.',
       () => {
-        // Lógica de salvar aqui!
-        console.log('Salvou!');
+        // ✅ Usar o método de salvamento manual
+        this.manualSaveDiagram();
       }
     );
   }
@@ -383,10 +526,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     if (inventoryJson) {
       const inventory = JSON.parse(inventoryJson);
       this.watchCount = inventory['watch'] || 0;
-      console.log('Watch count loaded from inventory:', this.watchCount);
     } else {
       this.watchCount = 0;
-      console.log('No inventory found, watch count set to 0');
     }
   }
 

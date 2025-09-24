@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewChildren, QueryList, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminPanelService, Item } from '../../services/admin-panel.service';
@@ -10,14 +10,17 @@ import { TipService, Tip, CreateTipRequest } from '../../services/tip.service';
 // ✅ Import da configuração global
 import { FILES_CONFIG, FileUrlBuilder } from '../../config/files.config';
 
+// ✅ Import do componente de editor de diagramas
+import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
+
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DiagramEditorComponent],
   templateUrl: './admin-panel.component.html',
   styleUrls: ['./admin-panel.component.css']
 })
-export class AdminPanelComponent implements OnInit {
+export class AdminPanelComponent implements OnInit, AfterViewInit {
   
   // ✅ Form models corrigidos
   avatar: Avatar = {};
@@ -93,11 +96,76 @@ export class AdminPanelComponent implements OnInit {
   user?: User | null;
   filesPath: string = FILES_CONFIG.BASE_URL;
 
+  // ✅ CORRIGIR: Apenas ViewChildren para capturar ambos os editores
+  @ViewChildren(DiagramEditorComponent) diagramEditors!: QueryList<DiagramEditorComponent>;
+
+  // ✅ REMOVER completamente o ViewChild individual
+  // @ViewChild('diagramEditor') diagramEditorComponentRef!: DiagramEditorComponent;
+
+  // ✅ ADICIONAR: Propriedades auxiliares para seleção
+  selectedGameMapId: number = 0;
+  selectedCharacterId: number = 0;
+
+  // ✅ ADICIONAR: Controle de tabs
+  activeTab: string = 'avatars'; // Tab ativa por padrão
+  
+  // Definir as tabs disponíveis
+  tabs = [
+    { id: 'avatars', name: 'Avatars', icon: '👤' },
+    { id: 'characters', name: 'Personagens', icon: '🎭' },
+    { id: 'phases', name: 'Fases', icon: '🎮' },
+    { id: 'items', name: 'Items', icon: '🛒' },
+    { id: 'tips', name: 'Dicas', icon: '💡' }
+  ];
+
+  // ✅ ADICIONAR: Propriedades para gerenciar diagramas corretos
+  editingCorrectDiagramIndex: number = -1; // -1 = não está editando
+  correctDiagramPreview: string = ''; // Preview do JSON para mostrar na lista
+
   constructor(
     private adminService: AdminPanelService, 
     private authService: AuthService,
     private tipService: TipService
   ) {}
+
+  // ✅ ADICIONAR: Método para trocar de tab
+  setActiveTab(tabId: string): void {
+    this.activeTab = tabId;
+    
+    if(this.activeTab === 'phases') {
+      // ✅ Aguardar o Angular renderizar o DOM
+      setTimeout(() => {
+        console.log('🔧 Inicializando editores de diagrama...');
+        
+        if (this.diagramEditors && this.diagramEditors.length > 0) {
+          this.diagramEditors.forEach((editor, index) => {
+            console.log(`🔧 Inicializando editor ${index + 1}/${this.diagramEditors.length}`);
+            editor.initializeJointJS();
+          });
+          console.log(`✅ ${this.diagramEditors.length} editores inicializados`);
+        } else {
+          console.warn('⚠️ Nenhum DiagramEditor encontrado');
+        }
+      }, 0);
+      
+    } else if(this.diagramEditors && this.diagramEditors.length > 0) {
+      console.log('🧹 Limpando diagramas ao sair da tab de fases');
+      this.diagramEditors.forEach((editor, index) => {
+        if (editor.isInitialized()) {
+          editor.reinitialize();
+        }
+      });
+    }
+  }
+
+  // ✅ HELPER: Métodos para obter cada editor específico
+  private getInitialDiagramEditor(): DiagramEditorComponent | undefined {
+    return this.diagramEditors?.toArray()[0]; // Primeiro editor = diagrama inicial
+  }
+
+  private getCorrectDiagramEditor(): DiagramEditorComponent | undefined {
+    return this.diagramEditors?.toArray()[1]; // Segundo editor = diagramas corretos
+  }
 
   // ✅ Métodos utilitários para URLs de imagem
   getAvatarImageUrl(fileName: string): string {
@@ -115,7 +183,10 @@ export class AdminPanelComponent implements OnInit {
   ngOnInit() {
     this.loadAll();
     this.user = this.authService.getCurrentUser();
-    console.log('Current user:', this.user);
+  }
+
+  ngAfterViewInit() {
+
   }
 
   // ✅ Load all data
@@ -144,8 +215,11 @@ export class AdminPanelComponent implements OnInit {
 
   loadPhases() {
     this.adminService.getPhases().subscribe({
-      next: (data) => this.phases = data,
-      error: (error) => console.error('Erro ao carregar phases:', error)
+      next: (data) => {
+        this.phases = data;
+        console.log('Phases carregadas:', this.phases);
+      },
+        error: (error) => console.error('Erro ao carregar phases:', error)
     });
   }
 
@@ -302,23 +376,19 @@ export class AdminPanelComponent implements OnInit {
 
   // ✅ CRUD Phase - CORRIGIDO
   onSubmitPhase() {
-    if (!this.phase.character.id || this.phase.character.id === 0) {
+    if (!this.selectedCharacterId || this.selectedCharacterId === 0) {
       alert('Por favor, selecione um personagem para a fase.');
       return;
     }
 
-    if (!this.phase.gameMap.id || this.phase.gameMap.id === 0) {
+    if (!this.selectedGameMapId || this.selectedGameMapId === 0) {
       alert('Por favor, selecione um GameMap para a fase.');
       return;
     }
     
-    // ✅ Converter para number antes da busca
-    const characterId = Number(this.phase.character.id);
-    const gameMapId = Number(this.phase.gameMap.id);
-    
     // Buscar dados completos do character e gameMap selecionados
-    const selectedCharacter = this.characters.find(c => c.id === characterId);
-    const selectedGameMap = this.gameMaps.find(gm => gm.id === gameMapId);
+    const selectedCharacter = this.characters.find(c => c.id === Number(this.selectedCharacterId));
+    const selectedGameMap = this.gameMaps.find(gm => gm.id === Number(this.selectedGameMapId));
 
     if (!selectedCharacter) {
       alert('Personagem selecionado não encontrado.');
@@ -379,16 +449,36 @@ export class AdminPanelComponent implements OnInit {
       },
       diagramInitial: '',
       correctDiagrams: [],
-      characterDialogues: [] // ✅ Limpar falas
+      characterDialogues: []
     };
+    
+    // ✅ ADICIONAR: Resetar IDs auxiliares
+    this.selectedCharacterId = 0;
+    this.selectedGameMapId = 0;
+    
     this.editPhaseId = undefined;
     
-    // ✅ Limpar campos de falas
+    // Limpar campos de falas
     this.newDialogue = '';
     this.editingDialogueIndex = -1;
+
+    // ✅ ADICIONAR: Limpar edição de diagramas corretos
+    this.editingCorrectDiagramIndex = -1;
+
+    // Reinicializar diagrama vazio
+    if (this.diagramEditors && this.diagramEditors.length > 0) {
+      console.log('🔄 Reinicializando ambos os editores (reset form)');
+      this.diagramEditors.forEach((editor, index) => {
+        if (editor.isInitialized()) {
+          console.log(`🔄 Reinicializando editor ${index + 1}`);
+          editor.reinitialize();
+        }
+      });
+    }
   }
   
   editPhase(index: number) {
+    console.log(this.phases);
     const p = this.phases[index];
     this.phase = { 
       id: p.id,
@@ -412,7 +502,34 @@ export class AdminPanelComponent implements OnInit {
       correctDiagrams: p.correctDiagrams || [],
       characterDialogues: p.characterDialogues || []
     };
+    
+    // ✅ ADICIONAR: Setar IDs auxiliares para os selects
+    this.selectedCharacterId = p.character?.id || 0;
+    this.selectedGameMapId = p.gameMap?.id || 0;
+
+    console.log("Selected GameMap ID:", this.selectedGameMapId);
+    
     this.editPhaseId = p.id;
+
+    // ✅ Carregar diagrama inicial no primeiro editor
+    const initialEditor = this.getInitialDiagramEditor();
+    if (initialEditor?.isInitialized() && p.diagramInitial) {
+      try {
+        const diagramJSON = JSON.parse(p.diagramInitial);
+        if (diagramJSON.cells) {
+          initialEditor.reinitialize();
+          setTimeout(() => {
+            if (initialEditor.graph) {
+              initialEditor.graph.fromJSON(diagramJSON);
+              console.log('📂 Diagrama inicial carregado para edição');
+            }
+          }, 100);
+        }
+      } catch (error) {
+        console.warn('⚠️ Erro no JSON, reinicializando vazio:', error);
+        initialEditor.reinitialize();
+      }
+    }
   }
 
   deletePhase(index: number) {
@@ -603,6 +720,42 @@ export class AdminPanelComponent implements OnInit {
     }
   }
 
+  // ✅ ADICIONAR: Métodos simples para gerenciar o diagrama
+  saveDiagramToPhase() {
+    const editor = this.getInitialDiagramEditor();
+    
+    if (!editor?.isInitialized()) {
+      alert('⚠️ Editor de diagrama inicial não está inicializado');
+      return;
+    }
+
+    const currentJSON = editor.getCurrentDiagramJSON();
+    
+    if (currentJSON && currentJSON.cells && currentJSON.cells.length > 0) {
+      this.phase.diagramInitial = JSON.stringify(currentJSON);
+      alert('✅ Diagrama inicial salvo!');
+      console.log('Diagrama inicial salvo:', currentJSON);
+    } else {
+      alert('⚠️ Adicione elementos ao diagrama antes de salvar');
+    }
+  }
+
+  // ✅ CORRIGIR: clearDiagram para limpar apenas o editor específico
+  clearDiagram() {
+    const initialEditor = this.getInitialDiagramEditor();
+    
+    if (!initialEditor?.isInitialized()) {
+      alert('⚠️ Editor de diagrama inicial não está disponível');
+      return;
+    }
+
+    if (confirm('🗑️ Limpar o diagrama inicial?')) {
+      initialEditor.reinitialize();
+      this.phase.diagramInitial = '';
+      alert('🗑️ Diagrama inicial limpo!');
+    }
+  }
+
   // ✅ Utility methods
   formatTime(seconds: number): string {
     if (!seconds) return 'N/A';
@@ -616,6 +769,164 @@ export class AdminPanelComponent implements OnInit {
       return `${minutes}m ${secs}s`;
     } else {
       return `${secs}s`;
+    }
+  }
+
+  // ✅ CORRIGIR: saveCorrectDiagram usando segundo editor
+  saveCorrectDiagram() {
+    const editor = this.getCorrectDiagramEditor();
+    
+    if (!editor?.isInitialized()) {
+      alert('⚠️ Editor de diagramas corretos não está inicializado');
+      return;
+    }
+
+    const currentJSON = editor.getCurrentDiagramJSON();
+    
+    if (!currentJSON || !currentJSON.cells || currentJSON.cells.length === 0) {
+      alert('⚠️ Crie um diagrama antes de salvá-lo como correto');
+      return;
+    }
+
+    try {
+      const jsonString = JSON.stringify(currentJSON);
+      
+      if (this.editingCorrectDiagramIndex >= 0) {
+        this.phase.correctDiagrams[this.editingCorrectDiagramIndex] = jsonString;
+        this.editingCorrectDiagramIndex = -1;
+        alert('✅ Diagrama correto atualizado!');
+      } else {
+        this.phase.correctDiagrams = this.phase.correctDiagrams || [];
+        this.phase.correctDiagrams.push(jsonString);
+        alert('✅ Diagrama correto adicionado!');
+      }
+
+      editor.reinitialize();
+      console.log('Diagrama correto salvo:', currentJSON);
+    } catch (error) {
+      console.error('❌ Erro ao salvar diagrama correto:', error);
+      alert('❌ Erro ao salvar diagrama correto');
+    }
+  }
+
+  // ✅ CORRIGIR: editCorrectDiagram usando segundo editor
+  editCorrectDiagram(index: number) {
+    try {
+      const diagramJSON = JSON.parse(this.phase.correctDiagrams[index]);
+      const editor = this.getCorrectDiagramEditor();
+      
+      if (!editor?.isInitialized()) {
+        alert('⚠️ Editor de diagramas corretos não está inicializado');
+        return;
+      }
+
+      editor.reinitialize();
+      setTimeout(() => {
+        if (editor.graph) {
+          editor.graph.fromJSON(diagramJSON);
+          this.editingCorrectDiagramIndex = index;
+          console.log('📂 Diagrama correto carregado para edição:', diagramJSON);
+        }
+      }, 100);
+      
+    } catch (error) {
+      console.error('❌ Erro ao carregar diagrama para edição:', error);
+      alert('❌ Erro ao carregar diagrama para edição');
+    }
+  }
+
+  // ✅ CORRIGIR: cancelEditCorrectDiagram usando segundo editor
+  cancelEditCorrectDiagram() {
+    this.editingCorrectDiagramIndex = -1;
+    
+    const editor = this.getCorrectDiagramEditor();
+    if (editor?.isInitialized()) {
+      editor.reinitialize();
+    }
+  }
+
+    // ✅ ADICIONAR: Método específico para limpar editor de diagramas corretos
+  clearCorrectDiagram() {
+    const correctEditor = this.getCorrectDiagramEditor();
+    
+    if (!correctEditor?.isInitialized()) {
+      alert('⚠️ Editor de diagramas corretos não está disponível');
+      return;
+    }
+
+    if (confirm('🗑️ Limpar o editor de diagramas corretos?')) {
+      correctEditor.reinitialize();
+      // Cancelar edição se estiver editando
+      this.editingCorrectDiagramIndex = -1;
+      alert('🗑️ Editor de diagramas corretos limpo!');
+    }
+  }
+
+  // ✅ Método utilitário para mostrar preview do JSON
+  getCorrectDiagramPreview(jsonString: string): string {
+    try {
+      const diagram = JSON.parse(jsonString);
+      const elementsCount = diagram.cells ? diagram.cells.length : 0;
+      const actors = diagram.cells?.filter((cell: any) => cell.type === 'custom.Actor').length || 0;
+      const useCases = diagram.cells?.filter((cell: any) => cell.type === 'custom.UseCase').length || 0;
+      const connections = diagram.cells?.filter((cell: any) => cell.type?.includes('Link') || cell.type?.includes('custom.')).length || 0;
+      
+      return `📊 ${elementsCount} elementos (👤 ${actors} atores, 🎯 ${useCases} casos de uso)`;
+    } catch (error) {
+      return '❌ JSON inválido';
+    }
+  }
+
+  // ✅ ADICIONAR: Método para remover diagrama correto
+  removeCorrectDiagram(index: number) {
+    if (confirm('🗑️ Remover este diagrama correto?')) {
+      this.phase.correctDiagrams.splice(index, 1);
+      
+      // ✅ Se estava editando este diagrama, cancelar edição
+      if (this.editingCorrectDiagramIndex === index) {
+        this.cancelEditCorrectDiagram();
+      } else if (this.editingCorrectDiagramIndex > index) {
+        // ✅ Ajustar índice se estava editando um diagrama posterior
+        this.editingCorrectDiagramIndex--;
+      }
+      
+      alert('🗑️ Diagrama correto removido!');
+    }
+  }
+
+  // ✅ ADICIONAR: Método para mover diagrama correto para cima
+  moveCorrectDiagramUp(index: number) {
+    if (index > 0) {
+      const temp = this.phase.correctDiagrams[index];
+      this.phase.correctDiagrams[index] = this.phase.correctDiagrams[index - 1];
+      this.phase.correctDiagrams[index - 1] = temp;
+      
+      // ✅ Ajustar índice de edição se necessário
+      if (this.editingCorrectDiagramIndex === index) {
+        this.editingCorrectDiagramIndex = index - 1;
+      } else if (this.editingCorrectDiagramIndex === index - 1) {
+        this.editingCorrectDiagramIndex = index;
+      }
+      
+      console.log('⬆️ Diagrama correto movido para cima');
+    }
+  }
+
+  // ✅ ADICIONAR: Método para mover diagrama correto para baixo
+  moveCorrectDiagramDown(index: number) {
+    if (index < this.phase.correctDiagrams.length - 1) {
+      const temp = this.phase.correctDiagrams[index];
+      this.phase.correctDiagrams[index] = this.phase.correctDiagrams[index + 1];
+      this.phase.correctDiagrams[index + 1] = temp;
+      
+      // ✅ Ajustar índice de edição se necessário
+      if (this.editingCorrectDiagramIndex === index) {
+        this.editingCorrectDiagramIndex = index + 1;
+      } else if (this.editingCorrectDiagramIndex === index + 1) {
+        this.editingCorrectDiagramIndex = index;
+      }
+      
+      console.log('⬇️ Diagrama correto movido para baixo');
     }
   }
 }
