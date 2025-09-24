@@ -2,6 +2,9 @@ import { Component, OnInit, Input, OnChanges, SimpleChanges, Inject, PLATFORM_ID
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideIconsModule } from '../../lucide-icons.module';
 import { DataService } from '../../../services/data.service';
+import { PhaseUserService } from '../../../services/phase-user.service';
+import { UserService, User } from '../../../services/user.service';
+import { PhaseUser } from '../../../services/game-map.service';
 
 @Component({
   selector: 'app-dialog-finished-gamephase',
@@ -13,6 +16,8 @@ import { DataService } from '../../../services/data.service';
 export class DialogFinishedGamephaseComponent implements OnInit {
   visible: boolean = false;
   @Input() accuracy: number = 0;
+  @Input() phaseUser: PhaseUser | null | undefined = null; // ✅ ADICIONAR: Receber PhaseUser
+  
   reputationSum: number = 0;
   coinsSum: number = 0;
 
@@ -20,7 +25,9 @@ export class DialogFinishedGamephaseComponent implements OnInit {
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private dataService: DataService
+    private dataService: DataService,
+    private phaseUserService: PhaseUserService, // ✅ ADICIONAR
+    private userService: UserService // ✅ ADICIONAR
   ) {}
 
   ngOnInit() {
@@ -34,46 +41,120 @@ export class DialogFinishedGamephaseComponent implements OnInit {
     }
   }
 
+  // ✅ CORRIGIR: Método principal para atualizar dados
   private updateSums() {
     this.reputationSum = this.calculateReputationSum(this.accuracy);
     this.coinsSum = this.calculateCoinsSum(this.accuracy);
-    this.updateUserData();
+    
+    // ✅ Atualizar dados no backend
+    this.updateBackendData();
   }
 
-  private updateUserData() {
-    if (isPlatformBrowser(this.platformId)) {
-      const userJson = localStorage.getItem('user');
-      if (userJson) {
-        const userData = JSON.parse(userJson);
-        
-        // Atualiza dinheiro e reputação
-        userData.money += this.coinsSum;
-        userData.reputation += this.reputationSum;
-        
-        // Atualiza o progressing com base na reputação ganha
-        userData.progressing = this.reputationSum >= 0;
-        
-        // Salva as alterações usando o DataService
-        this.dataService.updateUserData(userData);
-      }
+  // ✅ NOVO: Método para atualizar dados no backend
+  private updateBackendData() {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    // ✅ USAR: getCurrentUser() ao invés de localStorage diretamente
+    const userData = this.userService.getCurrentUser();
+    
+    if (!userData || !this.phaseUser) {
+      console.warn('⚠️ Dados do usuário ou phaseUser não disponíveis');
+      return;
+    }
+
+    try {
+      // ✅ 1. Atualizar PhaseUser com status de conclusão
+      const updatedPhaseUser: PhaseUser = {
+        ...this.phaseUser,
+        isCompleted: true, // Marcar como concluída
+        accuracy: this.accuracy, // Salvar acurácia final (se existir campo)
+        coins: this.coinsSum,
+        reputation: this.reputationSum
+      };
+
+      // ✅ 2. Atualizar usuário com recompensas
+      const updatedUser: User = {
+        ...userData,
+        coins: (userData.coins || 0) + this.coinsSum,
+        reputation: (userData.reputation || 0) + this.reputationSum,
+        progressing: this.reputationSum >= 0
+      };
+
+      console.log('💾 Atualizando dados:', {
+        phaseUserId: this.phaseUser.id,
+        userId: userData.id,
+        accuracy: this.accuracy,
+        coinsGain: this.coinsSum,
+        reputationGain: this.reputationSum
+      });
+
+      // ✅ 3. Salvar PhaseUser no backend
+      this.phaseUserService.updatePhaseUser(this.phaseUser.id, updatedPhaseUser).subscribe({
+        next: (savedPhaseUser) => {
+          console.log('✅ PhaseUser atualizada:', savedPhaseUser);
+          
+          // ✅ 4. Salvar usuário no backend usando getCurrentUser
+          this.userService.updateUser(userData.id, updatedUser).subscribe({
+            next: (savedUser) => {
+              console.log('✅ Usuário atualizado:', savedUser);
+              
+              // ✅ 5. Atualizar localStorage
+              localStorage.setItem('currentUser', JSON.stringify(savedUser));
+              
+              // ✅ 6. Atualizar DataService
+              this.dataService.updateUserData(savedUser);
+              
+            },
+            error: (error) => {
+              console.error('❌ Erro ao atualizar usuário:', error);
+              // ✅ Fallback: atualizar apenas localmente
+              this.updateLocalData(updatedUser);
+            }
+          });
+        },
+        error: (error) => {
+          console.error('❌ Erro ao atualizar PhaseUser:', error);
+          // ✅ Fallback: atualizar apenas dados do usuário localmente
+          this.updateLocalData(updatedUser);
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao processar dados:', error);
     }
   }
 
+  // ✅ CORRIGIR: Fallback para atualização local usando getCurrentUser
+  private updateLocalData(userData: User) {
+    localStorage.setItem('currentUser', JSON.stringify(userData));
+    this.dataService.updateUserData(userData);
+    console.log('📱 Dados atualizados localmente como fallback');
+  }
+
+  // ✅ CORRIGIR: Sistema de cálculo mais equilibrado
   calculateReputationSum(accuracy: number): number {
-    // Se accuracy < 50, retorna negativo proporcional
-    if (accuracy < 50) {
-      return -Math.round(100 - accuracy);
+    // ✅ Sistema baseado no que você implementou no game-phase
+    if (accuracy >= 80) {
+      // Excelente: +40 a +50 reputação
+      return Math.floor(40 + (accuracy - 80) * 0.5);
+    } else if (accuracy >= 60) {
+      // Bom: +10 a +39 reputação
+      return Math.floor(10 + (accuracy - 60) * 1.45);
+    } else if (accuracy >= 40) {
+      // Regular: -10 a +9 reputação
+      return Math.floor(-10 + (accuracy - 40) * 0.95);
+    } else {
+      // Ruim: -25 a -11 reputação
+      return Math.floor(-25 + accuracy * 0.35);
     }
-    // Caso contrário, retorna proporcional positivo
-    return Math.round(accuracy);
   }
 
   calculateCoinsSum(accuracy: number): number {
-    // Exemplo: moedas máximas 50, proporcional à acurácia
-    return Math.round((accuracy / 100) * 50);
+    // ✅ Sistema simples: moedas nunca negativas
+    return Math.max(0, Math.floor(accuracy));
   }
 
-  backToMenu () {
+  backToMenu() {
     this.backToMenuEvent.emit();
   }
 }

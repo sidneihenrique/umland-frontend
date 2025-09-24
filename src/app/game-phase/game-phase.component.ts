@@ -74,6 +74,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   phaseTypes = PHASE_TYPES;
 
   tips: string[] = [];
+
+  @ViewChild(HeaderComponent) headerComponent!: HeaderComponent;
   
   @ViewChild(StoreComponent) store!: StoreComponent;
   private userDataSubscription?: Subscription;
@@ -198,7 +200,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
           // ✅ Só inicializar o diagrama DEPOIS de ter os dados
           setTimeout(() => {
             if (this.diagramEditorComponentRef) {
-              this.diagramEditorComponentRef.initializeJointJS(this.phaseUser?.phase);
+              this.diagramEditorComponentRef.initializeJointJS(undefined, phaseUser);
             }
           });
         } else {
@@ -300,12 +302,12 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
   // ✅ Método público para salvamento manual
   public manualSaveDiagram(): void {
-    if (this.isSaving) {
-      console.log('⏳ Salvamento já em andamento...');
-      return;
+    try {
+      this.accuracy = this.diagramEditorComponentRef.calculateGraphAccuracy();
+      console.log('Acurácia calculada para salvamento manual:', this.accuracy);
+    } catch (error) {
+      console.error('❌ Erro ao calcular acurácia:', error);
     }
-
-    this.autoSaveDiagram();
   }
 
   // ✅ Método para obter status do último salvamento
@@ -540,6 +542,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   onBackToMenu() {
     this.finishedGamePhaseVisible = false;
     this.saveDisabled = true;
+    this.headerComponent.refreshUserData();
     this.router.navigate(['/map']);
   }
 

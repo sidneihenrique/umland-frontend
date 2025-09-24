@@ -75,16 +75,20 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     
   }
 
-  public initializeJointJS(phase?: Phase): void {
+  public initializeJointJS(phase?: Phase, phaseUser?: PhaseUser): void {
     // ✅ Verificar se os dados estão disponíveis antes de inicializar
     if(phase) {
       console.log('🔧 Inicializando JointJS com Phase fornecido:', phase);
       // Configurando dados do diagrama com PhaseUser fornecido
       this.setupDiagramData(phase);
-    } else if (!phase) {
+    } else if (phaseUser) {
+      console.log('🔧 Inicializando JointJS com PhaseUser fornecido:', phaseUser);
+      // Configurando dados do diagrama com PhaseUser fornecido
+      this.setupDiagramData(undefined, phaseUser);
+    } else {
       console.log('Iniciando JointJS sem Phase, usando dados padrão ou vazios');
       this.setupDiagramData();
-    } 
+    }
 
     // ✅ CORRIGIR: Criar namespace que inclui as classes customizadas
     const cellNamespace = {
@@ -543,8 +547,9 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     let bestAccuracy = 0;
 
     for (const correctJSON of this.correctsJSON) {
+      const formattedCorrectJSON = JSON.parse(correctJSON); // Parse para garantir que é um objeto
       const graphJSONCorrect = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
-      graphJSONCorrect.fromJSON(correctJSON);
+      graphJSONCorrect.fromJSON(formattedCorrectJSON);
 
       // Obtenha elementos e links do usuário e do modelo
       const userElements = this.graph.getElements();
@@ -727,35 +732,33 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   // ✅ Método privado para configurar dados do diagrama
-  private setupDiagramData(phase?: Phase): void {
+  private setupDiagramData(phase?: Phase, phaseUser?: PhaseUser): void {
     
-    if(!phase) {
-      console.log('🔍 Configurando dados do diagrama no AdminPanel (sem PhaseUser)');
-      // No admin panel, não há dados iniciais
-      this.initialJSON = null;
-      this.correctsJSON = [];
-    } else if (phase.diagramInitial) {
+    if(phase?.diagramInitial) {
       console.log('🔍 Configurando dados do diagrama com Phase:', phase);
       this.initialJSON = JSON.parse(phase.diagramInitial);
-    }  else if (this.phaseUser) {
-      console.log('🔍 Configurando dados do diagrama com PhaseUser:', this.phaseUser.phase);
+    } else if (phaseUser) {
+      console.log('🔍 Configurando dados do diagrama com PhaseUser:', phaseUser.phase);
 
-      if (this.phaseUser?.userDiagram) {
+      if (phaseUser.userDiagram) {
         try {
-          this.initialJSON = JSON.parse(this.phaseUser.userDiagram);
+          this.initialJSON = JSON.parse(phaseUser.userDiagram);
         } catch (error) {
           console.error('❌ Erro ao fazer parse do userDiagram:', error);
-          this.initialJSON = this.phaseUser.phase?.diagramInitial;
+          this.initialJSON = phaseUser.phase?.diagramInitial;
         }
-      } else if (!this.phaseUser?.userDiagram && this.phaseUser?.phase?.diagramInitial) {
+      } else if (!phaseUser?.userDiagram && phaseUser?.phase?.diagramInitial) {
         console.warn('⚠️ Nenhum diagrama do usuário encontrado, usando diagrama inicial da fase.');
-        this.initialJSON = this.phaseUser.phase?.diagramInitial;
+        this.initialJSON = JSON.parse(phaseUser.phase?.diagramInitial);
       }
+    } else {
+      this.initialJSON = null;
+      this.correctsJSON = [];
     }
 
 
-    if(this.phaseUser) {
-      this.correctsJSON = this.phaseUser.phase?.correctDiagrams || [];
+    if(phaseUser) {
+      this.correctsJSON = phaseUser.phase?.correctDiagrams || [];
     } else {
       this.correctsJSON = [];
     }

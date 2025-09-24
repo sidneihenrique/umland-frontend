@@ -15,6 +15,7 @@ export interface PhaseUser {
   coins: number;
   accuracy?: number;
   current?: boolean;
+  isCompleted?: boolean; // ✅ Novo campo para status de conclusão
   userDiagram?: string;
 }
 
