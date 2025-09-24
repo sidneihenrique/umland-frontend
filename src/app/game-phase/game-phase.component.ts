@@ -198,7 +198,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
           // ✅ Só inicializar o diagrama DEPOIS de ter os dados
           setTimeout(() => {
             if (this.diagramEditorComponentRef) {
-              this.diagramEditorComponentRef.initializeJointJS(this.phaseUser?.phase);
+              this.diagramEditorComponentRef.initializeJointJS(undefined, phaseUser);
             }
           });
         } else {
