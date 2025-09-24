@@ -42,7 +42,7 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
       next: (response) => {
         this.router.navigate(['/map']).then(
-          () => console.log('Navegação para o mapa bem-sucedida'),
+          () => localStorage.setItem('currentUser', JSON.stringify(response.user)),
           (error) => console.error('Erro na navegação:', error)
         );
       },

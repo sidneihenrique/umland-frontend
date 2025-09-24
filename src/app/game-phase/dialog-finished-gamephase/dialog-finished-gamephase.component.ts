@@ -54,15 +54,15 @@ export class DialogFinishedGamephaseComponent implements OnInit {
   private updateBackendData() {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    const userJson = localStorage.getItem('user');
-    if (!userJson || !this.phaseUser) {
+    // ✅ USAR: getCurrentUser() ao invés de localStorage diretamente
+    const userData = this.userService.getCurrentUser();
+    
+    if (!userData || !this.phaseUser) {
       console.warn('⚠️ Dados do usuário ou phaseUser não disponíveis');
       return;
     }
 
     try {
-      const userData: User = JSON.parse(userJson);
-
       // ✅ 1. Atualizar PhaseUser com status de conclusão
       const updatedPhaseUser: PhaseUser = {
         ...this.phaseUser,
@@ -93,13 +93,13 @@ export class DialogFinishedGamephaseComponent implements OnInit {
         next: (savedPhaseUser) => {
           console.log('✅ PhaseUser atualizada:', savedPhaseUser);
           
-          // ✅ 4. Salvar usuário no backend
+          // ✅ 4. Salvar usuário no backend usando getCurrentUser
           this.userService.updateUser(userData.id, updatedUser).subscribe({
             next: (savedUser) => {
               console.log('✅ Usuário atualizado:', savedUser);
               
               // ✅ 5. Atualizar localStorage
-              localStorage.setItem('user', JSON.stringify(savedUser));
+              localStorage.setItem('currentUser', JSON.stringify(savedUser));
               
               // ✅ 6. Atualizar DataService
               this.dataService.updateUserData(savedUser);
@@ -124,9 +124,9 @@ export class DialogFinishedGamephaseComponent implements OnInit {
     }
   }
 
-  // ✅ NOVO: Fallback para atualização local
+  // ✅ CORRIGIR: Fallback para atualização local usando getCurrentUser
   private updateLocalData(userData: User) {
-    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('currentUser', JSON.stringify(userData));
     this.dataService.updateUserData(userData);
     console.log('📱 Dados atualizados localmente como fallback');
   }

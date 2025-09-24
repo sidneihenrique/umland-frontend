@@ -74,6 +74,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   phaseTypes = PHASE_TYPES;
 
   tips: string[] = [];
+
+  @ViewChild(HeaderComponent) headerComponent!: HeaderComponent;
   
   @ViewChild(StoreComponent) store!: StoreComponent;
   private userDataSubscription?: Subscription;
@@ -540,6 +542,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   onBackToMenu() {
     this.finishedGamePhaseVisible = false;
     this.saveDisabled = true;
+    this.headerComponent.refreshUserData();
     this.router.navigate(['/map']);
   }
 

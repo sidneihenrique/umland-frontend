@@ -50,7 +50,8 @@ export class HeaderComponent implements OnInit, OnDestroy{
   ) {}
 
   ngOnInit(): void {
-    this.loadUserData(Number(localStorage.getItem('userId')));
+    // ✅ ATUALIZAR: Usar getCurrentUser() ao invés de getUserById()
+    this.loadUserData();
     if (this.parentType === 'game-phase') {
       this.startTimer();
     }
@@ -89,24 +90,22 @@ export class HeaderComponent implements OnInit, OnDestroy{
     this.storeToggleEvent.emit(isOpen);
   }
 
-  private loadUserData(userId: number | null) {
-    if(userId) {
-      this.userService.getUserById(userId).subscribe({
-        next: (user: User) => {
-          this.userData = user;
-
-        },
-        error: (error) => {
-          console.error('Erro ao carregar dados do usuário:', error);
-          this.router.navigate(['/login']);
-        }
-      });
-    }
-    else {
-      console.error('UserId is null');
+  // ✅ ATUALIZAR: Método para carregar dados do usuário usando getCurrentUser()
+  private loadUserData() {
+    const currentUser = this.userService.getCurrentUser();
+    
+    if (currentUser) {
+      this.userData = currentUser;
+      console.log('✅ Dados do usuário carregados no header:', this.userData);
+    } else {
+      console.error('❌ Usuário não encontrado no localStorage');
       this.router.navigate(['/login']);
     }
+  }
 
+  // ✅ ADICIONAR: Método para atualizar dados do usuário (chamado quando houver mudanças)
+  public refreshUserData(): void {
+    this.loadUserData();
   }
 
   private startTimer() {
@@ -158,7 +157,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
     return num.toString().padStart(2, '0');
   }
 
-    // ✅ Método para construir URL do avatar do usuário
+  // ✅ Método para construir URL do avatar do usuário
   getUserAvatarUrl(): string {
     if (!this.userData?.avatar?.filePath) {
       // Fallback para avatar padrão
@@ -177,5 +176,4 @@ export class HeaderComponent implements OnInit, OnDestroy{
     //   imgElement.src = 'assets/images/characters/default-avatar.png';
     // }
   }
-
 }
