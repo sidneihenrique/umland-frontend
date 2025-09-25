@@ -649,7 +649,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       for (const modelElem of modelElements) {
         const match = userElements.find(userElem =>
           userElem.get('type') === modelElem.get('type') &&
-          (userElem.attr(['label', 'text']) || '') === (modelElem.attr(['label', 'text']) || '')
+          (userElem.attr(['label', 'text']).toLowerCase() || '') === (modelElem.attr(['label', 'text']).toLowerCase() || '')
         );
         if (match) correctChecks++;
       }
@@ -670,17 +670,18 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       for (const modelLink of modelLinks) {
         const modelSource = modelLink.getSourceElement();
         const modelTarget = modelLink.getTargetElement();
-        const modelLabel = modelLink.label(0)?.attrs?.['text']?.text || '';
+        const modelLabel = modelLink.label(0)?.attrs?.['text']?.text?.toLowerCase() || '';
         const match = userLinks.find(userLink => {
           const userSource = userLink.getSourceElement();
           const userTarget = userLink.getTargetElement();
-          const userLabel = userLink.label(0)?.attrs?.['text']?.text || '';
+          const userLabel = userLink.label(0)?.attrs?.['text']?.text?.toLowerCase() || '';
           return (
             userLink.get('type') === modelLink.get('type') &&
             userSource && modelSource &&
             userTarget && modelTarget &&
-            (userSource.attr(['label', 'text']) || '') === (modelSource.attr(['label', 'text']) || '') &&
-            (userTarget.attr(['label', 'text']) || '') === (modelTarget.attr(['label', 'text']) || '') &&
+            // ✅ CORRIGIR: Aplicar toLowerCase() nas comparações de texto
+            (userSource.attr(['label', 'text']) || '').toLowerCase() === (modelSource.attr(['label', 'text']) || '').toLowerCase() &&
+            (userTarget.attr(['label', 'text']) || '').toLowerCase() === (modelTarget.attr(['label', 'text']) || '').toLowerCase() &&
             userLabel === modelLabel
           );
         });

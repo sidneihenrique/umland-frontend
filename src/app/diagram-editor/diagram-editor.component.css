@@ -74,6 +74,7 @@
 }
 
 .inconsistency_indicator {
+    width: fit-content;
     position: sticky;
     top: 0;
     left: 0;
