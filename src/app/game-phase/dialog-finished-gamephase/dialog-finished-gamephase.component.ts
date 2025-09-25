@@ -69,7 +69,8 @@ export class DialogFinishedGamephaseComponent implements OnInit {
         isCompleted: true, // Marcar como concluída
         accuracy: this.accuracy, // Salvar acurácia final (se existir campo)
         coins: this.coinsSum,
-        reputation: this.reputationSum
+        reputation: this.reputationSum,
+        userDiagram: JSON.stringify(this.phaseUser.userDiagram) // Garantir que o diagrama do usuário seja salvo
       };
 
       // ✅ 2. Atualizar usuário com recompensas

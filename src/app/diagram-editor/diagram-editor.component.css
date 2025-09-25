@@ -74,6 +74,7 @@
 }
 
 .inconsistency_indicator {
+    width: fit-content;
     position: sticky;
     top: 0;
     left: 0;
@@ -106,5 +107,27 @@
     font-size: 14px;
     font-weight: 700;
     color: var(--red);
+}
+
+/* ✅ ADICIONAR: Estilos para botão ativo */
+.btn-icon.active {
+    background: var(--yellow);
+    color: white;
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 3px rgba(134, 151, 230, 0.3);
+    transform: scale(1.05);
+}
+
+.btn-icon.active img {
+    filter: brightness(0) invert(1); /* Torna os ícones brancos quando ativo */
+}
+
+.btn-icon.active:hover {
+    background: var(--yellow);
+}
+
+/* ✅ Transição suave */
+.btn-icon {
+    transition: all 0.2s ease;
 }
 

@@ -1,33 +1,54 @@
 <div class="content">
     <div class="drag-and-drop-buttons">
-        <button class="btn-icon filled" (click)="addLink('association')">
+        <button 
+            class="btn-icon filled" 
+            [class.active]="isButtonActive('link-association')"
+            (click)="addLink('association')" 
+            type="button">
             <img src="assets/icons/association.svg" alt="">
         </button>
+        
         <button 
             class="btn-icon filled"
+            [class.active]="isButtonActive('actor')"
             draggable="true" 
             (dragstart)="onDragStart($event, 'actor')"
             (click)="addElement('actor')"
-            type="button"    
-        >
+            type="button">
             <img src="assets/icons/actor.svg" alt="">
         </button>
+        
         <button
             class="btn-icon filled"
+            [class.active]="isButtonActive('usecase')"
             draggable="true" 
             (dragstart)="onDragStart($event, 'usecase')"
             (click)="addElement('usecase')"    
-            type="button"
-        >
+            type="button">
             <img src="assets/icons/use_case.svg" alt="">
         </button>
-        <button class="btn-icon filled" (click)="addLink('extend')" type="button">
+        
+        <button 
+            class="btn-icon filled" 
+            [class.active]="isButtonActive('link-extend')"
+            (click)="addLink('extend')" 
+            type="button">
             <img src="assets/icons/extend.svg" alt="">
         </button>
-        <button class="btn-icon filled" (click)="addLink('include')" type="button">
+        
+        <button 
+            class="btn-icon filled" 
+            [class.active]="isButtonActive('link-include')"
+            (click)="addLink('include')" 
+            type="button">
             <img src="assets/icons/include.svg" alt="">
         </button>
-        <button class="btn-icon filled" (click)="addLink('dependency')" type="button">
+        
+        <button 
+            class="btn-icon filled" 
+            [class.active]="isButtonActive('link-dependency')"
+            (click)="addLink('dependency')" 
+            type="button">
             <img src="assets/icons/dependency.svg" alt="">
         </button>
     </div>

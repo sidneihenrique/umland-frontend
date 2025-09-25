@@ -139,3 +139,7 @@ body {
 .link-btn:hover {
   background: var(--blue);
 }
+.link-btn.active {
+  background: var(--yellow);
+  color: var(--white);
+}

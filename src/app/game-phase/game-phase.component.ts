@@ -443,6 +443,9 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
     // Calcular e atualizar a acurácia
     this.accuracy = this.diagramEditorComponentRef.calculateGraphAccuracy();
+    if (this.phaseUser) {
+      this.phaseUser.userDiagram = this.diagramEditorComponentRef.getCurrentDiagramJSON();
+    }
 
     // Fecha o diálogo de confirmação e abre o diálogo de finalização
     this.confirmDialogVisible = false;
