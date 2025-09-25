@@ -39,7 +39,6 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   private initialJSON: any;
   
   private correctsJSON: any[] = [];
-  private graphJSONCorrect = new joint.dia.Graph();
   
 
   // Botão de remover elemento
@@ -57,10 +56,17 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   // Tipo de link que está sendo criado
   private linkingType: string | null = null;
 
+  // ✅ ADICIONAR: Propriedades para controlar botões ativos
+  private activeButton: string | null = null;
+  private isWaitingForClick: boolean = false;
+
 
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
 
   public inconsistencies: string[] = [];
+
+  // ✅ ADICIONAR: Propriedade para armazenar o handler ativo
+  private activeClickHandler: ((evt: MouseEvent) => void) | null = null;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -68,7 +74,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   ) {}
 
   ngOnInit(): void {
-    // O GamePhaseComponent vai chamar initializeJointJS() quando tiver os dados
+   
   }
   
   ngAfterViewInit(): void {
@@ -154,7 +160,6 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       this.hideRemoveButton();
       this.hideLinkButton();
       this.showInlineEditor(this.currentCellView);
-      console.log(JSON.stringify(this.graph?.toJSON()));
     });
 
     // Atualiza a posição do botão de remover ao mover o mouse sobre o elemento
@@ -238,59 +243,165 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
+  // ✅ CORRIGIR: Método addElement para gerenciar estado ativo
   addElement(type?: string, event?: MouseEvent) {
+    // ✅ CANCELAR operação ativa anterior e limpar handlers
+    if (this.isWaitingForClick) {
+      this.cancelActiveOperation();
+    }
+
     // Verifica se o graph e o paper foram inicializados
     if (this.graph && this.paper) {
       const container = this.paperContainer.nativeElement as HTMLElement;
 
       // Se não recebeu o evento, adiciona um listener de click para capturar o próximo clique
       if(!event) {
-        const clickHandler = (evt: MouseEvent) => {
-          // Remove o listener após o clique para evitar múltiplas execuções
-          container.removeEventListener('click', clickHandler);
+        // ✅ Ativar botão e aguardar clique
+        this.setActiveButton(type || '');
+        this.isWaitingForClick = true;
+
+        // ✅ CORRIGIR: Remover handler anterior se existir
+        if (this.activeClickHandler) {
+          container.removeEventListener('click', this.activeClickHandler);
+        }
+
+        // ✅ Criar novo handler e armazenar referência
+        this.activeClickHandler = (evt: MouseEvent) => {
+          // Remove o listener após o clique
+          container.removeEventListener('click', this.activeClickHandler!);
+          this.activeClickHandler = null;
+          
+          // ✅ Desativar botão após uso
+          this.clearActiveButton();
+          this.isWaitingForClick = false;
+          
           // Chama addElement novamente, agora com o evento
           this.addElement(type, evt);
         };
-        container.addEventListener('click', clickHandler);
+
+        // ✅ Adicionar o novo handler
+        container.addEventListener('click', this.activeClickHandler);
         
         // Muda o cursor para indicar que está aguardando o clique
         this.setCursor('crosshair');
-        return
+        return;
+        
       } else if (event && type) {
-          const rect = container.getBoundingClientRect();
+        const rect = container.getBoundingClientRect();
 
-          // Posição do mouse relativa ao container
-          const clientX = event.clientX - rect.left + container.scrollLeft;
-          const clientY = event.clientY - rect.top + container.scrollTop;
+        // Posição do mouse relativa ao container
+        const clientX = event.clientX - rect.left + container.scrollLeft;
+        const clientY = event.clientY - rect.top + container.scrollTop;
 
-          // Ajuste para o zoom atual
-          const scaledX = clientX / this.zoomLevel;
-          const scaledY = clientY / this.zoomLevel;
+        // Ajuste para o zoom atual
+        const scaledX = clientX / this.zoomLevel;
+        const scaledY = clientY / this.zoomLevel;
 
-          switch (type) {
-            case 'actor': {
-              const actor = UMLElementUtil.createActor(scaledX, scaledY);
-              actor.addTo(this.graph);
-              break;
-            }
-            case 'usecase': {
-              const useCase = UMLElementUtil.createUseCase(scaledX, scaledY);
-              useCase.addTo(this.graph);
-              break;
-            }
-            // Adicione outros tipos conforme necessário
-            default:
-              console.error('Unknown element type:', type);
-              break;
+        switch (type) {
+          case 'actor': {
+            const actor = UMLElementUtil.createActor(scaledX, scaledY);
+            actor.addTo(this.graph);
+            break;
           }
-          // Voltar o cursor ao normal após adicionar o elemento
-          this.setCursor('default');
+          case 'usecase': {
+            const useCase = UMLElementUtil.createUseCase(scaledX, scaledY);
+            useCase.addTo(this.graph);
+            break;
+          }
+          // Adicione outros tipos conforme necessário
+          default:
+            console.error('Unknown element type:', type);
+            break;
+        }
+        // Voltar o cursor ao normal após adicionar o elemento
+        this.setCursor('default');
       }
     } else {
       console.error('Graph or paper not initialized');
       return;
     }
 
+  }
+
+  // ✅ CORRIGIR: Método addLink para gerenciar estado ativo
+  addLink(type: string) {
+    // ✅ ADICIONAR: Cancelar operação ativa 
+    if (this.isWaitingForClick) {
+      this.cancelActiveOperation();
+    }
+    // ✅ Ativar botão de link
+    this.setActiveButton(`link-${type}`);
+    this.isWaitingForClick = true;
+
+    this.linkingType = type;
+    this.linkingSource = null;
+
+    // Aguarda o primeiro clique (origem)
+    const selectSource = (cellView: joint.dia.ElementView) => {
+      this.linkingSource = cellView.model;
+
+      // Aguarda o segundo clique (destino)
+      const selectTarget = (targetView: joint.dia.ElementView) => {
+        if (this.linkingSource && targetView.model.id !== this.linkingSource.id) {
+          // Cria o link usando o utilitário
+          const link = UMLElementUtil.createLink(this.linkingSource, targetView.model, this.linkingType!);
+          link.addTo(this.graph!);
+        }
+
+        // ✅ Desativar botão após completar o link
+        this.clearActiveButton();
+        this.isWaitingForClick = false;
+
+        // Limpa listeners
+        this.paper!.off('element:pointerclick', selectTarget);
+        this.linkingSource = null;
+        this.linkingType = null;
+      };
+
+      this.paper!.once('element:pointerclick', selectTarget);
+      // Remove listener de origem para evitar múltiplos triggers
+      this.paper!.off('element:pointerclick', selectSource);
+    };
+
+    this.paper!.on('element:pointerclick', selectSource);
+  }
+
+  // ✅ ADICIONAR: Método para definir botão ativo
+  private setActiveButton(buttonType: string): void {
+    this.activeButton = buttonType;
+  }
+
+  // ✅ ADICIONAR: Método para limpar botão ativo
+  private clearActiveButton(): void {
+    this.activeButton = null;
+  }
+
+  // ✅ ADICIONAR: Método público para verificar se um botão está ativo
+  public isButtonActive(buttonType: string): boolean {
+    return this.activeButton === buttonType;
+  }
+
+  // ✅ ADICIONAR: Método para cancelar operação ativa
+  public cancelActiveOperation(): void {
+    if (this.isWaitingForClick) {
+      this.clearActiveButton();
+      this.isWaitingForClick = false;
+      this.setCursor('default');
+      
+      // ✅ ADICIONAR: Remover handler ativo de elemento
+      if (this.activeClickHandler) {
+        const container = this.paperContainer.nativeElement as HTMLElement;
+        container.removeEventListener('click', this.activeClickHandler);
+        this.activeClickHandler = null;
+      }
+      
+      // Limpar operações de link se estiver ativas
+      if (this.linkingType) {
+        this.paper?.off('element:pointerclick');
+        this.linkingSource = null;
+        this.linkingType = null;
+      }
+    }
   }
 
   private showInlineEditor(cellView: joint.dia.ElementView | null | joint.dia.LinkView, evt?: joint.dia.Event): void {
@@ -438,6 +549,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
     btn.onclick = () => {
       this.linkingSource = cellView.model;
+      btn.classList.add('active');
       
       // Aguarda o próximo clique em outro elemento
       this.paper!.once('element:pointerclick', (targetView: joint.dia.ElementView) => {
@@ -509,34 +621,6 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
-  addLink(type: string) {
-    this.linkingType = type;
-    this.linkingSource = null;
-
-    // Aguarda o primeiro clique (origem)
-    const selectSource = (cellView: joint.dia.ElementView) => {
-      this.linkingSource = cellView.model;
-
-      // Aguarda o segundo clique (destino)
-      const selectTarget = (targetView: joint.dia.ElementView) => {
-        if (this.linkingSource && targetView.model.id !== this.linkingSource.id) {
-          // Cria o link usando o utilitário
-          const link = UMLElementUtil.createLink(this.linkingSource, targetView.model, this.linkingType!);
-          link.addTo(this.graph!);
-        }
-        // Limpa listeners
-        this.paper!.off('element:pointerclick', selectTarget);
-        this.linkingSource = null;
-        this.linkingType = null;
-      };
-
-      this.paper!.once('element:pointerclick', selectTarget);
-      // Remove listener de origem para evitar múltiplos triggers
-      this.paper!.off('element:pointerclick', selectSource);
-    };
-
-    this.paper!.on('element:pointerclick', selectSource);
-  }
   // Cálcula se o graph do usuário está correto
   calculateGraphAccuracy(): number {
     if (!this.graph || !this.correctsJSON.length) {
@@ -700,6 +784,9 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   ngOnDestroy(): void {
+    // ✅ Cancelar operações ativas antes de destruir
+    this.cancelActiveOperation();
+    
     if (this.paper) {
       this.paper.remove();
       this.paper = null;
