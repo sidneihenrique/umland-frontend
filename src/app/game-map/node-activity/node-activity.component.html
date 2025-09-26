@@ -1,4 +1,4 @@
-<div class="node-wrapper" [ngClass]="{ 'locked': phase.status === 'LOCKED', 'active': phase.status === 'AVAILABLE'}">
+<div class="node-wrapper" [ngClass]="{ 'locked': phase.status === 'LOCKED', 'active': phase.current === true}">
     <div class="node" (click)="openGamePhase()">
         <span>{{ phase.phase.title }}</span>
     </div>

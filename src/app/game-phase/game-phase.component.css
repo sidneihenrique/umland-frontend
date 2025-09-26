@@ -3,18 +3,8 @@
     flex-direction: column;
     gap: 16px;
 
-}
+    padding: 16px;
 
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-header .left {
-    display: flex;
-    align-items: center;
-    gap: 32px;
 }
 
 .game-timers {
@@ -389,7 +379,7 @@ header .watch-time.active {
     gap: 8px;
     font-size: 12px;
     color: #666;
-    z-index: 1000;
+    z-index: 5;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
 }
