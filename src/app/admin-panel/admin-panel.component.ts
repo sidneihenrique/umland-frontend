@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ViewChildren, QueryList, AfterViewInit } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminPanelService, Item } from '../../services/admin-panel.service';
+import { GameMapService } from '../../services/game-map.service';
 import { Avatar, Phase, Character } from '../../services/phase.service';
 import { User } from '../../services/user.service';
 import { GameMap } from '../../services/game-map.service';
@@ -113,6 +114,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   tabs = [
     { id: 'avatars', name: 'Avatars', icon: '👤' },
     { id: 'characters', name: 'Personagens', icon: '🎭' },
+    { id: 'gamemaps', name: 'GameMaps', icon: '🗺️' }, // ✅ NOVA TAB
     { id: 'phases', name: 'Fases', icon: '🎮' },
     { id: 'items', name: 'Items', icon: '🛒' },
     { id: 'tips', name: 'Dicas', icon: '💡' }
@@ -122,10 +124,21 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   editingCorrectDiagramIndex: number = -1; // -1 = não está editando
   correctDiagramPreview: string = ''; // Preview do JSON para mostrar na lista
 
+  // ✅ ADICIONAR: Propriedades para GameMap
+  gameMap: GameMap = {
+    title: '',
+    users: [],
+    phases: []
+  };
+
+  // ✅ ADICIONAR: Estado de edição para GameMap
+  editGameMapId?: number;
+
   constructor(
     private adminService: AdminPanelService, 
     private authService: AuthService,
-    private tipService: TipService
+    private tipService: TipService,
+    private gameMapService: GameMapService
   ) {}
 
   // ✅ ADICIONAR: Método para trocar de tab
@@ -927,6 +940,104 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       }
       
       console.log('⬇️ Diagrama correto movido para baixo');
+    }
+  }
+
+  // ✅ ADICIONAR: Métodos CRUD para GameMap
+  onSubmitGameMap() {
+    if (!this.gameMap.title.trim()) {
+      alert('Por favor, digite um título para o GameMap.');
+      return;
+    }
+    
+    if (this.editGameMapId != null) {
+      this.gameMapService.updateGameMap(this.editGameMapId, this.gameMap).subscribe({
+        next: () => {
+          this.loadGameMaps();
+          this.resetGameMapForm();
+          alert('✅ GameMap atualizado com sucesso!');
+        },
+        error: (error) => {
+          console.error('Erro ao atualizar gameMap:', error);
+          alert('❌ Erro ao atualizar GameMap');
+        }
+      });
+    } else {
+      // ✅ Criar novo GameMap
+      const newGameMap: Omit<GameMap, 'id'> = {
+        title: this.gameMap.title.trim(),
+        users: [],
+        phases: [],
+        createdAt: new Date().toISOString(),
+        createdByUser: this.user ? this.user : undefined
+      };
+
+      this.gameMapService.createGameMap(newGameMap).subscribe({
+        next: () => {
+          this.loadGameMaps();
+          this.resetGameMapForm();
+          alert('✅ GameMap criado com sucesso!');
+        },
+        error: (error) => {
+          console.error('Erro ao criar gameMap:', error);
+          alert('❌ Erro ao criar GameMap');
+        }
+      });
+    }
+  }
+
+  resetGameMapForm() {
+    this.gameMap = {
+      title: '',
+      users: [],
+      phases: []
+    };
+    this.editGameMapId = undefined;
+  }
+
+  editGameMap(index: number) {
+    const gm = this.gameMaps[index];
+    this.gameMap = { 
+      id: gm.id,
+      title: gm.title,
+      users: gm.users || [],
+      phases: gm.phases || [],
+      createdAt: gm.createdAt,
+      createdByUser: gm.createdByUser
+    };
+    this.editGameMapId = gm.id;
+  }
+
+  deleteGameMap(index: number) {
+    const gm = this.gameMaps[index];
+    if (gm.id != null) {
+      if (confirm(`🗑️ Remover o GameMap "${gm.title}"?\n\nAtenção: Isso pode afetar as fases vinculadas.`)) {
+        this.gameMapService.deleteGameMap(gm.id).subscribe({
+          next: () => {
+            this.loadGameMaps();
+            alert('🗑️ GameMap removido com sucesso!');
+          },
+          error: (error) => {
+            console.error('Erro ao deletar gameMap:', error);
+            alert('❌ Erro ao remover GameMap');
+          }
+        });
+      }
+    }
+  }
+
+  // ✅ ADICIONAR: Método utilitário para formatar data
+  formatDate(dateString?: string): string {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR') + ' às ' + date.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Data inválida';
     }
   }
 }

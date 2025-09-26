@@ -41,7 +41,7 @@ export class LoginComponent {
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
-        this.router.navigate(['/map']).then(
+        this.router.navigate(['/select-map']).then(
           () => localStorage.setItem('currentUser', JSON.stringify(response.user)),
           (error) => console.error('Erro na navegação:', error)
         );

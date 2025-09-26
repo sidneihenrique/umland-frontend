@@ -1,29 +1,38 @@
-import { Component, OnInit, EventEmitter, Input, Output, ViewChild, ViewContainerRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, EventEmitter, Input, Output, ViewChild, ViewContainerRef, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { StorageService } from '../../services/storage.service';
 import { StoreComponent } from "../store/store.component";
 import { BackpackComponent } from "../backpack/backpack.component";
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component'; // ✅ ADICIONAR
 import { DataService, UserResponse } from '../../services/data.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user.service';
 import { User } from '../../services/user.service';
+import { AuthService } from '../auth/auth.service'; // ✅ ADICIONAR
+import { isPlatformBrowser } from '@angular/common';
 
 import { FileUrlBuilder } from '../../config/files.config';
 
 @Component({
   selector: 'app-header',
-  imports: [LucideIconsModule, StoreComponent, BackpackComponent, CommonModule],
+  imports: [
+    LucideIconsModule, 
+    StoreComponent, 
+    BackpackComponent, 
+    CommonModule,
+    ConfirmDialogComponent // ✅ ADICIONAR
+  ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
 export class HeaderComponent implements OnInit, OnDestroy{
 
-  @Output() logoutEvent = new EventEmitter<void>();
   @Output() exitEvent = new EventEmitter<void>();
   @Output() storeToggleEvent = new EventEmitter<boolean>();
+  // ✅ REMOVER: logoutEvent (agora é tratado internamente)
 
-  @Input() parentType!: 'game-phase' | 'game-map';
+  @Input() parentType!: 'game-phase' | 'game-map' | 'game-map-select'; // ✅ ADICIONAR: novo tipo
 
   userData?: User;
 
@@ -32,6 +41,11 @@ export class HeaderComponent implements OnInit, OnDestroy{
 
   // Referência para o componente Backpack (mochila)
   @ViewChild(BackpackComponent) backpack!: BackpackComponent;
+
+  // ✅ ADICIONAR: Propriedades para o modal de logout
+  confirmDialogVisible: boolean = false;
+  confirmDialogTitle: string = '';
+  confirmDialogMessage: string = '';
 
   currentTime: string = '00:00:00';
   watchTime: string = '';
@@ -46,7 +60,9 @@ export class HeaderComponent implements OnInit, OnDestroy{
   constructor(
     private dataService: DataService,
     private userService: UserService,
-    private router: Router
+    private authService: AuthService, // ✅ ADICIONAR
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object // ✅ ADICIONAR
   ) {}
 
   ngOnInit(): void {
@@ -66,8 +82,34 @@ export class HeaderComponent implements OnInit, OnDestroy{
     }
   }
 
+  // ✅ ALTERAR: Método logout agora abre o modal
   logout() {
-    this.logoutEvent.emit();
+    this.openConfirmDialog(
+      'Tem certeza que deseja fazer logout?',
+      'Você precisará fazer o login novamente caso deseje entrar'
+    );
+  }
+
+  // ✅ ADICIONAR: Método para confirmar logout
+  confirmLogout() {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('currentUser');
+    }
+    this.authService.logout();
+    this.router.navigate(['/login']);
+    this.confirmDialogVisible = false;
+  }
+
+  // ✅ ADICIONAR: Método para cancelar logout
+  onCancel() {
+    this.confirmDialogVisible = false;
+  }
+
+  // ✅ ADICIONAR: Método para abrir modal de confirmação
+  openConfirmDialog(title: string, message: string) {
+    this.confirmDialogTitle = title;
+    this.confirmDialogMessage = message;
+    this.confirmDialogVisible = true;
   }
 
   exitGame() {
@@ -157,7 +199,6 @@ export class HeaderComponent implements OnInit, OnDestroy{
     return num.toString().padStart(2, '0');
   }
 
-  // ✅ Método para construir URL do avatar do usuário
   getUserAvatarUrl(): string {
     if (!this.userData?.avatar?.filePath) {
       // Fallback para avatar padrão
@@ -168,12 +209,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
     return FileUrlBuilder.avatar(this.userData.avatar.filePath);
   }
 
-  // ✅ Método para tratar erro de carregamento da imagem
   onAvatarImageError(event: Event): void {
-    // const imgElement = event.target as HTMLImageElement;
-    // if (imgElement && imgElement.src !== 'assets/images/characters/default-avatar.png') {
-    //   console.warn('Failed to load user avatar:', imgElement.src);
-    //   imgElement.src = 'assets/images/characters/default-avatar.png';
-    // }
+    // Tratamento de erro de imagem se necessário
   }
 }

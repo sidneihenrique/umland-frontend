@@ -111,9 +111,32 @@ header .right {
 }
 
 #activity-diagram {
+    width: 100%;
+
+    overflow-y: auto;
+
     display: flex;
     align-items: center;
     gap: 88px;
 
     height: 60vh;
+
+    padding: 16px;
+}
+
+.uml-start-circle {
+    width: 60px;
+    height: 60px;
+    border: 8px solid var(--black);
+    border-radius: 50%;
+
+    position: relative;
+}
+
+.uml-start-circle .arrow {
+    width: 88px;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translate(50%, -50%);
 }

@@ -78,13 +78,13 @@ export class AuthService {
     return this.http.post(`${this.api}/users`, null, { params });
   }
 
-  logout(): Observable<any> {
-    return this.http.post(`${this.api}/users/logout`, {})
-      .pipe(
-        tap(() => {
-          this.clearAuth();
-        })
-      );
+  logout(): Observable<any> | void {
+    // return this.http.post(`${this.api}/users/logout`, {})
+    //   .pipe(
+    //     tap(() => {
+    //       this.clearAuth();
+    //     })
+    //   );
   }
 
   // ✅ Métodos auxiliares corrigidos com verificação de plataforma

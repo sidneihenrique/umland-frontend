@@ -22,7 +22,6 @@
 }
 
 body {
-  padding: 16px;
   overflow-y: hidden;
 }
 
@@ -64,7 +63,6 @@ body {
   width: 32px;
   height: 32px;
   font-size: 32px;
-  color: var(--black);
 
 }
 

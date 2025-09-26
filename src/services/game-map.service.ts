@@ -23,8 +23,10 @@ export interface PhaseUser {
 export interface GameMap {
   id?: number;
   title: string;
-  users: User[];
-  phases: Phase[];
+  users?: User[];
+  phases?: Phase[];
+  createdAt?: string; // ✅ ADICIONAR: Data de criação (LocalDateTime vira string no JSON)
+  createdByUser?: User; // ✅ ADICIONAR: Usuário que criou o GameMap
 }
 
 @Injectable({ providedIn: 'root' })
@@ -45,6 +47,22 @@ export class GameMapService {
     const url = `${this.apiUrl}/gamemaps/${gameMapId}/phases`;
     
     return this.http.get<PhaseUser[]>(url, { params });
+  }
+
+  /**
+   * ✅ NOVO: Associa um GameMap a um usuário
+   * POST /gamemaps/{gameMapId}/set-to-user/{userId}
+   * @param gameMapId - ID do GameMap
+   * @param userId - ID do usuário
+   * @returns Observable<GameMap> - GameMap atualizado com o usuário associado
+   */
+  setGameMapToUser(gameMapId: number, userId: number): Observable<GameMap> {
+    const url = `${this.apiUrl}/gamemaps/${gameMapId}/set-to-user/${userId}`;
+    
+    console.log(`🔗 Associando GameMap ${gameMapId} ao usuário ${userId}`);
+    console.log(`📡 URL: ${url}`);
+    
+    return this.http.post<GameMap>(url, {});
   }
 
   /**

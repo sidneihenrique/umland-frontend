@@ -5,6 +5,7 @@ import { AuthGuard } from './auth/auth-guard';
 import { AdminPanelComponent } from './admin-panel/admin-panel.component';
 import { GameMapComponent } from './game-map/game-map.component';
 import { RegisterComponent } from './register/register.component';
+import { SelectMapComponent } from './select-map/select-map.component';
 
 
 export const routes: Routes = [
@@ -13,7 +14,7 @@ export const routes: Routes = [
      },
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
-    { path: 'map',
+    { path: 'map/:id',
       component: GameMapComponent,
       canActivate: [AuthGuard]
     },
@@ -25,5 +26,10 @@ export const routes: Routes = [
     {
       path: 'admin',
       component: AdminPanelComponent
+    },
+    {
+      path: 'select-map',
+      component: SelectMapComponent,
+      canActivate: [AuthGuard]
     }
 ];

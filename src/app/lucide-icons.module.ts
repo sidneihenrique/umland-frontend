@@ -24,7 +24,14 @@ import {
   Loader2,
   CloudUpload,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Map,
+  MapPin,
+  Gamepad2,
+  Users,
+  User,
+  Calendar,
+  MousePointerClick
 } from 'lucide-angular';
 
 @NgModule({
@@ -51,7 +58,14 @@ import {
     Loader2,
     CloudUpload,
     ToggleLeft,
-    ToggleRight
+    ToggleRight,
+    Map,
+    MapPin,
+    Gamepad2,
+    Users,
+    User,
+    Calendar,
+    MousePointerClick
   })],
   exports: [LucideAngularModule],
 })
