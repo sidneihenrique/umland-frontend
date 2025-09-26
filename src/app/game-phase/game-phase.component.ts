@@ -407,7 +407,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
       'Tem certeza que sair da fase?',
       'Você voltará para o menu principal se fizer isto.',
       () => {
-        this.router.navigate(['/map']);
+        this.router.navigate(['/map', this.phase?.gameMap.id]);
       }
     );
 
