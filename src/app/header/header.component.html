@@ -46,3 +46,12 @@
 
 <app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
 <app-backpack #backpack></app-backpack>
+
+<!-- ✅ ADICIONAR: Modal de confirmação de logout -->
+<app-confirm-dialog 
+    [visible]="confirmDialogVisible" 
+    [title]="confirmDialogTitle" 
+    [message]="confirmDialogMessage"
+    (confirm)="confirmLogout()" 
+    (cancel)="onCancel()">
+</app-confirm-dialog>

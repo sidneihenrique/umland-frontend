@@ -7,7 +7,7 @@ import { StoreComponent } from "../store/store.component";
 import { AuthService } from '../auth/auth.service';
 import { DataService, UserResponse } from '../../services/data.service';
 import { User, UserService } from '../../services/user.service';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router'; // ✅ ADICIONAR: ActivatedRoute
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { NodeActivityComponent } from './node-activity/node-activity.component';
 import { CommonModule } from '@angular/common';
@@ -47,8 +47,8 @@ export class GameMapComponent implements OnInit {
 
   // ✅ Usando PhaseUser diretamente
   phaseUsers: PhaseUser[] = [];
-  gameMapId: number = 1; // ID do GameMap - você pode fazer isso dinâmico
-  userId: number = 0; // ID do usuário logado
+  gameMapId: number = 0; // ✅ ALTERAR: Será definido pela URL
+  userId: number = 0; // ✅ ALTERAR: Será definido pelo getCurrentUser()
   isLoadingPhases: boolean = false;
   phasesError: string = '';
 
@@ -58,14 +58,30 @@ export class GameMapComponent implements OnInit {
     private dataService: DataService,
     private userService: UserService,
     private router: Router,
+    private route: ActivatedRoute, // ✅ ADICIONAR: ActivatedRoute
     private gameMapService: GameMapService
   ) {}
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      const userIdStr = localStorage.getItem('userId');
-      if (userIdStr) {
-        this.userId = Number(userIdStr);
+      // ✅ ALTERAR: Obter gameMapId da URL
+      this.gameMapId = Number(this.route.snapshot.paramMap.get('id'));
+      console.log('🗺️ GameMapId obtido da URL:', this.gameMapId);
+
+      // ✅ Verificar se gameMapId é válido
+      if (!this.gameMapId || this.gameMapId <= 0) {
+        console.error('❌ GameMapId inválido:', this.gameMapId);
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      // ✅ ALTERAR: Usar getCurrentUser() ao invés de localStorage
+      const currentUser = this.userService.getCurrentUser();
+      
+      if (currentUser && currentUser.id) {
+        this.userId = currentUser.id;
+        this.userData = currentUser;
+        console.log('👤 Usuário atual obtido:', { id: this.userId, name: currentUser.name });
         
         // Inscreve-se nas atualizações de dados do usuário
         this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
@@ -74,12 +90,13 @@ export class GameMapComponent implements OnInit {
           }
         });
 
-        // Carrega os dados iniciais
+        // ✅ Carregar dados completos do usuário (opcional - para garantir dados atualizados)
         this.loadUserData(this.userId);
         
         // ✅ Carrega as fases do GameMap para este usuário
         this.loadPhaseUsers();
       } else {
+        console.warn('⚠️ Usuário não encontrado no localStorage');
         this.router.navigate(['/login']);
       }
     }
@@ -87,13 +104,27 @@ export class GameMapComponent implements OnInit {
 
   // ✅ Método renomeado e simplificado
   public loadPhaseUsers() {
+    if (!this.gameMapId || !this.userId) {
+      console.error('❌ GameMapId ou UserId não disponível:', { 
+        gameMapId: this.gameMapId, 
+        userId: this.userId 
+      });
+      return;
+    }
+
     this.isLoadingPhases = true;
     this.phasesError = '';
+    
+    console.log('📡 Carregando fases do mapa:', { 
+      gameMapId: this.gameMapId, 
+      userId: this.userId 
+    });
         
     this.gameMapService.getAllPhasesByUser(this.gameMapId, this.userId).subscribe({
       next: (phaseUsers: PhaseUser[]) => {
         this.phaseUsers = phaseUsers;
         this.isLoadingPhases = false;
+        console.log('✅ Fases carregadas:', phaseUsers.length);
       },
       error: (error) => {
         console.error('❌ Erro ao carregar fases:', error);
@@ -130,7 +161,7 @@ export class GameMapComponent implements OnInit {
             filePath: 'character_teacher_01.png' 
           },
           gameMap: {
-            id: 1,
+            id: this.gameMapId, // ✅ USAR: gameMapId da URL
             title: 'Campus Virtual',
             users: [],
             phases: []
@@ -159,7 +190,7 @@ export class GameMapComponent implements OnInit {
             filePath: 'character_teacher_01.png' 
           },
           gameMap: {
-            id: 1,
+            id: this.gameMapId, // ✅ USAR: gameMapId da URL
             title: 'Campus Virtual',
             users: [],
             phases: []
@@ -188,7 +219,7 @@ export class GameMapComponent implements OnInit {
             filePath: 'character_teacher_01.png' 
           },
           gameMap: {
-            id: 1,
+            id: this.gameMapId, // ✅ USAR: gameMapId da URL
             title: 'Campus Virtual',
             users: [],
             phases: []
@@ -230,13 +261,13 @@ export class GameMapComponent implements OnInit {
     return `http://localhost:9090/uploads/characters/${phaseUser.phase.character.filePath}`;
   }
 
-  // ✅ Método para atualizar GameMap ID dinamicamente
+  // ✅ Método para atualizar GameMap ID dinamicamente (mantido para compatibilidade)
   setGameMapId(newGameMapId: number) {
     this.gameMapId = newGameMapId;
     this.loadPhaseUsers();
   }
 
-  // ✅ Método para atualizar User ID dinamicamente (se necessário)
+  // ✅ Método para atualizar User ID dinamicamente (mantido para compatibilidade)
   setUserId(newUserId: number) {
     this.userId = newUserId;
     this.loadPhaseUsers();
@@ -260,7 +291,8 @@ export class GameMapComponent implements OnInit {
 
   confirmLogout() {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('userId');
+      // ✅ ALTERAR: Remover currentUser ao invés de userId
+      localStorage.removeItem('currentUser');
     }
     this.authService.logout();
     this.router.navigate(['/login']);
@@ -270,15 +302,18 @@ export class GameMapComponent implements OnInit {
     this.confirmDialogVisible = false;
   }
 
+  // ✅ ALTERAR: Método mais simples já que temos os dados do getCurrentUser
   private loadUserData(userId: number) {
+    // Carrega dados completos e atualizados do usuário do backend
     this.userService.getUserById(userId).subscribe({
       next: (user: User) => {
         this.userData = user;
+        console.log('✅ Dados do usuário atualizados do backend:', user);
       },
       error: (error) => {
-        console.error('Erro ao carregar dados do usuário:', error);
-        this.userLoadError = 'Erro ao carregar dados do usuário';
-        this.router.navigate(['/login']);
+        console.error('⚠️ Erro ao carregar dados atualizados do usuário:', error);
+        // Continuar com os dados do getCurrentUser que já temos
+        console.log('📱 Usando dados do localStorage como fallback');
       }
     });
   }

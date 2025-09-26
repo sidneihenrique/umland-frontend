@@ -23,8 +23,10 @@ export interface PhaseUser {
 export interface GameMap {
   id?: number;
   title: string;
-  users: User[];
-  phases: Phase[];
+  users?: User[];
+  phases?: Phase[];
+  createdAt?: string; // ✅ ADICIONAR: Data de criação (LocalDateTime vira string no JSON)
+  createdByUser?: User; // ✅ ADICIONAR: Usuário que criou o GameMap
 }
 
 @Injectable({ providedIn: 'root' })

@@ -510,4 +510,102 @@
       </div>
     </div>
   </div>
+
+  <!-- GameMap Tab -->
+  <div *ngIf="activeTab === 'gamemaps'" class="card">
+    <div class="card-header">
+      <h2>🗺️ Cadastro de GameMap</h2>
+    </div>
+    <div class="card-content">
+      <form (ngSubmit)="onSubmitGameMap()" #gameMapForm="ngForm" class="form">
+        <div class="form-group">
+          <label>Título do GameMap:</label>
+          <input 
+            type="text" 
+            name="title" 
+            [(ngModel)]="gameMap.title" 
+            required 
+            class="form-input"
+            placeholder="Digite o nome do GameMap..." 
+          />
+        </div>
+
+        <div class="form-group" *ngIf="editGameMapId">
+          <label>📊 Informações:</label>
+          <div class="gamemap-info">
+            <div class="info-item">
+              <strong>👥 Usuários:</strong> {{ gameMap.users?.length || 0 }}
+            </div>
+            <div class="info-item">
+              <strong>🎮 Fases:</strong> {{ gameMap.phases?.length || 0 }}
+            </div>
+            <div class="info-item" *ngIf="gameMap.createdAt">
+              <strong>📅 Criado em:</strong> {{ formatDate(gameMap.createdAt) }}
+            </div>
+            <div class="info-item" *ngIf="gameMap.createdByUser">
+              <strong>👤 Criado por:</strong> {{ gameMap.createdByUser.name }}
+            </div>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="btn-primary" 
+          [disabled]="!gameMap.title || !gameMap.title.trim()">
+          {{ editGameMapId ? '✏️ Atualizar GameMap' : '💾 Salvar GameMap' }}
+        </button>
+        <button 
+          type="button" 
+          (click)="resetGameMapForm()" 
+          class="btn-secondary">
+          🔄 Limpar
+        </button>
+      </form>
+      
+      <!-- Lista de GameMaps -->
+      <div class="gamemaps-list">
+        <div *ngFor="let gm of gameMaps; let i = index" class="gamemap-card">
+          <div class="gamemap-header">
+            <div class="gamemap-title">
+              <h4>🗺️ {{ gm.title }}</h4>
+              <span class="gamemap-id">ID: {{ gm.id }}</span>
+            </div>
+            <div class="gamemap-stats">
+              <span class="stat-badge users">👥 {{ gm.users?.length || 0 }}</span>
+              <span class="stat-badge phases">🎮 {{ gm.phases?.length || 0 }}</span>
+            </div>
+          </div>
+          
+          <div class="gamemap-details">
+            <div class="detail-row">
+              <div class="detail-item" *ngIf="gm.createdAt">
+                <span class="detail-label">📅 Criado:</span>
+                <span class="detail-value">{{ formatDate(gm.createdAt) }}</span>
+              </div>
+              <div class="detail-item" *ngIf="gm.createdByUser">
+                <span class="detail-label">👤 Por:</span>
+                <span class="detail-value">{{ gm.createdByUser.name }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="item-actions">
+            <button class="btn-edit" (click)="editGameMap(i)" title="Editar GameMap">
+              ✏️
+            </button>
+            <button class="btn-delete" (click)="deleteGameMap(i)" title="Remover GameMap">
+              🗑️
+            </button>
+          </div>
+        </div>
+        
+        <!-- Mensagem quando não há GameMaps -->
+        <div *ngIf="gameMaps.length === 0" class="empty-state">
+          <div class="empty-icon">🗺️</div>
+          <h3>Nenhum GameMap cadastrado</h3>
+          <p>Crie seu primeiro GameMap para começar a organizar as fases do jogo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

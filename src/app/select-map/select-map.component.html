@@ -1,0 +1,91 @@
+<div class="select-map-overlay" [class.visible]="isOpen" (click)="close()">
+  <div class="select-map-dialog" (click)="$event.stopPropagation()">
+    
+    <!-- Header Component -->
+    <app-header parentType="game-map"></app-header>
+    
+    <!-- Select Map Header -->
+    <div class="select-map-header">
+      <div class="title">
+        <lucide-icon name="map" class="lucide-icon" [size]="32" color="#FFFFFF"></lucide-icon>
+        <h2>SELECIONAR MAPA</h2>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="loading-spinner">
+        <lucide-icon name="loader-2" class="lucide-icon spinning" [size]="48"></lucide-icon>
+      </div>
+      <p>Carregando mapas...</p>
+    </div>
+
+    <!-- GameMaps Content -->
+    <div class="select-map-content" *ngIf="!loading">
+      
+      <!-- GameMaps Grid -->
+      <div class="gamemaps-grid" *ngIf="gameMaps.length > 0">
+        <div 
+          *ngFor="let gameMap of gameMaps; let i = index" 
+          class="gamemap-card"
+          (click)="selectMap(gameMap)">
+          
+          <!-- GameMap Header -->
+          <div class="gamemap-header">
+            <div class="gamemap-icon">
+              <lucide-icon name="map-pin" class="lucide-icon" [size]="24"></lucide-icon>
+            </div>
+            <div class="gamemap-title">
+              <h3>{{ gameMap.title }}</h3>
+              <span class="gamemap-id">ID: {{ gameMap.id }}</span>
+            </div>
+          </div>
+
+          <!-- GameMap Stats -->
+          <div class="gamemap-stats">
+            <div class="stat-item phases">
+              <lucide-icon name="gamepad-2" class="lucide-icon" [size]="16"></lucide-icon>
+              <span class="stat-value">{{ getMapStats(gameMap).phases }}</span>
+              <span class="stat-label">Fases</span>
+            </div>
+            
+            <div class="stat-item users">
+              <lucide-icon name="users" class="lucide-icon" [size]="16"></lucide-icon>
+              <span class="stat-value">{{ getMapStats(gameMap).users }}</span>
+              <span class="stat-label">Usuários</span>
+            </div>
+          </div>
+
+          <!-- GameMap Details -->
+          <div class="gamemap-details">
+            <div class="detail-item" *ngIf="gameMap.createdAt">
+              <lucide-icon name="calendar" class="lucide-icon" [size]="14"></lucide-icon>
+              <span class="detail-text">{{ formatDate(gameMap.createdAt) }}</span>
+            </div>
+            
+            <div class="detail-item" *ngIf="gameMap.createdByUser">
+              <lucide-icon name="user" class="lucide-icon" [size]="14"></lucide-icon>
+              <span class="detail-text">{{ gameMap.createdByUser.name }}</span>
+            </div>
+          </div>
+
+          <!-- Selection Indicator -->
+          <div class="selection-indicator">
+            <lucide-icon name="mouse-pointer-click" class="lucide-icon" [size]="20"></lucide-icon>
+            <span>Clique para selecionar</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="gameMaps.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <lucide-icon name="map-pin-off" class="lucide-icon" [size]="64"></lucide-icon>
+        </div>
+        <h3>Nenhum mapa disponível</h3>
+        <p>Não há GameMaps cadastrados no sistema.</p>
+        <p>Entre em contato com o administrador para criar novos mapas.</p>
+      </div>
+    </div>
+  </div>
+</div>
