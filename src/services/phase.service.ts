@@ -29,6 +29,7 @@ export interface Phase {
   diagramInitial: string;
   correctDiagrams: string[];
   characterDialogues: string[];
+  parentPhaseId?: number;
 }
 
 // Interface para criar Phase (sem ID)

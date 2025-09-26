@@ -134,6 +134,9 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   // ✅ ADICIONAR: Estado de edição para GameMap
   editGameMapId?: number;
 
+  // ✅ ADICIONAR: ID da Phase pai selecionada
+  selectedParentPhaseId: number = 0;
+
   constructor(
     private adminService: AdminPanelService, 
     private authService: AuthService,
@@ -413,14 +416,15 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Preencher dados completos
+    // ✅ ADICIONAR: Incluir parentPhaseId na phase
     const completePhase: Phase = {
       ...this.phase,
       character: selectedCharacter,
-      gameMap: selectedGameMap
+      gameMap: selectedGameMap,
+      parentPhaseId: this.selectedParentPhaseId > 0 ? this.selectedParentPhaseId : undefined // ✅ NOVO
     };
 
-    console.log('Submitting phase:', completePhase);
+    console.log('Submitting phase with parentPhaseId:', completePhase);
     
     if (this.editPhaseId != null) {
       this.adminService.updatePhase(this.editPhaseId, completePhase).subscribe({
@@ -462,10 +466,14 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       },
       diagramInitial: '',
       correctDiagrams: [],
-      characterDialogues: []
+      characterDialogues: [],
+      parentPhaseId: undefined // ✅ ADICIONAR
     };
     
-    // ✅ ADICIONAR: Resetar IDs auxiliares
+    // ✅ ADICIONAR: Resetar ID da phase pai
+    this.selectedParentPhaseId = 0;
+    
+    // Resetar outros IDs auxiliares
     this.selectedCharacterId = 0;
     this.selectedGameMapId = 0;
     
@@ -475,7 +483,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     this.newDialogue = '';
     this.editingDialogueIndex = -1;
 
-    // ✅ ADICIONAR: Limpar edição de diagramas corretos
+    // Limpar edição de diagramas corretos
     this.editingCorrectDiagramIndex = -1;
 
     // Reinicializar diagrama vazio
@@ -513,18 +521,21 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       },
       diagramInitial: p.diagramInitial || '',
       correctDiagrams: p.correctDiagrams || [],
-      characterDialogues: p.characterDialogues || []
+      characterDialogues: p.characterDialogues || [],
+      parentPhaseId: p.parentPhaseId // ✅ ADICIONAR
     };
     
-    // ✅ ADICIONAR: Setar IDs auxiliares para os selects
+    // Setar IDs auxiliares para os selects
     this.selectedCharacterId = p.character?.id || 0;
     this.selectedGameMapId = p.gameMap?.id || 0;
+    this.selectedParentPhaseId = p.parentPhaseId || 0; // ✅ ADICIONAR
 
     console.log("Selected GameMap ID:", this.selectedGameMapId);
+    console.log("Selected Parent Phase ID:", this.selectedParentPhaseId); // ✅ LOG
     
     this.editPhaseId = p.id;
 
-    // ✅ Carregar diagrama inicial no primeiro editor
+    // Carregar diagrama inicial no primeiro editor
     const initialEditor = this.getInitialDiagramEditor();
     if (initialEditor?.isInitialized() && p.diagramInitial) {
       try {
@@ -1039,5 +1050,33 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     } catch (error) {
       return 'Data inválida';
     }
+  }
+
+  getAvailableParentPhases(): Phase[] {
+    if (!this.selectedGameMapId) {
+      return [];
+    }
+
+    // Filtrar phases do mesmo GameMap, excluindo a fase atual se estiver editando
+    return this.phases.filter(phase => {
+      // Deve ser do mesmo GameMap
+      const sameGameMap = phase.gameMap?.id === this.selectedGameMapId;
+      
+      // Não pode ser a própria phase (ao editar)
+      const notSelf = this.editPhaseId ? phase.id !== this.editPhaseId : true;
+      
+      // ✅ OPCIONAL: Evitar loops - fase pai não pode ter como pai a fase atual
+      const notCircular = this.editPhaseId ? phase.parentPhaseId !== this.editPhaseId : true;
+      
+      return sameGameMap && notSelf && notCircular;
+    });
+  }
+
+  // ✅ ADICIONAR: Método para obter nome da phase pai
+  getParentPhaseName(parentPhaseId?: number): string {
+    if (!parentPhaseId) return 'Nenhuma';
+    
+    const parentPhase = this.phases.find(p => p.id === parentPhaseId);
+    return parentPhase ? parentPhase.title : `Fase #${parentPhaseId}`;
   }
 }
