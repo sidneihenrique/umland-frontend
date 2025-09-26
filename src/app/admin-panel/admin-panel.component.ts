@@ -967,7 +967,9 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       const newGameMap: Omit<GameMap, 'id'> = {
         title: this.gameMap.title.trim(),
         users: [],
-        phases: []
+        phases: [],
+        createdAt: new Date().toISOString(),
+        createdByUser: this.user ? this.user : undefined
       };
 
       this.gameMapService.createGameMap(newGameMap).subscribe({

@@ -29,6 +29,8 @@ import {
   MapPin,
   Gamepad2,
   Users,
+  User,
+  Calendar,
   MousePointerClick
 } from 'lucide-angular';
 
@@ -61,6 +63,8 @@ import {
     MapPin,
     Gamepad2,
     Users,
+    User,
+    Calendar,
     MousePointerClick
   })],
   exports: [LucideAngularModule],

@@ -50,6 +50,22 @@ export class GameMapService {
   }
 
   /**
+   * ✅ NOVO: Associa um GameMap a um usuário
+   * POST /gamemaps/{gameMapId}/set-to-user/{userId}
+   * @param gameMapId - ID do GameMap
+   * @param userId - ID do usuário
+   * @returns Observable<GameMap> - GameMap atualizado com o usuário associado
+   */
+  setGameMapToUser(gameMapId: number, userId: number): Observable<GameMap> {
+    const url = `${this.apiUrl}/gamemaps/${gameMapId}/set-to-user/${userId}`;
+    
+    console.log(`🔗 Associando GameMap ${gameMapId} ao usuário ${userId}`);
+    console.log(`📡 URL: ${url}`);
+    
+    return this.http.post<GameMap>(url, {});
+  }
+
+  /**
    * ❌ DEPRECIADO: Método antigo que buscava apenas Phase
    * Mantido para compatibilidade, mas deve ser removido futuramente
    */
