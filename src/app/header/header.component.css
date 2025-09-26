@@ -137,7 +137,18 @@ header .right {
 }
 
 .left .btn-icon {
+    border-radius: 6px;
+
+    border: 3px solid transparent;
+    
     transition: 0.3s;
+}
+
+.left .btn-icon:hover{
+    box-shadow: 0 0 8px 4px rgba(132, 132, 132, 0.2);
+    border-color: var(--yellow);
+    transform: scale(1.05);
+    transition: 0.5s;
 }
 
 .left .btn-icon:hover .lucide-icon {
