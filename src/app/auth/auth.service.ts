@@ -4,6 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Observable } from 'rxjs';
 import { tap, map } from 'rxjs/operators';
 import { User } from '../../services/user.service';
+import { API_CONFIG } from '../../config/api.config';
 
 export interface LoginRequest {
   email: string;
@@ -26,7 +27,7 @@ export interface RegisterRequest {
 export class AuthService {
   private tokenKey: string = "authToken";
   private userKey: string = "authUser";
-  private api = 'http://localhost:9090';
+  private api = API_CONFIG.BASE_URL;
 
   constructor(private http: HttpClient,
               @Inject(PLATFORM_ID) private platformId: Object

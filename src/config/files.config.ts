@@ -1,5 +1,7 @@
+import { API_CONFIG } from "./api.config";
+
 export const FILES_CONFIG = {
-  BASE_URL: 'http://localhost:9090/uploads/',
+  BASE_URL: `${API_CONFIG.BASE_URL}/uploads/`,
   PATHS: {
     AVATARS: 'avatars/',
     CHARACTERS: 'characters/',
