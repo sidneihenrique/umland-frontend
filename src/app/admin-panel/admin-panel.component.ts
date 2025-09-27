@@ -50,7 +50,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       users: [],
       phases: []
     },
-    diagramInitial: '',
+    diagramInitial: undefined,
     correctDiagrams: [],
     characterDialogues: []
   };
@@ -464,7 +464,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
         users: [],
         phases: []
       },
-      diagramInitial: '',
+      diagramInitial: undefined,
       correctDiagrams: [],
       characterDialogues: [],
       parentPhaseId: undefined // ✅ ADICIONAR
@@ -519,7 +519,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
         users: [],
         phases: []
       },
-      diagramInitial: p.diagramInitial || '',
+      diagramInitial: p.diagramInitial || undefined,
       correctDiagrams: p.correctDiagrams || [],
       characterDialogues: p.characterDialogues || [],
       parentPhaseId: p.parentPhaseId // ✅ ADICIONAR
@@ -775,7 +775,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
 
     if (confirm('🗑️ Limpar o diagrama inicial?')) {
       initialEditor.reinitialize();
-      this.phase.diagramInitial = '';
+      this.phase.diagramInitial = undefined;
       alert('🗑️ Diagrama inicial limpo!');
     }
   }

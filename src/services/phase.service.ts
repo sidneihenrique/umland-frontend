@@ -26,7 +26,7 @@ export interface Phase {
   maxTime: number;
   character: Character
   gameMap: GameMap;
-  diagramInitial: string;
+  diagramInitial?: string;
   correctDiagrams: string[];
   characterDialogues: string[];
   parentPhaseId?: number;
