@@ -148,7 +148,7 @@
 
         <div class="form-group">
           <label>GameMap:</label>
-          <select name="gameMapId" [(ngModel)]="selectedGameMapId" required class="form-select">
+          <select name="gameMapId" [(ngModel)]="selectedGameMapId" required class="form-select" (ngModelChange)="onGameMapChange()">
             <option value="0">Selecione um GameMap</option>
             <option *ngFor="let gameMap of gameMaps" [value]="gameMap.id">
               🗺️ {{ gameMap.title }}
@@ -156,12 +156,13 @@
           </select>
         </div>
 
-        <!-- ✅ NOVO: Campo para Phase Pai -->
+        <!-- ✅ CORRIGIR: Adicionar trackBy para forçar re-renderização -->
         <div class="form-group">
           <label>🔗 Phase Pai (Opcional):</label>
           <select name="parentPhaseId" [(ngModel)]="selectedParentPhaseId" class="form-select">
             <option value="0">🚫 Nenhuma (Fase independente)</option>
-            <option *ngFor="let parentPhase of getAvailableParentPhases()" [value]="parentPhase.id">
+            <option *ngFor="let parentPhase of getAvailableParentPhases(); trackBy: trackParentPhase" 
+                    [value]="parentPhase.id">
               🎮 {{ parentPhase.title }}
               <span *ngIf="parentPhase.type"> - {{ parentPhase.type }}</span>
             </option>

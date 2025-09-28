@@ -424,7 +424,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       parentPhaseId: this.selectedParentPhaseId > 0 ? this.selectedParentPhaseId : undefined // ✅ NOVO
     };
 
-    console.log('Submitting phase with parentPhaseId:', completePhase);
+    console.log('Submitting phase', completePhase);
     
     if (this.editPhaseId != null) {
       this.adminService.updatePhase(this.editPhaseId, completePhase).subscribe({
@@ -467,10 +467,10 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       diagramInitial: undefined,
       correctDiagrams: [],
       characterDialogues: [],
-      parentPhaseId: undefined // ✅ ADICIONAR
+      parentPhaseId: undefined
     };
     
-    // ✅ ADICIONAR: Resetar ID da phase pai
+    // Reseta a ID da phase pai
     this.selectedParentPhaseId = 0;
     
     // Resetar outros IDs auxiliares
@@ -499,7 +499,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   }
   
   editPhase(index: number) {
-    console.log(this.phases);
     const p = this.phases[index];
     this.phase = { 
       id: p.id,
@@ -522,16 +521,13 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       diagramInitial: p.diagramInitial || undefined,
       correctDiagrams: p.correctDiagrams || [],
       characterDialogues: p.characterDialogues || [],
-      parentPhaseId: p.parentPhaseId // ✅ ADICIONAR
+      parentPhaseId: p.parentPhaseId 
     };
     
     // Setar IDs auxiliares para os selects
     this.selectedCharacterId = p.character?.id || 0;
     this.selectedGameMapId = p.gameMap?.id || 0;
-    this.selectedParentPhaseId = p.parentPhaseId || 0; // ✅ ADICIONAR
-
-    console.log("Selected GameMap ID:", this.selectedGameMapId);
-    console.log("Selected Parent Phase ID:", this.selectedParentPhaseId); // ✅ LOG
+    this.selectedParentPhaseId = p.parentPhaseId || 0; 
     
     this.editPhaseId = p.id;
 
@@ -1057,19 +1053,22 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       return [];
     }
 
-    // Filtrar phases do mesmo GameMap, excluindo a fase atual se estiver editando
-    return this.phases.filter(phase => {
-      // Deve ser do mesmo GameMap
-      const sameGameMap = phase.gameMap?.id === this.selectedGameMapId;
-      
-      // Não pode ser a própria phase (ao editar)
+    // ✅ GARANTIR: this.phases é array válido
+    if (!Array.isArray(this.phases)) {
+      console.warn('⚠️ this.phases não é array, recarregando...');
+      this.loadPhases();
+      return [];
+    }
+
+    const filteredPhases = this.phases.filter(phase => {
+      const sameGameMap = phase.gameMap?.id === Number(this.selectedGameMapId);
       const notSelf = this.editPhaseId ? phase.id !== this.editPhaseId : true;
-      
-      // ✅ OPCIONAL: Evitar loops - fase pai não pode ter como pai a fase atual
       const notCircular = this.editPhaseId ? phase.parentPhaseId !== this.editPhaseId : true;
       
       return sameGameMap && notSelf && notCircular;
     });
+    
+    return filteredPhases;
   }
 
   // ✅ ADICIONAR: Método para obter nome da phase pai
@@ -1078,5 +1077,25 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     
     const parentPhase = this.phases.find(p => p.id === parentPhaseId);
     return parentPhase ? parentPhase.title : `Fase #${parentPhaseId}`;
+  }
+
+  // ✅ CORRIGIR: Método mais robusto para mudança de GameMap
+  onGameMapChange() {
+    
+    // Reset parent phase quando GameMap muda
+    this.selectedParentPhaseId = 0;
+    
+    // ✅ FORÇAR: Re-avaliação do método getAvailableParentPhases
+    setTimeout(() => {
+      
+      // Força o Angular a detectar a mudança
+      this.getAvailableParentPhases();
+    }, 0);
+  }
+
+  // ✅ ADICIONAR: TrackBy function para otimizar ngFor
+  trackParentPhase(index: number, phase: Phase): any {
+    // Usar combinação de gameMapId + phaseId para forçar re-render quando GameMap muda
+    return `${this.selectedGameMapId}-${phase.id}`;
   }
 }
