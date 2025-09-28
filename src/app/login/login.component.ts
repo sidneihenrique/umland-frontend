@@ -4,34 +4,35 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { AuthService } from '../auth/auth.service';
+import { FooterComponent } from '../footer/footer.component';
+import { NotificationService } from '../notification/notification.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, FooterComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
   email: string = '';
   password: string = '';
-  errorMessage: string = '';
   isLoading: boolean = false;
 
   constructor(
     private router: Router,
     private dataService: DataService,
-    private authService: AuthService
+    private authService: AuthService,
+    private notificationService: NotificationService
   ) { }
 
   onSubmit() {
     if (!this.email || !this.password) {
-      this.errorMessage = 'Por favor, preencha todos os campos.';
+      this.notificationService.showNotification('error', 'Por favor, preencha todos os campos.');
       return;
     }
 
     this.isLoading = true;
-    this.errorMessage = '';
 
     const credentials = {
       email: this.email.trim(),
@@ -48,7 +49,8 @@ export class LoginComponent {
       },
       error: (error) => {
         console.error('Erro no login:', error);
-        this.errorMessage = error.error?.message || 'Erro ao fazer login. Verifique suas credenciais.';
+        const errorMsg = error.error?.message || 'Erro ao fazer login. Verifique suas credenciais.';
+        this.notificationService.showNotification('error', errorMsg);
         this.isLoading = false;
       },
       complete: () => {

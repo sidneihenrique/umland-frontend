@@ -1,60 +1,51 @@
 <div class="admin-panel">
-  <h1>🛠️ Painel do Administrador</h1>
+  <h1>Painel do Administrador</h1>
 
-    <!-- ✅ ADICIONAR: Navegação de tabs -->
   <div class="tabs-navigation">
-    <button 
-      *ngFor="let tab of tabs" 
-      class="tab-button"
-      [class.active]="activeTab === tab.id"
+    <button *ngFor="let tab of tabs" class="tab-button" [class.active]="activeTab === tab.id"
       (click)="setActiveTab(tab.id)">
-      {{ tab.icon }} {{ tab.name }}
+      {{ tab.name }}
     </button>
   </div>
 
-  <!-- ✅ MODIFICAR: Envolver cada seção com *ngIf -->
-  
-  <!-- Avatar Tab -->
   <div *ngIf="activeTab === 'avatars'" class="card">
     <div class="card-header">
-      <h2>👤 Cadastro de Avatar</h2>
+      <h2>Cadastro de Avatar</h2>
     </div>
     <div class="card-content">
       <form (ngSubmit)="onSubmitAvatar()" #avatarForm="ngForm" class="form">
         <div class="file-input-container">
           <label class="file-label">
             <input type="file" name="avatarImage" accept="image/*" (change)="onAvatarImageChange($event)" />
-            <span class="file-button">📷 Escolher Imagem</span>
+            <span class="file-button">Escolher Imagem</span>
           </label>
           <div *ngIf="avatarPreview" class="image-preview">
             <img [src]="avatarPreview" alt="Preview" />
           </div>
         </div>
         <button type="submit" class="btn-primary" [disabled]="!avatarImageFile && !editAvatarId">
-          {{ editAvatarId ? '✏️ Atualizar Avatar' : '💾 Salvar Avatar' }}
+          {{ editAvatarId ? 'Atualizar Avatar' : 'Salvar Avatar' }}
         </button>
-        <button type="button" (click)="resetAvatarForm()" class="btn-secondary">🔄 Limpar</button>
+        <button type="button" (click)="resetAvatarForm()" class="btn-secondary">Limpar</button>
       </form>
-      
-      <!-- ✅ Seção Avatar - URLs corrigidas -->
+
       <div class="items-grid">
         <div *ngFor="let a of avatars; let i = index" class="item-card">
           <div class="item-image">
             <img [src]="getAvatarImageUrl(a.filePath || '')" alt="Avatar" />
           </div>
           <div class="item-actions">
-            <button class="btn-edit" (click)="editAvatar(i)">✏️</button>
-            <button class="btn-delete" (click)="deleteAvatar(i)">🗑️</button>
+            <button class="btn-edit" (click)="editAvatar(i)">Editar</button>
+            <button class="btn-delete" (click)="deleteAvatar(i)">Remover</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Character Tab -->
   <div *ngIf="activeTab === 'characters'" class="card">
     <div class="card-header">
-      <h2>🎭 Cadastro de Personagem</h2>
+      <h2>Cadastro de Personagem</h2>
     </div>
     <div class="card-content">
       <form (ngSubmit)="onSubmitCharacter()" #characterForm="ngForm" class="form">
@@ -65,19 +56,19 @@
         <div class="file-input-container">
           <label class="file-label">
             <input type="file" name="characterImage" accept="image/*" (change)="onCharacterImageChange($event)" />
-            <span class="file-button">📷 Escolher Imagem</span>
+            <span class="file-button">Escolher Imagem</span>
           </label>
           <div *ngIf="characterPreview" class="image-preview">
             <img [src]="characterPreview" alt="Preview" />
           </div>
         </div>
-        <button type="submit" class="btn-primary" [disabled]="!character.name || (!characterImageFile && !editCharacterId)">
-          {{ editCharacterId ? '✏️ Atualizar Personagem' : '💾 Salvar Personagem' }}
+        <button type="submit" class="btn-primary"
+          [disabled]="!character.name || (!characterImageFile && !editCharacterId)">
+          {{ editCharacterId ? 'Atualizar Personagem' : 'Salvar Personagem' }}
         </button>
-        <button type="button" (click)="resetCharacterForm()" class="btn-secondary">🔄 Limpar</button>
+        <button type="button" (click)="resetCharacterForm()" class="btn-secondary">Limpar</button>
       </form>
-      
-      <!-- ✅ Seção Character - URLs corrigidas -->
+
       <div class="items-grid">
         <div *ngFor="let c of characters; let i = index" class="item-card">
           <div class="item-image">
@@ -87,18 +78,17 @@
             <h4>{{ c.name }}</h4>
           </div>
           <div class="item-actions">
-            <button class="btn-edit" (click)="editCharacter(i)">✏️</button>
-            <button class="btn-delete" (click)="deleteCharacter(i)">🗑️</button>
+            <button class="btn-edit" (click)="editCharacter(i)">Editar</button>
+            <button class="btn-delete" (click)="deleteCharacter(i)">Remover</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Phase Tab -->
   <div *ngIf="activeTab === 'phases'" class="card">
     <div class="card-header">
-      <h2>🎮 Cadastro de Fase</h2>
+      <h2>Cadastro de Fase</h2>
     </div>
     <div class="card-content">
       <form (ngSubmit)="onSubmitPhase()" #phaseForm="ngForm" class="form">
@@ -106,7 +96,7 @@
           <label>Título da Fase:</label>
           <input type="text" name="title" [(ngModel)]="phase.title" required class="form-input" />
         </div>
-        
+
         <div class="form-group">
           <label>Descrição:</label>
           <textarea name="description" [(ngModel)]="phase.description" class="form-textarea" rows="3"></textarea>
@@ -141,7 +131,7 @@
           <select name="characterId" [(ngModel)]="selectedCharacterId" required class="form-select">
             <option value="0">Selecione um personagem</option>
             <option *ngFor="let char of characters" [value]="char.id">
-              🎭 {{ char.name }}
+              PERSONAGENS {{ char.name }}
             </option>
           </select>
         </div>
@@ -151,224 +141,161 @@
           <select name="gameMapId" [(ngModel)]="selectedGameMapId" required class="form-select">
             <option value="0">Selecione um GameMap</option>
             <option *ngFor="let gameMap of gameMaps" [value]="gameMap.id">
-              🗺️ {{ gameMap.title }}
+              MAPAS {{ gameMap.title }}
             </option>
           </select>
         </div>
 
-        <!-- ✅ NEW: Seção de Falas do Personagem -->
         <div class="form-group">
-          <label>💬 Falas do Personagem:</label>
-          
-          <!-- Campo para adicionar/editar fala -->
+          <label>Falas do Personagem:</label>
           <div class="dialogue-input-container">
             <div class="dialogue-input-row">
-              <textarea 
-                [(ngModel)]="newDialogue" 
-                name="newDialogue"
-                placeholder="Digite uma fala do personagem..."
-                class="form-textarea dialogue-input"
-                rows="2"></textarea>
+              <textarea [(ngModel)]="newDialogue" name="newDialogue" placeholder="Digite uma fala do personagem..."
+                class="form-textarea dialogue-input" rows="2"></textarea>
               <div class="dialogue-buttons">
-                <button type="button" 
-                        (click)="addDialogue()" 
-                        class="btn-dialogue add"
-                        [disabled]="!newDialogue.trim()">
-                  {{ editingDialogueIndex >= 0 ? '✏️' : '➕' }}
+                <button type="button" (click)="addDialogue()" class="btn-dialogue add" [disabled]="!newDialogue.trim()">
+                  {{ editingDialogueIndex >= 0 ? 'Editar' : 'Adicionar' }}
                 </button>
-                <button type="button" 
-                        (click)="cancelEditDialogue()" 
-                        class="btn-dialogue cancel"
-                        *ngIf="editingDialogueIndex >= 0">
-                  ❌
+                <button type="button" (click)="cancelEditDialogue()" class="btn-dialogue cancel"
+                  *ngIf="editingDialogueIndex >= 0">
+                  Remover
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Lista de falas adicionadas -->
           <div class="dialogues-list" *ngIf="phase.characterDialogues.length > 0">
-            <div *ngFor="let dialogue of phase.characterDialogues; let i = index" class="dialogue-item" [class.editing]="editingDialogueIndex === i">
-              
+            <div *ngFor="let dialogue of phase.characterDialogues; let i = index" class="dialogue-item"
+              [class.editing]="editingDialogueIndex === i">
+
               <div class="dialogue-number">{{ i + 1 }}</div>
-              
+
               <div class="dialogue-content">
                 <p>{{ dialogue }}</p>
               </div>
-              
+
               <div class="dialogue-actions">
-                <!-- Mover para cima -->
-                <button type="button" 
-                        (click)="moveDialogueUp(i)" 
-                        class="btn-dialogue move"
-                        [disabled]="i === 0"
-                        title="Mover para cima">
+                <button type="button" (click)="moveDialogueUp(i)" class="btn-dialogue move" [disabled]="i === 0"
+                  title="Mover para cima">
                   ⬆️
                 </button>
-                
-                <!-- Mover para baixo -->
-                <button type="button" 
-                        (click)="moveDialogueDown(i)" 
-                        class="btn-dialogue move"
-                        [disabled]="i === phase.characterDialogues.length - 1"
-                        title="Mover para baixo">
+
+                <button type="button" (click)="moveDialogueDown(i)" class="btn-dialogue move"
+                  [disabled]="i === phase.characterDialogues.length - 1" title="Mover para baixo">
                   ⬇️
                 </button>
-                
-                <!-- Editar -->
-                <button type="button" 
-                        (click)="editDialogue(i)" 
-                        class="btn-dialogue edit"
-                        title="Editar fala">
-                  ✏️
+
+                <button type="button" (click)="editDialogue(i)" class="btn-dialogue edit" title="Editar fala">
+                  Editar
                 </button>
-                
-                <!-- Remover -->
-                <button type="button" 
-                        (click)="removeDialogue(i)" 
-                        class="btn-dialogue remove"
-                        title="Remover fala">
-                  🗑️
+
+                <button type="button" (click)="removeDialogue(i)" class="btn-dialogue remove" title="Remover fala">
+                  Remover
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Contador de falas -->
           <div class="dialogues-counter" *ngIf="phase.characterDialogues.length > 0">
             <small>{{ phase.characterDialogues.length }} fala(s) adicionada(s)</small>
           </div>
         </div>
 
-        <!-- ✅ EDITOR 1: Para diagrama inicial -->
         <div class="form-group">
           <label>Diagrama Inicial:</label>
-          
+
           <div class="diagram-editor-section">
             <div class="diagram-controls">
-              <button type="button" 
-                      (click)="saveDiagramToPhase()" 
-                      class="btn-diagram save">
-                💾 Salvar Diagrama Inicial
+              <button type="button" (click)="saveDiagramToPhase()" class="btn-diagram save">
+                Salvar Diagrama Inicial
               </button>
-              
-              <button type="button" 
-                      (click)="clearDiagram()" 
-                      class="btn-diagram clear">
-                🗑️ Limpar Diagrama Inicial
+
+              <button type="button" (click)="clearDiagram()" class="btn-diagram clear">
+                Limpar Diagrama Inicial
               </button>
             </div>
-            
-            <!-- ✅ PRIMEIRO EDITOR: Diagrama inicial -->
+
             <diagram-editor #diagramEditorInitial></diagram-editor>
           </div>
         </div>
 
-        <!-- ✅ EDITOR 2: Para diagramas corretos -->
         <div class="form-group">
-          <label>📊 Diagramas Corretos:</label>
-          
+          <label>Diagramas Corretos:</label>
           <div class="diagram-editor-section">
             <div class="diagram-controls">
-              <button type="button" 
-                      (click)="saveCorrectDiagram()" 
-                      class="btn-diagram save">
-                {{ editingCorrectDiagramIndex >= 0 ? '✏️ Atualizar Diagrama' : '➕ Adicionar como Correto' }}
+              <button type="button" (click)="saveCorrectDiagram()" class="btn-diagram save">
+                {{ editingCorrectDiagramIndex >= 0 ? 'Atualizar Diagrama' : 'Adicionar como Correto' }}
               </button>
-              
-              <button type="button" 
-                      (click)="cancelEditCorrectDiagram()" 
-                      class="btn-diagram cancel"
-                      *ngIf="editingCorrectDiagramIndex >= 0">
-                ❌ Cancelar Edição
+
+              <button type="button" (click)="cancelEditCorrectDiagram()" class="btn-diagram cancel"
+                *ngIf="editingCorrectDiagramIndex >= 0">
+                Cancelar Edição
               </button>
-              
-              <button type="button" 
-                      (click)="clearCorrectDiagram()" 
-                      class="btn-diagram clear">
-                🗑️ Limpar Editor
+
+              <button type="button" (click)="clearCorrectDiagram()" class="btn-diagram clear">
+                Limpar Editor
               </button>
             </div>
-            
-            <!-- Indicador de modo de edição -->
+
             <div class="editing-indicator" *ngIf="editingCorrectDiagramIndex >= 0">
               <span class="indicator-text">
-                ✏️ Editando diagrama correto #{{ editingCorrectDiagramIndex + 1 }}
+                Editando diagrama correto #{{ editingCorrectDiagramIndex + 1 }}
               </span>
             </div>
-            
-            <!-- ✅ SEGUNDO EDITOR: Diagramas corretos -->
+
             <diagram-editor #diagramEditorCorrect></diagram-editor>
           </div>
-          
-          <!-- ✅ Lista de diagramas corretos cadastrados (continua igual) -->
+
           <div class="correct-diagrams-list" *ngIf="phase.correctDiagrams.length > 0">
-            <h4>📋 Diagramas Corretos Cadastrados:</h4>
-            
-            <div *ngFor="let diagram of phase.correctDiagrams; let i = index" 
-                 class="correct-diagram-item" 
-                 [class.editing]="editingCorrectDiagramIndex === i">
-              
+            <h4>Diagramas Corretos Cadastrados:</h4>
+
+            <div *ngFor="let diagram of phase.correctDiagrams; let i = index" class="correct-diagram-item"
+              [class.editing]="editingCorrectDiagramIndex === i">
+
               <div class="diagram-number">{{ i + 1 }}</div>
-              
+
               <div class="diagram-info">
                 <div class="diagram-preview">
                   {{ getCorrectDiagramPreview(diagram) }}
                 </div>
               </div>
-              
+
               <div class="diagram-actions">
-                <!-- Mover para cima -->
-                <button type="button" 
-                        (click)="moveCorrectDiagramUp(i)" 
-                        class="btn-diagram-action move"
-                        [disabled]="i === 0"
-                        title="Mover para cima">
+                <button type="button" (click)="moveCorrectDiagramUp(i)" class="btn-diagram-action move"
+                  [disabled]="i === 0" title="Mover para cima">
                   ⬆️
                 </button>
-                
-                <!-- Mover para baixo -->
-                <button type="button" 
-                        (click)="moveCorrectDiagramDown(i)" 
-                        class="btn-diagram-action move"
-                        [disabled]="i === phase.correctDiagrams.length - 1"
-                        title="Mover para baixo">
+
+                <button type="button" (click)="moveCorrectDiagramDown(i)" class="btn-diagram-action move"
+                  [disabled]="i === phase.correctDiagrams.length - 1" title="Mover para baixo">
                   ⬇️
                 </button>
-                
-                <!-- Editar -->
-                <button type="button" 
-                        (click)="editCorrectDiagram(i)" 
-                        class="btn-diagram-action edit"
-                        title="Editar diagrama">
-                  ✏️
+
+                <button type="button" (click)="editCorrectDiagram(i)" class="btn-diagram-action edit"
+                  title="Editar diagrama">
+                  Editar
                 </button>
-                
-                <!-- Remover -->
-                <button type="button" 
-                        (click)="removeCorrectDiagram(i)" 
-                        class="btn-diagram-action remove"
-                        title="Remover diagrama">
-                  🗑️
+
+                <button type="button" (click)="removeCorrectDiagram(i)" class="btn-diagram-action remove"
+                  title="Remover diagrama">
+                  Remover
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Contador de diagramas corretos -->
           <div class="correct-diagrams-counter" *ngIf="phase.correctDiagrams.length > 0">
             <small>{{ phase.correctDiagrams.length }} diagrama(s) correto(s) cadastrado(s)</small>
           </div>
         </div>
 
-        <button type="submit" class="btn-primary" 
-                [disabled]="!phase.title || !selectedCharacterId || !selectedGameMapId">
-          {{ editPhaseId ? '✏️ Atualizar Fase' : '💾 Salvar Fase' }}
+        <button type="submit" class="btn-primary"
+          [disabled]="!phase.title || !selectedCharacterId || !selectedGameMapId">
+          {{ editPhaseId ? 'Atualizar Fase' : 'Salvar Fase' }}
         </button>
-        <button type="button" (click)="resetPhaseForm()" class="btn-secondary">🔄 Limpar</button>
+        <button type="button" (click)="resetPhaseForm()" class="btn-secondary">Limpar</button>
       </form>
-      
-      <!-- ✅ Lista de Phases CORRIGIDA -->
+
       <div class="phases-list">
         <div *ngFor="let phase of phases; let i = index" class="phase-card expanded">
           <div class="phase-header">
@@ -378,31 +305,31 @@
             </div>
             <h3>{{ phase.title }}</h3>
           </div>
-          
+
           <div class="phase-details">
             <div class="detail-grid">
               <div class="detail-item">
-                <span class="detail-label">⏱️ Tempo:</span>
+                <span class="detail-label">Tempo:</span>
                 <span class="detail-value">{{ formatTime(phase.maxTime) }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">🎭 Personagem:</span>
+                <span class="detail-label">Personagem:</span>
                 <span class="detail-value">{{ phase?.character?.name || 'N/A' }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">🗺️ GameMap:</span>
+                <span class="detail-label">GameMap:</span>
                 <span class="detail-value">{{ phase?.gameMap?.title || 'N/A' }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">📊 Diagrama:</span>
-                <span class="detail-value">{{ phase?.diagramInitial ? '✅ Definido' : '❌ Vazio' }}</span>
+                <span class="detail-label">Diagrama:</span>
+                <span class="detail-value">{{ phase?.diagramInitial ? 'Definido' : 'Vazio' }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">✅ Corretos:</span>
+                <span class="detail-label">Corretos:</span>
                 <span class="detail-value">{{ phase?.correctDiagrams?.length || 0 }}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">💬 Diálogos:</span>
+                <span class="detail-label">Diálogos:</span>
                 <span class="detail-value">{{ phase?.characterDialogues?.length || 0 }}</span>
               </div>
             </div>
@@ -410,198 +337,125 @@
               <p>{{ phase.description }}</p>
             </div>
           </div>
-          
+
           <div class="item-actions">
-            <button class="btn-edit" (click)="editPhase(i)">✏️</button>
-            <button class="btn-delete" (click)="deletePhase(i)">🗑️</button>
+            <button class="btn-edit" (click)="editPhase(i)">Editar</button>
+            <button class="btn-delete" (click)="deletePhase(i)">Remover</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Item Tab -->
-  <div *ngIf="activeTab === 'items'" class="card">
-    <div class="card-header">
-      <h2>🛒 Cadastro de Item</h2>
-    </div>
-    <div class="card-content">
-      <form (ngSubmit)="onSubmitItem()" #itemForm="ngForm" class="form">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Título do Item:</label>
-            <input type="text" name="title" [(ngModel)]="item.title" required class="form-input" />
-          </div>
-          <div class="form-group">
-            <label>Preço (R$):</label>
-            <input type="number" name="price" [(ngModel)]="item.price" required class="form-input" min="0" step="0.01" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Descrição:</label>
-          <textarea name="description" [(ngModel)]="item.description" required class="form-textarea"></textarea>
-        </div>
-        <div class="file-input-container">
-          <label class="file-label">
-            <input type="file" name="itemImage" accept="image/*" (change)="onItemImageChange($event)" />
-            <span class="file-button">📷 Escolher Imagem</span>
-          </label>
-          <div *ngIf="itemPreview" class="image-preview">
-            <img [src]="itemPreview" alt="Preview" />
-          </div>
-        </div>
-        <button type="submit" class="btn-primary" 
-                [disabled]="!item.title || !item.description || (!itemImageFile && !editItemId)">
-          {{ editItemId ? '✏️ Atualizar Item' : '💾 Salvar Item' }}
-        </button>
-        <button type="button" (click)="resetItemForm()" class="btn-secondary">🔄 Limpar</button>
-      </form>
-      
-      <!-- ✅ Seção Item - URLs corrigidas -->
-      <div class="items-grid">
-        <div *ngFor="let it of items; let i = index" class="item-card">
-          <div class="item-image">
-            <img [src]="getItemImageUrl(it.filePath || '')" [alt]="it.title" />
-          </div>
-          <div class="item-info">
-            <h4>{{ it.title }}</h4>
-            <p>{{ it.description }}</p>
-            <div class="price">R$ {{ it.price | number:'1.2-2' }}</div>
-          </div>
-          <div class="item-actions">
-            <button class="btn-edit" (click)="editItem(i)">✏️</button>
-            <button class="btn-delete" (click)="deleteItem(i)">🗑️</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tip Tab -->
   <div *ngIf="activeTab === 'tips'" class="card">
     <div class="card-header">
-      <h2>💡 Cadastro de Dicas</h2>
+      <h2>Cadastro de Dicas</h2>
     </div>
     <div class="card-content">
       <form (ngSubmit)="onSubmitTip()" #tipForm="ngForm" class="form">
         <div class="form-group">
           <label>Dica:</label>
-          <textarea name="tip" [(ngModel)]="tip.tip" required class="form-textarea" 
-                    placeholder="Digite aqui a dica para os jogadores..."></textarea>
+          <textarea name="tip" [(ngModel)]="tip.tip" required class="form-textarea"
+            placeholder="Digite aqui a dica para os jogadores..."></textarea>
         </div>
         <button type="submit" class="btn-primary" [disabled]="!tip.tip || !tip.tip.trim()">
-          {{ editTipId ? '✏️ Atualizar Dica' : '💾 Salvar Dica' }}
+          {{ editTipId ? 'Atualizar Dica' : 'Salvar Dica' }}
         </button>
-        <button type="button" (click)="resetTipForm()" class="btn-secondary">🔄 Limpar</button>
+        <button type="button" (click)="resetTipForm()" class="btn-secondary">Limpar</button>
       </form>
-      
+
       <div class="tips-list">
         <div *ngFor="let t of tips; let i = index" class="tip-card">
-          <div class="tip-icon">💡</div>
+          <div class="tip-icon">Dicas</div>
           <div class="tip-content">
             <p>{{ t.tip }}</p>
             <small class="tip-id">ID: {{ t.id }}</small>
           </div>
           <div class="item-actions">
-            <button class="btn-edit" (click)="editTip(i)">✏️</button>
-            <button class="btn-delete" (click)="deleteTip(i)">🗑️</button>
+            <button class="btn-edit" (click)="editTip(i)">Editar</button>
+            <button class="btn-delete" (click)="deleteTip(i)">Remover</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- GameMap Tab -->
   <div *ngIf="activeTab === 'gamemaps'" class="card">
     <div class="card-header">
-      <h2>🗺️ Cadastro de GameMap</h2>
+      <h2>Cadastro de GameMap</h2>
     </div>
     <div class="card-content">
       <form (ngSubmit)="onSubmitGameMap()" #gameMapForm="ngForm" class="form">
         <div class="form-group">
           <label>Título do GameMap:</label>
-          <input 
-            type="text" 
-            name="title" 
-            [(ngModel)]="gameMap.title" 
-            required 
-            class="form-input"
-            placeholder="Digite o nome do GameMap..." 
-          />
+          <input type="text" name="title" [(ngModel)]="gameMap.title" required class="form-input"
+            placeholder="Digite o nome do GameMap..." />
         </div>
 
         <div class="form-group" *ngIf="editGameMapId">
-          <label>📊 Informações:</label>
+          <label>Informações:</label>
           <div class="gamemap-info">
             <div class="info-item">
-              <strong>👥 Usuários:</strong> {{ gameMap.users?.length || 0 }}
+              <strong>Usuários:</strong> {{ gameMap.users?.length || 0 }}
             </div>
             <div class="info-item">
-              <strong>🎮 Fases:</strong> {{ gameMap.phases?.length || 0 }}
+              <strong>Fases:</strong> {{ gameMap.phases?.length || 0 }}
             </div>
             <div class="info-item" *ngIf="gameMap.createdAt">
-              <strong>📅 Criado em:</strong> {{ formatDate(gameMap.createdAt) }}
+              <strong>Criado em:</strong> {{ formatDate(gameMap.createdAt) }}
             </div>
             <div class="info-item" *ngIf="gameMap.createdByUser">
-              <strong>👤 Criado por:</strong> {{ gameMap.createdByUser.name }}
+              <strong>Criado por:</strong> {{ gameMap.createdByUser.name }}
             </div>
           </div>
         </div>
 
-        <button 
-          type="submit" 
-          class="btn-primary" 
-          [disabled]="!gameMap.title || !gameMap.title.trim()">
-          {{ editGameMapId ? '✏️ Atualizar GameMap' : '💾 Salvar GameMap' }}
+        <button type="submit" class="btn-primary" [disabled]="!gameMap.title || !gameMap.title.trim()">
+          {{ editGameMapId ? 'Atualizar GameMap' : 'Salvar GameMap' }}
         </button>
-        <button 
-          type="button" 
-          (click)="resetGameMapForm()" 
-          class="btn-secondary">
-          🔄 Limpar
+        <button type="button" (click)="resetGameMapForm()" class="btn-secondary">
+          Limpar
         </button>
       </form>
-      
-      <!-- Lista de GameMaps -->
+
       <div class="gamemaps-list">
         <div *ngFor="let gm of gameMaps; let i = index" class="gamemap-card">
           <div class="gamemap-header">
             <div class="gamemap-title">
-              <h4>🗺️ {{ gm.title }}</h4>
+              <h4>Mapa{{ gm.title }}</h4>
               <span class="gamemap-id">ID: {{ gm.id }}</span>
             </div>
             <div class="gamemap-stats">
-              <span class="stat-badge users">👥 {{ gm.users?.length || 0 }}</span>
-              <span class="stat-badge phases">🎮 {{ gm.phases?.length || 0 }}</span>
+              <span class="stat-badge users">Usuários{{ gm.users?.length || 0 }}</span>
+              <span class="stat-badge phases">Fases{{ gm.phases?.length || 0 }}</span>
             </div>
           </div>
-          
+
           <div class="gamemap-details">
             <div class="detail-row">
               <div class="detail-item" *ngIf="gm.createdAt">
-                <span class="detail-label">📅 Criado:</span>
+                <span class="detail-label">Criado:</span>
                 <span class="detail-value">{{ formatDate(gm.createdAt) }}</span>
               </div>
               <div class="detail-item" *ngIf="gm.createdByUser">
-                <span class="detail-label">👤 Por:</span>
+                <span class="detail-label">Por:</span>
                 <span class="detail-value">{{ gm.createdByUser.name }}</span>
               </div>
             </div>
           </div>
-          
+
           <div class="item-actions">
             <button class="btn-edit" (click)="editGameMap(i)" title="Editar GameMap">
-              ✏️
+              Editar
             </button>
             <button class="btn-delete" (click)="deleteGameMap(i)" title="Remover GameMap">
-              🗑️
+              Remover
             </button>
           </div>
         </div>
-        
-        <!-- Mensagem quando não há GameMaps -->
+
         <div *ngIf="gameMaps.length === 0" class="empty-state">
-          <div class="empty-icon">🗺️</div>
+          <div class="empty-icon">Mapas</div>
           <h3>Nenhum GameMap cadastrado</h3>
           <p>Crie seu primeiro GameMap para começar a organizar as fases do jogo.</p>
         </div>

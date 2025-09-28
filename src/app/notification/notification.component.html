@@ -1,0 +1,30 @@
+<div class="notification-container" [ngClass]="{
+    'notification-show': isVisible,
+    'notification-hide': !isVisible,
+    'notification-success': type === 'success',
+    'notification-error': type === 'error',
+    'notification-achievement': type === 'achievement'
+  }" [attr.data-type]="type">
+
+  <div class="notification-content">
+    <div class="notification-icon">
+      <lucide-icon *ngIf="type === 'success'" name="circle-check-big" [size]="20">
+      </lucide-icon>
+      <lucide-icon *ngIf="type === 'error'" name="triangle-alert" [size]="20">
+      </lucide-icon>
+      <lucide-icon *ngIf="type === 'achievement'" name="sparkles" [size]="20">
+      </lucide-icon>
+    </div>
+
+    <div class="notification-message">
+      {{ message }}
+    </div>
+
+    <button class="notification-close" (click)="close()" type="button" aria-label="Fechar notificação">
+      <lucide-icon name="x" [size]="16"></lucide-icon>
+    </button>
+  </div>
+
+  <div *ngIf="autoDismiss" class="notification-progress" [style.animation-duration]="duration + 'ms'">
+  </div>
+</div>

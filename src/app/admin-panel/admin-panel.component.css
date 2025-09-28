@@ -299,7 +299,6 @@
   line-height: 1.4;
 }
 
-/* Tips Styles */
 .tips-list {
   display: flex;
   flex-direction: column;
@@ -346,7 +345,6 @@
   font-style: italic;
 }
 
-/* Enhanced Phase Styles */
 .phase-card.expanded {
   flex-direction: column;
   align-items: stretch;
@@ -423,7 +421,6 @@
   color: #0c5460;
 }
 
-/* ✅ Estilos para seção de falas do personagem */
 .dialogue-input-container {
   margin-top: 0.5rem;
 }
@@ -604,7 +601,6 @@
   transform: translateY(-2px);
 }
 
-/* ✅ Estilos simples para o editor */
 .diagram-editor-section {
   border: 2px solid #e1e5e9;
   border-radius: 8px;
@@ -656,7 +652,6 @@ diagram-editor {
     height: 100%;
 }
 
-/* ✅ ADICIONAR: Estilos para navegação de tabs */
 .tabs-navigation {
   background: white;
   border-radius: 16px;
@@ -707,7 +702,6 @@ diagram-editor {
   border-radius: 2px;
 }
 
-/* ✅ ADICIONAR: Estilos para diagramas corretos */
 .btn-diagram.cancel {
   background: #6c757d;
   color: white;
@@ -859,7 +853,6 @@ diagram-editor {
   font-style: italic;
 }
 
-/* Responsivo */
 @media (max-width: 768px) {
   .admin-panel {
     padding: 1rem;
@@ -932,7 +925,6 @@ diagram-editor {
   }
 }
 
-/* ✅ ADICIONAR: Estilos para GameMaps */
 .gamemap-info {
   background: #f8f9fa;
   border: 1px solid #e9ecef;
@@ -1051,7 +1043,6 @@ diagram-editor {
   font-size: 0.9rem;
 }
 
-/* ✅ Estado vazio */
 .empty-state {
   text-align: center;
   padding: 3rem 2rem;
@@ -1075,7 +1066,6 @@ diagram-editor {
   line-height: 1.5;
 }
 
-/* ✅ Responsivo para GameMaps */
 @media (max-width: 768px) {
   .gamemap-header {
     flex-direction: column;
