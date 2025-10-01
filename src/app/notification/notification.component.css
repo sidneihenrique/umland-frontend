@@ -1,0 +1,122 @@
+.notification-success {
+  background-color: #00D819 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #00D819 !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  min-width: 300px !important;
+  max-width: 400px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.notification-error {
+  background-color: #FF0000 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #FF0000 !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  min-width: 300px !important;
+  max-width: 400px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.notification-achievement {
+  background-color: #00A6FF !important;
+  color: #FFFFFF !important;
+  border: 2px solid #00A6FF !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  min-width: 300px !important;
+  max-width: 400px !important;
+  display: flex !important;
+    flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.notification-success,
+.notification-success *,
+.notification-error,
+.notification-error *,
+.notification-achievement,
+.notification-achievement * {
+  color: #FFFFFF !important;
+}
+
+.notification-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+.notification-success .notification-icon {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.notification-error .notification-icon {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.notification-achievement .notification-icon {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.notification-success .notification-close,
+.notification-error .notification-close,
+.notification-achievement .notification-close {
+  background: transparent !important;
+  border: none !important;
+  color: #FFFFFF !important;
+  cursor: pointer !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 4px !important;
+  margin-left: 12px !important;
+}
+
+.notification-success .notification-close:hover,
+.notification-error .notification-close:hover,
+.notification-achievement .notification-close:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.notification-success .notification-message,
+.notification-error .notification-message,
+.notification-achievement .notification-message {
+  flex: 1 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  font-weight: 500 !important;
+  color: #FFFFFF !important;
+}
