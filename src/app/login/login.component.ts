@@ -42,13 +42,24 @@ export class LoginComponent {
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
+        // ✅ CORRIGIR: Salvar ANTES de navegar
+        localStorage.setItem('currentUser', JSON.stringify(response.user));
+        console.log('✅ Usuário salvo:', response.user);
+        
+        // ✅ DEPOIS navegar
         this.router.navigate(['/select-map']).then(
-          () => localStorage.setItem('currentUser', JSON.stringify(response.user)),
-          (error) => console.error('Erro na navegação:', error)
+          () => {
+            console.log('✅ Navegação realizada com sucesso');
+          },
+          (error) => {
+            console.error('❌ Erro na navegação:', error);
+            this.notificationService.showNotification('error', 'Login realizado, mas erro ao navegar.');
+            this.isLoading = false;
+          }
         );
       },
       error: (error) => {
-        console.error('Erro no login:', error);
+        console.error('❌ Erro no login:', error);
         const errorMsg = error.error?.message || 'Erro ao fazer login. Verifique suas credenciais.';
         this.notificationService.showNotification('error', errorMsg);
         this.isLoading = false;

@@ -853,6 +853,28 @@ diagram-editor {
   font-style: italic;
 }
 
+/* ✅ ADICIONAR: Estilos para o campo de ajuda e badge de phase pai */
+
+.form-help {
+  color: #6c757d;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.badge.parent-phase {
+  background: #17a2b8;
+  color: white;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+/* ✅ Responsive para o grid de detalhes */
 @media (max-width: 768px) {
   .admin-panel {
     padding: 1rem;

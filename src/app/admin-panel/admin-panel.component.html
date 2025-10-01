@@ -146,6 +146,25 @@
           </select>
         </div>
 
+        <!-- ✅ NOVO: Campo para Phase Pai -->
+        <div class="form-group">
+          <label>🔗 Phase Pai (Opcional):</label>
+          <select name="parentPhaseId" [(ngModel)]="selectedParentPhaseId" class="form-select">
+            <option value="0">🚫 Nenhuma (Fase independente)</option>
+            <option *ngFor="let parentPhase of getAvailableParentPhases()" [value]="parentPhase.id">
+              🎮 {{ parentPhase.title }}
+              <span *ngIf="parentPhase.type"> - {{ parentPhase.type }}</span>
+            </option>
+          </select>
+          <small class="form-help" *ngIf="selectedGameMapId === 0">
+            ℹ️ Selecione um GameMap primeiro para ver as fases disponíveis
+          </small>
+          <small class="form-help" *ngIf="selectedGameMapId > 0 && getAvailableParentPhases().length === 0">
+            ℹ️ Não há outras fases neste GameMap para usar como pai
+          </small>
+        </div>
+
+        <!-- ✅ NEW: Seção de Falas do Personagem -->
         <div class="form-group">
           <label>Falas do Personagem:</label>
           <div class="dialogue-input-container">
@@ -295,13 +314,18 @@
         </button>
         <button type="button" (click)="resetPhaseForm()" class="btn-secondary">Limpar</button>
       </form>
-
+      
+      <!-- ✅ ALTERAR: Lista de Phases para mostrar Phase Pai -->
       <div class="phases-list">
         <div *ngFor="let phase of phases; let i = index" class="phase-card expanded">
           <div class="phase-header">
             <div class="phase-badges">
               <span class="badge type-{{ phase.type.toLowerCase() }}">{{ phase.type }}</span>
               <span class="badge mode-{{ (phase.mode || 'basic').toLowerCase() }}">{{ phase.mode || 'BASIC' }}</span>
+              <!-- ✅ NOVO: Badge para indicar se tem phase pai -->
+              <span class="badge parent-phase" *ngIf="phase.parentPhaseId" title="Tem fase pai">
+                🔗 FILHO
+              </span>
             </div>
             <h3>{{ phase.title }}</h3>
           </div>
@@ -319,6 +343,11 @@
               <div class="detail-item">
                 <span class="detail-label">GameMap:</span>
                 <span class="detail-value">{{ phase?.gameMap?.title || 'N/A' }}</span>
+              </div>
+              <!-- ✅ NOVO: Mostrar Phase Pai -->
+              <div class="detail-item">
+                <span class="detail-label">🔗 Phase Pai:</span>
+                <span class="detail-value">{{ getParentPhaseName(phase.parentPhaseId) }}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Diagrama:</span>
