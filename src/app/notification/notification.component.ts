@@ -1,8 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideIconsModule } from '../lucide-icons.module';
-
-export type NotificationType = 'success' | 'error' | 'achievement';
+import { NotificationType } from '../../services/notification.service';
 
 @Component({
   selector: 'app-notification',
@@ -16,9 +15,10 @@ export class NotificationComponent implements OnInit, OnDestroy {
   @Input() duration: number = 4000;
   @Input() autoDismiss: boolean = true;
   @Input() isVisible: boolean = false;
+  @Input() displayMode: 'toast' | 'snackbar' = 'toast';
+  @Input() id: string = '';
 
   @Output() dismissed = new EventEmitter<void>();
-  @Output() refreshTimer = new EventEmitter<void>();
 
   private timeoutId?: number;
 
@@ -39,25 +39,5 @@ export class NotificationComponent implements OnInit, OnDestroy {
   close() {
     this.isVisible = false;
     this.dismissed.emit();
-  }
-
-  show() {
-    this.isVisible = true;
-    this.startTimer();
-  }
-
-  refresh() {
-    this.startTimer();
-  }
-
-  private startTimer() {
-    if (this.autoDismiss && this.duration > 0) {
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-      }
-      this.timeoutId = window.setTimeout(() => {
-        this.close();
-      }, this.duration);
-    }
   }
 }

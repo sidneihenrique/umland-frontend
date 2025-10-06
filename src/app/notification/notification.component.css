@@ -1,122 +1,212 @@
+/* Estilos base para todas as notificações */
+.notification-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: #FFFFFF;
+  transition: all 0.3s ease-in-out;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Animações de entrada e saída */
+.notification-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notification-hide {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Estilos específicos para modo TOAST (base da página) */
+.notification-toast {
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 24px;
+  border-radius: 0;
+  border-top: 3px solid;
+  animation: slideUpFromBottom 0.4s ease-out forwards;
+}
+
+.notification-toast.notification-hide {
+  animation: slideDownToBottom 0.3s ease-in forwards;
+}
+
+/* Estilos específicos para modo SNACKBAR (canto superior direito) */
+.notification-snackbar {
+  min-width: 300px;
+  max-width: 400px;
+  border-radius: 8px;
+  animation: slideInFromRight 0.4s ease-out forwards;
+}
+
+.notification-snackbar.notification-hide {
+  animation: slideOutToRight 0.3s ease-in forwards;
+}
+
+/* Cores por tipo de notificação */
 .notification-success {
-  background-color: #00D819 !important;
-  color: #FFFFFF !important;
-  border: 2px solid #00D819 !important;
-  border-radius: 8px !important;
-  padding: 16px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-  min-width: 300px !important;
-  max-width: 400px !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 12px !important;
+  background-color: #00D819;
+  border-color: #00D819;
 }
 
 .notification-error {
-  background-color: #FF0000 !important;
-  color: #FFFFFF !important;
-  border: 2px solid #FF0000 !important;
-  border-radius: 8px !important;
-  padding: 16px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-  min-width: 300px !important;
-  max-width: 400px !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 12px !important;
+  background-color: #FF0000;
+  border-color: #FF0000;
 }
 
 .notification-achievement {
-  background-color: #00A6FF !important;
-  color: #FFFFFF !important;
-  border: 2px solid #00A6FF !important;
-  border-radius: 8px !important;
-  padding: 16px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-  min-width: 300px !important;
-  max-width: 400px !important;
-  display: flex !important;
-    flex-direction: row !important;
-  align-items: center !important;
-  gap: 12px !important;
+  background-color: #00A6FF;
+  border-color: #00A6FF;
 }
 
-.notification-success,
-.notification-success *,
-.notification-error,
-.notification-error *,
-.notification-achievement,
-.notification-achievement * {
-  color: #FFFFFF !important;
-}
-
+/* Conteúdo da notificação */
 .notification-content {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  width: 100% !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
-.notification-success .notification-icon {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  border-radius: 50% !important;
-  width: 36px !important;
-  height: 36px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+.notification-icon {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.notification-error .notification-icon {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  border-radius: 50% !important;
-  width: 36px !important;
-  height: 36px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+.notification-message {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #FFFFFF;
 }
 
-.notification-achievement .notification-icon {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  border-radius: 50% !important;
-  width: 36px !important;
-  height: 36px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+.notification-close {
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
 }
 
-.notification-success .notification-close,
-.notification-error .notification-close,
-.notification-achievement .notification-close {
-  background: transparent !important;
-  border: none !important;
-  color: #FFFFFF !important;
-  cursor: pointer !important;
-  width: 24px !important;
-  height: 24px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 4px !important;
-  margin-left: 12px !important;
+.notification-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
-.notification-success .notification-close:hover,
-.notification-error .notification-close:hover,
-.notification-achievement .notification-close:hover {
-  background-color: rgba(255, 255, 255, 0.2) !important;
+/* Animações para TOAST */
+@keyframes slideUpFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.notification-success .notification-message,
-.notification-error .notification-message,
-.notification-achievement .notification-message {
-  flex: 1 !important;
-  font-size: 14px !important;
-  line-height: 1.5 !important;
-  font-weight: 500 !important;
-  color: #FFFFFF !important;
+@keyframes slideDownToBottom {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+/* Animações para SNACKBAR */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Barra de progresso para auto-dismiss */
+.notification-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 100%;
+  animation: progressBar linear;
+}
+
+.notification-toast .notification-progress {
+  bottom: 0;
+}
+
+.notification-snackbar .notification-progress {
+  bottom: 0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+@keyframes progressBar {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 768px) {
+  .notification-snackbar {
+    min-width: 280px;
+    max-width: calc(100vw - 40px);
+    margin: 0 20px;
+  }
+  
+  .notification-toast {
+    padding: 16px 20px;
+  }
+  
+  .notification-message {
+    font-size: 13px;
+  }
+  
+  .notification-icon {
+    width: 32px;
+    height: 32px;
+  }
 }

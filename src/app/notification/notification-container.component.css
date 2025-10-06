@@ -1,0 +1,30 @@
+.toast-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.toast-container app-notification {
+  pointer-events: auto;
+}
+
+.snackbar-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.snackbar-container app-notification {
+  pointer-events: auto;
+}

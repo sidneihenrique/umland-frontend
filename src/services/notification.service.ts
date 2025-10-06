@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { NotificationType } from './notification.component';
+
+export type NotificationType = 'success' | 'error' | 'achievement';
 
 export interface NotificationData {
   id: string;

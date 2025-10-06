@@ -162,7 +162,6 @@ export class StoreComponent implements OnInit, OnDestroy {
 
     const newCoinsAmount = this.userMoney - item.price;
     
-    // Atualiza as moedas no backend
     this.userService.updateUserCoins(this.userData.id, newCoinsAmount).subscribe({
       next: (updatedUser: User) => {
         // Atualiza os dados locais

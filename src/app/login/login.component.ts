@@ -5,7 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { AuthService } from '../auth/auth.service';
 import { FooterComponent } from '../footer/footer.component';
-import { NotificationService } from '../notification/notification.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-login',
