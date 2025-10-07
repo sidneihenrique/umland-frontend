@@ -1,68 +1,42 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { NotificationService, NotificationData } from '../../services/notification.service';
 import { NotificationComponent } from './notification.component';
-import { NotificationService, NotificationData } from './notification.service';
 
 @Component({
   selector: 'app-notification-container',
+  standalone: true,
   imports: [CommonModule, NotificationComponent],
-  template: `
-    <div class="notification-container-wrapper">
-      <app-notification
-        *ngFor="let notification of notifications; trackBy: trackByNotificationId; let i = index"
-        [type]="notification.type"
-        [message]="notification.message"
-        [duration]="notification.duration || 4000"
-        [autoDismiss]="notification.autoDismiss !== false"
-        [isVisible]="true"
-        (dismissed)="onNotificationDismissed(notification.id)"
-        [style.margin-bottom.px]="8"
-        class="notification-item">
-      </app-notification>
-    </div>
-  `,
-  styles: [`
-    .notification-container-wrapper {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      pointer-events: none;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-width: 400px;
-    }
-
-    .notification-item {
-      pointer-events: all;
-      position: relative;
-    }
-  `]
+  templateUrl: './notification-container.component.html',
+  styleUrl: './notification-container.component.css'
 })
 export class NotificationContainerComponent implements OnInit, OnDestroy {
-  notifications: NotificationData[] = [];
-  private subscription?: Subscription;
+  toastNotifications: NotificationData[] = [];
+  snackbarNotifications: NotificationData[] = [];
+  
+  private notificationSubscription?: Subscription;
 
   constructor(private notificationService: NotificationService) {}
 
   ngOnInit() {
-    this.subscription = this.notificationService.notifications$.subscribe(
-      notifications => {
-        this.notifications = notifications;
+    this.notificationSubscription = this.notificationService.notifications$.subscribe(
+      (notifications: NotificationData[]) => {
+        // Separar notificações entre toast (success, error) e snackbar (achievement)
+        this.toastNotifications = notifications.filter(n => n.type !== 'achievement');
+        this.snackbarNotifications = notifications.filter(n => n.type === 'achievement');
       }
     );
   }
 
   ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+    if (this.notificationSubscription) {
+      this.notificationSubscription.unsubscribe();
     }
   }
 
-  onNotificationDismissed(id: string) {
-    this.notificationService.removeNotification(id);
+  onNotificationDismissed(notificationId: string) {
+    this.notificationService.removeNotification(notificationId);
   }
 
   trackByNotificationId(index: number, notification: NotificationData): string {

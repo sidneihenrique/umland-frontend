@@ -3,8 +3,10 @@
     'notification-hide': !isVisible,
     'notification-success': type === 'success',
     'notification-error': type === 'error',
-    'notification-achievement': type === 'achievement'
-  }" [attr.data-type]="type">
+    'notification-achievement': type === 'achievement',
+    'notification-toast': displayMode === 'toast',
+    'notification-snackbar': displayMode === 'snackbar'
+  }" [attr.data-type]="type" [attr.data-mode]="displayMode">
 
   <div class="notification-content">
     <div class="notification-icon">

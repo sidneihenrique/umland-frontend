@@ -35,7 +35,7 @@ export interface ApiError {
 }
 
 @Injectable({
-    providedIn: 'root'  // singleton disponível em toda a aplicação
+    providedIn: 'root'
 })
 
 export class DataService {
@@ -49,7 +49,6 @@ export class DataService {
         private http: HttpClient,
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
-        // URL para SSR
         this.baseUrl = API_CONFIG.BASE_URL;
         if (isPlatformBrowser(this.platformId)) {
             this.baseUrl = (window as any).apiUrl || this.baseUrl;
@@ -74,7 +73,6 @@ export class DataService {
         return null;
     }
 
-    // Método para atualizar dados do usuário no localStorage e notificar observers
     updateUserData(userData: User) {
         if (isPlatformBrowser(this.platformId)) {
             localStorage.setItem('user', JSON.stringify(userData));
@@ -82,7 +80,6 @@ export class DataService {
         }
     }
 
-    // Método para carregar dados do usuário do localStorage
     loadUserData(): User | null {
         if (isPlatformBrowser(this.platformId)) {
             const userJson = localStorage.getItem('user');
