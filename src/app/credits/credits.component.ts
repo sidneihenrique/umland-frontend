@@ -1,4 +1,5 @@
-import { Component, AfterViewInit, ElementRef, ViewChild, Renderer2 } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, ViewChild, Renderer2, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-credits',
@@ -10,12 +11,17 @@ import { Component, AfterViewInit, ElementRef, ViewChild, Renderer2 } from '@ang
 export class CreditsComponent implements AfterViewInit {
   @ViewChild('audioElement', { static: false }) audioElement?: ElementRef<HTMLAudioElement>;
 
-  constructor(private renderer: Renderer2) {}
+  constructor(
+    private renderer: Renderer2,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) { }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.startCreditsSequence();
-    }, 100);
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        this.startCreditsSequence();
+      }, 100);
+    }
   }
 
   private startCreditsSequence(): void {
@@ -30,22 +36,18 @@ export class CreditsComponent implements AfterViewInit {
       return;
     }
 
-    // Oculta o conteúdo inicialmente
     this.renderer.setStyle(content, 'display', 'none');
 
-    // Mostra o pré-conteúdo
     this.renderer.setStyle(preContent, 'display', 'block');
     this.fadeIn(preContent, 2000, () => {
       setTimeout(() => {
         this.fadeOut(preContent, 2000, () => {
-          // Toca o áudio se disponível
           if (this.audioElement?.nativeElement) {
-            this.audioElement.nativeElement.play().catch(err => 
+            this.audioElement.nativeElement.play().catch(err =>
               console.log('Audio play error (requer interação do usuário):', err)
             );
           }
 
-          // Mostra a logo
           this.renderer.setStyle(image, 'display', 'block');
           this.renderer.addClass(container, 'has-stars');
           const logoImg = image.querySelector('img');
@@ -54,11 +56,9 @@ export class CreditsComponent implements AfterViewInit {
           }
 
           setTimeout(() => {
-            // Mostra os créditos rolando
             this.renderer.setStyle(content, 'display', 'block');
             this.renderer.addClass(amazingCredits, 'animate');
 
-            // Para o áudio e oculta os créditos após 87 segundos
             setTimeout(() => {
               if (this.audioElement?.nativeElement) {
                 this.audioElement.nativeElement.pause();
@@ -74,14 +74,14 @@ export class CreditsComponent implements AfterViewInit {
   private fadeIn(element: HTMLElement, duration: number, callback?: () => void): void {
     this.renderer.setStyle(element, 'opacity', '0');
     this.renderer.setStyle(element, 'display', 'block');
-    
+
     let start: number | null = null;
     const animate = (timestamp: number) => {
       if (!start) start = timestamp;
       const progress = timestamp - start;
       const opacity = Math.min(progress / duration, 1);
       this.renderer.setStyle(element, 'opacity', opacity.toString());
-      
+
       if (progress < duration) {
         requestAnimationFrame(animate);
       } else if (callback) {
@@ -98,7 +98,7 @@ export class CreditsComponent implements AfterViewInit {
       const progress = timestamp - start;
       const opacity = Math.max(1 - (progress / duration), 0);
       this.renderer.setStyle(element, 'opacity', opacity.toString());
-      
+
       if (progress < duration) {
         requestAnimationFrame(animate);
       } else {

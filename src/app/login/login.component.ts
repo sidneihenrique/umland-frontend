@@ -28,7 +28,8 @@ export class LoginComponent {
 
   onSubmit() {
     if (!this.email || !this.password) {
-      this.notificationService.showNotification('error', 'Por favor, preencha todos os campos.');
+      // this.notificationService.showNotification('success', 'Por favor, preencha todos os campos.');
+      this.notificationService.showNotification('achievement', 'Teste.');
       return;
     }
 
