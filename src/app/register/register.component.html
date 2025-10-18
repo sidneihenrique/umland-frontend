@@ -65,10 +65,19 @@
             <label>Escolha seu Avatar:</label>
 
             <div *ngIf="isLoadingAvatars" class="loading-avatars">
-                <p>🔄 Carregando avatares...</p>
+                <p>Carregando avatares<span class="dots"><span>.</span><span>.</span><span>.</span></span></p>
             </div>
 
-            <div *ngIf="!isLoadingAvatars" class="character-list">
+            <div *ngIf="avatarsLoadError && !isLoadingAvatars" class="error-avatars">
+                <div class="error-icon">⚠️</div>
+                <p class="error-title">Erro de Conexão</p>
+                <p class="error-description">Não foi possível carregar os avatares do servidor.</p>
+                <button type="button" class="retry-button" (click)="retryLoadAvatars()">
+                    Tentar Novamente
+                </button>
+            </div>
+
+            <div *ngIf="!isLoadingAvatars && !avatarsLoadError" class="character-list">
                 <div *ngFor="let avatar of avatars" class="character-item"
                     [class.selected]="selectedAvatar?.id === avatar.id || selectedAvatar?.filePath === avatar.filePath"
                     (click)="selectAvatar(avatar)">

@@ -58,6 +58,10 @@ section {
   display: none;
 }
 
+.image img {
+  filter: invert(1);
+}
+
 #container .pre-content {
   position: relative;
   top: 50%;
