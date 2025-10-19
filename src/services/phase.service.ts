@@ -17,6 +17,15 @@ export interface Character {
   filePath: string;
 }
 
+export type PhaseNodeType = 'ACTIVITY' | 'DECISION';
+
+export interface PhaseTransition {
+  id?: number;
+  fromPhase?: Phase | null;        
+  toPhase?: Phase | null;   
+  optionText?: string | null;
+}
+
 export interface Phase {
   id?: number;
   title: string;
@@ -29,7 +38,10 @@ export interface Phase {
   diagramInitial?: string;
   correctDiagrams: string[];
   characterDialogues: string[];
-  parentPhaseId?: number;
+  nodeType?: PhaseNodeType;  // 'ACTIVITY' | 'DECISION'
+  phaseTransitions?: PhaseTransition[];
+  incomingTransitions?: number[];
+  outgoingTransitions?: number[];
 }
 
 // Interface para criar Phase (sem ID)
@@ -163,93 +175,25 @@ export class PhaseService {
     return this.http.delete<void>(`${this.apiUrl}/phases/${id}`);
   }
 
-  // ✅ Métodos utilitários para converter dados do frontend
-
-  /**
-   * Converte objeto Phase do frontend para CreatePhaseRequest
-   */
-  convertToCreateRequest(phase: any, characterId: number, gameMapId: number): CreatePhaseRequest {
-    return {
-      title: phase.title,
-      type: phase.type.key,
-      mode: 'BASIC', // ou phase.mode se existir
-      maxTime: phase.maxTime || 3600, // 1 hora padrão
-      status: 'AVAILABLE',
-      character: {
-        id: characterId,
-        name: phase.character.name,
-        filePath: phase.character.filePath
-      },
-      gameMap: {
-        id: gameMapId,
-        title: '', // Será preenchido pelo backend
-        users: [],
-        phases: []
-      },
-      diagramInitial: phase.diagramJSON ? JSON.stringify(phase.diagramJSON) : '',
-      correctDiagrams: phase.correctDiagramsJson.map((diagram: any) => JSON.stringify(diagram)),
-      characterDialogues: phase.character.dialogCharacter || []
-    };
+    // TRANSITIONS (endpoints sugeridos; ajuste aos seus endpoints reais)
+  getTransitionsByFromPhase(phaseId: number): Observable<PhaseTransition[]> {
+    return this.http.get<PhaseTransition[]>(`${this.apiUrl}/phases/${phaseId}/outgoing-transitions`);
   }
 
-  /**
-   * Converte Phase da API para formato do frontend (se necessário)
-   */
-  convertToFrontendFormat(phase: Phase): any {
-    return {
-      id: phase.id,
-      title: phase.title,
-      description: `Fase ${phase.title}`, // Pode ser calculado ou vir da API
-      type: {
-        key: phase.type,
-        title: this.getTypeTitle(phase.type),
-        description: this.getTypeDescription(phase.type)
-      },
-      level: 'MEDIUM', // Pode ser calculado baseado em outros fatores
-      diagramJSON: phase.diagramInitial ? JSON.parse(phase.diagramInitial) : null,
-      correctDiagramsJson: phase.correctDiagrams.map(diagram => JSON.parse(diagram)),
-      tips: [], // Pode vir de outra fonte ou ser calculado
-      character: {
-        name: phase.character.name,
-        filePath: phase.character.filePath,
-        dialogCharacter: phase.characterDialogues
-      }
-    };
+  getTransitionsByToPhase(phaseId: number): Observable<PhaseTransition[]> {
+    return this.http.get<PhaseTransition[]>(`${this.apiUrl}/phases/${phaseId}/incoming-transitions`);
   }
 
-  /**
-   * Retorna o objeto type completo baseado na chave
-   */
-  getPhaseType(typeKey: 'BUILD' | 'FIX' | 'COMPLETE'): PhaseType {
-    return PHASE_TYPES[typeKey] || {
-      key: typeKey,
-      title: typeKey,
-      description: 'Descrição não disponível'
-    };
+  createTransition(t: { fromPhase: number | null; toPhase: number | null; optionText?: string | null }): Observable<PhaseTransition> {
+    return this.http.post<PhaseTransition>(`${this.apiUrl}/phase-transitions`, t);
   }
 
-  /**
-   * Retorna todos os tipos disponíveis
-   */
-  getAllPhaseTypes(): PhaseType[] {
-    return Object.values(PHASE_TYPES);
+  updateTransition(id: number, t: { fromPhase: number | null; toPhase: number | null; optionText?: string | null }): Observable<PhaseTransition> {
+    return this.http.put<PhaseTransition>(`${this.apiUrl}/phase-transitions/${id}`, t);
   }
 
-  private getTypeTitle(type: string): string {
-    switch(type) {
-      case 'BUILD': return 'Construa do zero';
-      case 'FIX': return 'Corrija o diagrama';
-      case 'COMPLETE': return 'Complete o diagrama';
-      default: return type;
-    }
+  deleteTransition(transitionId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/phase-transitions/${transitionId}`);
   }
 
-  private getTypeDescription(type: string): string {
-    switch(type) {
-      case 'BUILD': return 'Nesta fase, você começará com um espaço em branco...';
-      case 'FIX': return 'Nesta fase, você encontrará um diagrama parcialmente construído...';
-      case 'COMPLETE': return 'Nesta fase, você deve completar o diagrama existente...';
-      default: return '';
-    }
-  }
 }

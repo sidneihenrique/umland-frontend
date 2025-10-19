@@ -13,6 +13,7 @@ import { FILES_CONFIG, FileUrlBuilder } from '../../config/files.config';
 
 // ✅ Import do componente de editor de diagramas
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
+import { PhaseService, PhaseTransition } from '../../services/phase.service';
 
 @Component({
   selector: 'app-admin-panel',
@@ -52,7 +53,8 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     },
     diagramInitial: undefined,
     correctDiagrams: [],
-    characterDialogues: []
+    characterDialogues: [],
+    nodeType: 'ACTIVITY'
   };
   
   item: Item = { 
@@ -116,6 +118,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     { id: 'characters', name: 'Personagens', icon: '🎭' },
     { id: 'gamemaps', name: 'GameMaps', icon: '🗺️' }, // ✅ NOVA TAB
     { id: 'phases', name: 'Fases', icon: '🎮' },
+    { id: 'phase-transitions', name: 'Transições', icon: '➡️' },
     { id: 'items', name: 'Items', icon: '🛒' },
     { id: 'tips', name: 'Dicas', icon: '💡' }
   ];
@@ -134,14 +137,23 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   // ✅ ADICIONAR: Estado de edição para GameMap
   editGameMapId?: number;
 
-  // ✅ ADICIONAR: ID da Phase pai selecionada
-  selectedParentPhaseId: number = 0;
+  // ADD: modelo para transições de saída (normalizado para ids)
+  outgoingTransitions: { id?: number; toPhaseId: number; optionText?: string | null }[] = [];
+  activityNextPhaseId: number = 0;
+
+  activityPreviousPhaseId: number = 0; // ID da fase anterior (para ACTIVITY)
+  incomingTransitions: { id?: number; fromPhaseId: number; optionText?: string | null }[] = []; // Transições de entrada
+
+  // ✅ NOVO: Propriedades para transições de fase
+  phaseTransitions: { id?: number; fromPhaseId: number; toPhaseId: number; optionText?: string | null }[] = [];
+  availablePhases: Phase[] = [];
 
   constructor(
     private adminService: AdminPanelService, 
     private authService: AuthService,
     private tipService: TipService,
-    private gameMapService: GameMapService
+    private gameMapService: GameMapService,
+    private phaseService: PhaseService
   ) {}
 
   // ✅ ADICIONAR: Método para trocar de tab
@@ -233,10 +245,14 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     this.adminService.getPhases().subscribe({
       next: (data) => {
         this.phases = data;
-        console.log('Phases carregadas:', this.phases);
       },
         error: (error) => console.error('Erro ao carregar phases:', error)
     });
+  }
+
+  // ===== Transições (somente SAINDO da fase atual) =====
+  private getPhaseId(ref: any): number {
+    return ref && typeof ref === 'object' ? (ref.id ?? 0) : (typeof ref === 'number' ? ref : 0);
   }
 
   loadItems() {
@@ -390,7 +406,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ✅ CRUD Phase - CORRIGIDO
   onSubmitPhase() {
     if (!this.selectedCharacterId || this.selectedCharacterId === 0) {
       alert('Por favor, selecione um personagem para a fase.');
@@ -416,29 +431,39 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // ✅ ADICIONAR: Incluir parentPhaseId na phase
     const completePhase: Phase = {
       ...this.phase,
       character: selectedCharacter,
       gameMap: selectedGameMap,
-      parentPhaseId: this.selectedParentPhaseId > 0 ? this.selectedParentPhaseId : undefined // ✅ NOVO
     };
 
-    console.log('Submitting phase with parentPhaseId:', completePhase);
+    console.log('Submitting phase', completePhase);
     
     if (this.editPhaseId != null) {
       this.adminService.updatePhase(this.editPhaseId, completePhase).subscribe({
-        next: () => {
+        next: (phase) => {
           this.loadPhases();
-          this.resetPhaseForm();
+          if(phase?.id) {
+            this.editPhaseId = phase.id;
+            this.selectedGameMapId = phase.gameMap?.id || this.selectedGameMapId;
+            this.loadOutgoingTransitions(phase.id); // << apenas saídas
+          }
+          this.editPhase(undefined, phase); // Carregar a fase recém-criada para edição
+
         },
         error: (error) => console.error('Erro ao atualizar phase:', error)
       });
     } else {
       this.adminService.createPhase(completePhase).subscribe({
-        next: () => {
+        next: (phase) => {
           this.loadPhases();
-          this.resetPhaseForm();
+          if(phase?.id) {
+            this.editPhaseId = phase.id;
+            this.selectedGameMapId = phase.gameMap?.id || this.selectedGameMapId;
+            this.loadIncomingTransitions(phase.id); // << apenas entradas
+            alert('✅ Fase criada. Configure as transições (entradas) desta fase.');
+          }
+          this.editPhase(undefined, phase); // Carregar a fase recém-criada para edição
         },
         error: (error) => console.error('Erro ao criar phase:', error)
       });
@@ -447,19 +472,19 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   
   resetPhaseForm() {
     this.phase = { 
-      id: 0,
+      id: undefined,
       title: '', 
       description: '', 
       type: 'BUILD', 
       mode: 'BASIC',
       maxTime: 3600,
       character: {
-        id: 0,
+        id: undefined,
         name: '',
         filePath: ''
       },
       gameMap: {
-        id: 0,
+        id: undefined,
         title: '',
         users: [],
         phases: []
@@ -467,11 +492,9 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       diagramInitial: undefined,
       correctDiagrams: [],
       characterDialogues: [],
-      parentPhaseId: undefined // ✅ ADICIONAR
+      nodeType: 'ACTIVITY'
     };
     
-    // ✅ ADICIONAR: Resetar ID da phase pai
-    this.selectedParentPhaseId = 0;
     
     // Resetar outros IDs auxiliares
     this.selectedCharacterId = 0;
@@ -496,11 +519,21 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
         }
       });
     }
+
+    this.outgoingTransitions = [];
+    this.activityNextPhaseId = 0;
   }
   
-  editPhase(index: number) {
-    console.log(this.phases);
-    const p = this.phases[index];
+  editPhase(index?: number, phase?: Phase) {
+    let p;
+    if(phase) {
+      p = phase;
+    } else if(index != null) {
+      p = this.phases[index];
+    } else {
+      console.error('editPhase requires either an index or a phase object');
+      return;
+    }
     this.phase = { 
       id: p.id,
       title: p.title, 
@@ -522,18 +555,18 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       diagramInitial: p.diagramInitial || undefined,
       correctDiagrams: p.correctDiagrams || [],
       characterDialogues: p.characterDialogues || [],
-      parentPhaseId: p.parentPhaseId // ✅ ADICIONAR
+      nodeType: p.nodeType || 'ACTIVITY'
     };
     
     // Setar IDs auxiliares para os selects
     this.selectedCharacterId = p.character?.id || 0;
     this.selectedGameMapId = p.gameMap?.id || 0;
-    this.selectedParentPhaseId = p.parentPhaseId || 0; // ✅ ADICIONAR
-
-    console.log("Selected GameMap ID:", this.selectedGameMapId);
-    console.log("Selected Parent Phase ID:", this.selectedParentPhaseId); // ✅ LOG
     
     this.editPhaseId = p.id;
+
+    if (p.id) {
+      this.loadOutgoingTransitions(p.id); 
+    }
 
     // Carregar diagrama inicial no primeiro editor
     const initialEditor = this.getInitialDiagramEditor();
@@ -545,7 +578,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
           setTimeout(() => {
             if (initialEditor.graph) {
               initialEditor.graph.fromJSON(diagramJSON);
-              console.log('📂 Diagrama inicial carregado para edição');
             }
           }, 100);
         }
@@ -758,7 +790,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     if (currentJSON && currentJSON.cells && currentJSON.cells.length > 0) {
       this.phase.diagramInitial = JSON.stringify(currentJSON);
       alert('✅ Diagrama inicial salvo!');
-      console.log('Diagrama inicial salvo:', currentJSON);
     } else {
       alert('⚠️ Adicione elementos ao diagrama antes de salvar');
     }
@@ -826,7 +857,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       }
 
       editor.reinitialize();
-      console.log('Diagrama correto salvo:', currentJSON);
     } catch (error) {
       console.error('❌ Erro ao salvar diagrama correto:', error);
       alert('❌ Erro ao salvar diagrama correto');
@@ -849,7 +879,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
         if (editor.graph) {
           editor.graph.fromJSON(diagramJSON);
           this.editingCorrectDiagramIndex = index;
-          console.log('📂 Diagrama correto carregado para edição:', diagramJSON);
         }
       }, 100);
       
@@ -932,7 +961,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
         this.editingCorrectDiagramIndex = index;
       }
       
-      console.log('⬆️ Diagrama correto movido para cima');
     }
   }
 
@@ -950,7 +978,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
         this.editingCorrectDiagramIndex = index;
       }
       
-      console.log('⬇️ Diagrama correto movido para baixo');
     }
   }
 
@@ -1052,31 +1079,202 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getAvailableParentPhases(): Phase[] {
-    if (!this.selectedGameMapId) {
-      return [];
-    }
+  private loadOutgoingTransitions(phaseId: number) {
+    this.outgoingTransitions = [];
+    this.activityNextPhaseId = 0;
 
-    // Filtrar phases do mesmo GameMap, excluindo a fase atual se estiver editando
-    return this.phases.filter(phase => {
-      // Deve ser do mesmo GameMap
-      const sameGameMap = phase.gameMap?.id === this.selectedGameMapId;
-      
-      // Não pode ser a própria phase (ao editar)
-      const notSelf = this.editPhaseId ? phase.id !== this.editPhaseId : true;
-      
-      // ✅ OPCIONAL: Evitar loops - fase pai não pode ter como pai a fase atual
-      const notCircular = this.editPhaseId ? phase.parentPhaseId !== this.editPhaseId : true;
-      
-      return sameGameMap && notSelf && notCircular;
+    this.phaseService.getTransitionsByFromPhase(phaseId).subscribe({
+      next: (phaseTransitions) => {
+        // Normaliza para ids
+        this.outgoingTransitions = (phaseTransitions || []).map(t => ({
+          id: t.id,
+          toPhaseId: this.getPhaseId(t.toPhase), // 0 se null
+          optionText: t.optionText ?? null
+        }));
+
+        if ((this.phase.nodeType || 'ACTIVITY') === 'ACTIVITY') {
+          this.activityNextPhaseId = this.outgoingTransitions[0]?.toPhaseId || 0;
+        }
+      },
+      error: (e) => {
+        console.error('Erro ao carregar transições de saída:', e);
+        this.outgoingTransitions = [];
+        this.activityNextPhaseId = 0;
+      }
     });
   }
 
-  // ✅ ADICIONAR: Método para obter nome da phase pai
-  getParentPhaseName(parentPhaseId?: number): string {
-    if (!parentPhaseId) return 'Nenhuma';
-    
-    const parentPhase = this.phases.find(p => p.id === parentPhaseId);
-    return parentPhase ? parentPhase.title : `Fase #${parentPhaseId}`;
+  private loadIncomingTransitions(phaseId: number) {
+    this.incomingTransitions = [];
+    this.activityPreviousPhaseId = 0;
+
+    this.phaseService.getTransitionsByToPhase(phaseId).subscribe({
+      next: (phaseTransitions) => {
+        // Normaliza para ids
+        this.incomingTransitions = (phaseTransitions || []).map(t => ({
+          id: t.id,
+          fromPhaseId: this.getPhaseId(t.fromPhase), // 0 se null
+          optionText: t.optionText ?? null
+        }));
+
+        if ((this.phase.nodeType || 'ACTIVITY') === 'ACTIVITY') {
+          this.activityPreviousPhaseId = this.incomingTransitions[0]?.fromPhaseId || 0;
+        }
+      },
+      error: (e) => {
+        console.error('Erro ao carregar transições de entrada:', e);
+        this.incomingTransitions = [];
+        this.activityPreviousPhaseId = 0;
+      }
+    });
+  }
+
+  saveDecisionTransitions() {
+    if (!this.editPhaseId) return;
+
+    const ops: Array<Promise<any>> = [];
+
+    this.outgoingTransitions.forEach(row => {
+      const toId = row.toPhaseId || 0;
+      const text = (row.optionText || '').trim() || null;
+
+      if (row.id) {
+        // Atualiza: toPhase pode ser null (fim)
+        ops.push(
+          this.phaseService.updateTransition(row.id, {
+            fromPhase: this.editPhaseId!,
+            toPhase: toId > 0 ? toId : null,
+            optionText: text
+          }).toPromise()
+        );
+      } else if (toId > 0 || text) {
+        // Cria apenas se há destino ou texto
+        ops.push(
+          this.phaseService.createTransition({
+            fromPhase: this.editPhaseId!,
+            toPhase: toId > 0 ? toId : null,
+            optionText: text
+          }).toPromise()
+        );
+      }
+    });
+
+    Promise.allSettled(ops).then(() => this.loadIncomingTransitions(this.editPhaseId!));
+  }
+
+
+  getPreviousPhaseTitle(phaseId: number): string | null {
+    // Encontra a fase atual
+    const currentPhase = this.phases.find(p => p.id === phaseId);
+    if (!currentPhase || !currentPhase.incomingTransitions) {
+      console.warn('Current Phase or incomingTransitionsIds not found', currentPhase);
+      return null; // Sem transições de entrada
+    }
+
+    // Busca a fase anterior com base no primeiro ID de incomingTransitionsIds
+    const previousPhaseId = currentPhase.incomingTransitions[0]; // Assume que há apenas uma entrada
+    const previousPhase = this.phases.find(p => p.id === previousPhaseId);
+    console.log('Previou Phase', previousPhase);
+
+    return previousPhase?.title || null;
+  }
+
+  getNextPhaseTitle(phaseId: number): string | null {
+    // Encontra a fase atual
+    const currentPhase = this.phases.find(p => p.id === phaseId);
+    if (!currentPhase || !currentPhase.outgoingTransitions) {
+      return null; // Sem transições de saída
+    }
+
+    // Busca a próxima fase com base no primeiro ID de outgoingTransitions
+    const nextPhaseId = currentPhase.outgoingTransitions[0]; // Assume que há apenas uma saída
+    const nextPhase = this.phases.find(p => p.id === nextPhaseId);
+
+    return nextPhase?.title || null;
+  }
+
+  // ✅ NOVO: Métodos para transições de fase
+  loadPhaseTransitions() {
+    if (!this.selectedGameMapId || this.selectedGameMapId === 0) {
+      this.phaseTransitions = [];
+      this.availablePhases = [];
+      return;
+    }
+
+    // Carregar fases do GameMap selecionado
+    this.availablePhases = this.phases.filter(p => p.gameMap?.id === Number(this.selectedGameMapId));
+
+
+
+    // Carregar transições do GameMap selecionado
+    this.gameMapService.getPhaseTransitionsByGameMapId(this.selectedGameMapId).subscribe({
+      next: (transitions) => {
+        this.phaseTransitions = transitions.map(t => ({
+          id: t.id,
+          fromPhaseId: t.fromPhase?.id || 0,
+          toPhaseId: t.toPhase?.id || 0,
+          optionText: t.optionText || null
+        }));
+      },
+      error: (error) => console.error('Erro ao carregar transições:', error)
+    });
+  }
+
+  addTransitionRow() {
+    this.phaseTransitions.push({ fromPhaseId: 0, toPhaseId: 0, optionText: '' });
+  }
+
+  removeTransitionRow(index: number) {
+    const row = this.phaseTransitions[index];
+    if (row?.id) {
+      this.phaseService.deleteTransition(row.id).subscribe({
+        next: () => this.loadPhaseTransitions(),
+        error: (error) => console.error('Erro ao deletar transição:', error)
+      });
+    } else {
+      this.phaseTransitions.splice(index, 1);
+    }
+  }
+
+  savePhaseTransitions() {
+    const ops: Array<Promise<any>> = [];
+
+    this.phaseTransitions.forEach(row => {
+      const payload = {
+        fromPhase: row.fromPhaseId > 0 ? row.fromPhaseId : null,
+        toPhase: row.toPhaseId > 0 ? row.toPhaseId : null,
+        optionText: row.optionText?.trim() || null
+      };
+
+      if (row.id) {
+        ops.push(this.phaseService.updateTransition(row.id, payload).toPromise());
+      } else if (row.fromPhaseId > 0 && row.toPhaseId > 0) {
+        ops.push(this.phaseService.createTransition(payload).toPromise());
+      }
+    });
+
+    Promise.allSettled(ops).then(() => this.loadPhaseTransitions());
+  }
+
+  updateAvailablePhases(index: number) {
+    const row = this.phaseTransitions[index];
+    if (!row) return;
+
+    // Atualiza apenas os selects da mesma linha
+    this.phaseTransitions = this.phaseTransitions.map((transition, i) => {
+      if (i === index) {
+        return {
+          ...transition,
+          fromPhaseId: row.fromPhaseId,
+          toPhaseId: row.toPhaseId
+        };
+      }
+      return transition;
+    });
+  }
+
+  isDecisionPhase(phaseId: number): boolean {
+    const phase = this.phases.find(p => p.id === phaseId);
+    return phase?.nodeType === 'DECISION';
   }
 }

@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { API_CONFIG } from '../config/api.config';
 import { Phase } from './phase.service';
 import { User } from './user.service';
+import { PhaseTransition } from './phase.service';
 
 // ✅ Interface PhaseUser baseada na entidade Java
 export interface PhaseUser {
@@ -15,7 +16,7 @@ export interface PhaseUser {
   coins: number;
   accuracy?: number;
   current?: boolean;
-  isCompleted?: boolean; // ✅ Novo campo para status de conclusão
+  isCompleted?: boolean;
   userDiagram?: string;
 }
 
@@ -59,9 +60,6 @@ export class GameMapService {
   setGameMapToUser(gameMapId: number, userId: number): Observable<GameMap> {
     const url = `${this.apiUrl}/gamemaps/${gameMapId}/set-to-user/${userId}`;
     
-    console.log(`🔗 Associando GameMap ${gameMapId} ao usuário ${userId}`);
-    console.log(`📡 URL: ${url}`);
-    
     return this.http.post<GameMap>(url, {});
   }
 
@@ -69,12 +67,8 @@ export class GameMapService {
    * ❌ DEPRECIADO: Método antigo que buscava apenas Phase
    * Mantido para compatibilidade, mas deve ser removido futuramente
    */
-  getAllPhases(idGameMap: number): Observable<Phase[]> {
-    console.log(`⚠️ DEPRECIADO: Usando método antigo getAllPhases`);
-    console.log(`🗺️ Buscando fases do GameMap ID: ${idGameMap}`);
-    console.log(`🔗 URL: ${this.apiUrl}/gamemaps/${idGameMap}/phases`);
-    
-    return this.http.get<Phase[]>(`${this.apiUrl}/gamemaps/${idGameMap}/phases`);
+  getAllPhasesByGameMap(idGameMap: number): Observable<Phase[]> {
+    return this.http.get<Phase[]>(`${this.apiUrl}/gamemaps/${idGameMap}`);
   }
 
   // ✅ Métodos adicionais (caso precise no futuro)
@@ -117,5 +111,9 @@ export class GameMapService {
    */
   deleteGameMap(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/gamemaps/${id}`);
+  }
+
+  getPhaseTransitionsByGameMapId(gameMapId: number): Observable<PhaseTransition[]> {
+    return this.http.get<PhaseTransition[]>(`${this.apiUrl}/gamemaps/${gameMapId}/phase-transitions`);
   }
 }
