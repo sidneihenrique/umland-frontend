@@ -132,6 +132,14 @@
         </div>
 
         <div class="form-group">
+          <label>Nó do Fluxo:</label>
+          <select name="nodeType" [(ngModel)]="phase.nodeType" required class="form-select">
+            <option value="ACTIVITY">🏃 Atividade</option>
+            <option value="DECISION">⚖️ Decisão</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
           <label>Tempo Máximo (segundos):</label>
           <input type="number" name="maxTime" [(ngModel)]="phase.maxTime" required class="form-input" min="60" />
         </div>
@@ -148,31 +156,12 @@
 
         <div class="form-group">
           <label>GameMap:</label>
-          <select name="gameMapId" [(ngModel)]="selectedGameMapId" required class="form-select" (ngModelChange)="onGameMapChange()">
+          <select name="gameMapId" [(ngModel)]="selectedGameMapId" required class="form-select">
             <option value="0">Selecione um GameMap</option>
             <option *ngFor="let gameMap of gameMaps" [value]="gameMap.id">
               🗺️ {{ gameMap.title }}
             </option>
           </select>
-        </div>
-
-        <!-- ✅ CORRIGIR: Adicionar trackBy para forçar re-renderização -->
-        <div class="form-group">
-          <label>🔗 Phase Pai (Opcional):</label>
-          <select name="parentPhaseId" [(ngModel)]="selectedParentPhaseId" class="form-select">
-            <option value="0">🚫 Nenhuma (Fase independente)</option>
-            <option *ngFor="let parentPhase of getAvailableParentPhases(); trackBy: trackParentPhase" 
-                    [value]="parentPhase.id">
-              🎮 {{ parentPhase.title }}
-              <span *ngIf="parentPhase.type"> - {{ parentPhase.type }}</span>
-            </option>
-          </select>
-          <small class="form-help" *ngIf="selectedGameMapId === 0">
-            ℹ️ Selecione um GameMap primeiro para ver as fases disponíveis
-          </small>
-          <small class="form-help" *ngIf="selectedGameMapId > 0 && getAvailableParentPhases().length === 0">
-            ℹ️ Não há outras fases neste GameMap para usar como pai
-          </small>
         </div>
 
         <!-- ✅ NEW: Seção de Falas do Personagem -->
@@ -387,17 +376,13 @@
         <button type="button" (click)="resetPhaseForm()" class="btn-secondary">🔄 Limpar</button>
       </form>
       
-      <!-- ✅ ALTERAR: Lista de Phases para mostrar Phase Pai -->
+      
       <div class="phases-list">
         <div *ngFor="let phase of phases; let i = index" class="phase-card expanded">
           <div class="phase-header">
             <div class="phase-badges">
               <span class="badge type-{{ phase.type.toLowerCase() }}">{{ phase.type }}</span>
               <span class="badge mode-{{ (phase.mode || 'basic').toLowerCase() }}">{{ phase.mode || 'BASIC' }}</span>
-              <!-- ✅ NOVO: Badge para indicar se tem phase pai -->
-              <span class="badge parent-phase" *ngIf="phase.parentPhaseId" title="Tem fase pai">
-                🔗 FILHO
-              </span>
             </div>
             <h3>{{ phase.title }}</h3>
           </div>
@@ -416,11 +401,6 @@
                 <span class="detail-label">🗺️ GameMap:</span>
                 <span class="detail-value">{{ phase?.gameMap?.title || 'N/A' }}</span>
               </div>
-              <!-- ✅ NOVO: Mostrar Phase Pai -->
-              <div class="detail-item">
-                <span class="detail-label">🔗 Phase Pai:</span>
-                <span class="detail-value">{{ getParentPhaseName(phase.parentPhaseId) }}</span>
-              </div>
               <div class="detail-item">
                 <span class="detail-label">📊 Diagrama:</span>
                 <span class="detail-value">{{ phase?.diagramInitial ? '✅ Definido' : '❌ Vazio' }}</span>
@@ -432,6 +412,25 @@
               <div class="detail-item">
                 <span class="detail-label">💬 Diálogos:</span>
                 <span class="detail-value">{{ phase?.characterDialogues?.length || 0 }}</span>
+              </div>
+              <!-- Adicionar Tipo do Nó -->
+              <div class="detail-item">
+                <span class="detail-label">🔗 Tipo do Nó:</span>
+                <span class="detail-value">{{ phase.nodeType === 'ACTIVITY' ? 'Atividade' : 'Decisão' }}</span>
+              </div>
+              <!-- Adicionar Fase Anterior -->
+              <div class="detail-item">
+                <span class="detail-label">⬅️ Fase Anterior:</span>
+                <span class="detail-value">
+                  {{ getPreviousPhaseTitle(phase.id || 0) || 'Início do diagrama de atividades' }}
+                </span>
+              </div>
+              <!-- Adicionar Próxima Fase -->
+              <div class="detail-item">
+                <span class="detail-label">➡️ Próxima Fase:</span>
+                <span class="detail-value">
+                  {{ getNextPhaseTitle(phase.id || 0) || 'Fim do diagrama de atividades' }}
+                </span>
               </div>
             </div>
             <div *ngIf="phase.description" class="phase-description">
@@ -504,6 +503,67 @@
       </div>
     </div>
   </div>
+
+  <!-- Phase Transitions Tab -->
+  <div *ngIf="activeTab === 'phase-transitions'" class="card">
+    <div class="card-header">
+      <h2>🔗 Cadastro e Edição de Transições</h2>
+    </div>
+    <div class="card-content">
+      <!-- Seleção do GameMap -->
+      <div class="form-group">
+        <label>Selecione o GameMap:</label>
+        <select class="form-select" [(ngModel)]="selectedGameMapId" (change)="loadPhaseTransitions()">
+          <option value="0">Selecione um GameMap</option>
+          <option *ngFor="let gameMap of gameMaps" [value]="gameMap.id">
+            🗺️ {{ gameMap.title }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Lista de transições -->
+      <div class="form-group" *ngIf="selectedGameMapId > 0" style="margin-top: 20px;">
+        <button type="button" class="btn-primary" (click)="addTransitionRow()">➕ Adicionar Transição</button>
+      </div>
+
+      <div class="items-grid transitions-list" *ngIf="phaseTransitions.length > 0">
+        <div class="item-card transition-card" *ngFor="let phaseTransition of phaseTransitions; let i = index;">
+          <div class="transition-row">
+            <div class="form-group">
+              <label>Origem:</label>
+              <select class="form-select" [(ngModel)]="phaseTransition.fromPhaseId" name="fromPhase_{{i}}">
+                <option [ngValue]="0">Selecione uma fase</option>
+                <option *ngFor="let ph of availablePhases" [ngValue]="ph.id" [disabled]="ph.id === phaseTransition.toPhaseId">
+                  🎮 {{ ph.title }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Destino:</label>
+              <select class="form-select" [(ngModel)]="phaseTransition.toPhaseId" name="toPhase_{{i}}">
+                <option [ngValue]="0">Selecione uma fase</option>
+                <option *ngFor="let ph of availablePhases" [ngValue]="ph.id" [disabled]="ph.id === phaseTransition.fromPhaseId">
+                  🎮 {{ ph.title }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group" *ngIf="isDecisionPhase(phaseTransition.fromPhaseId)">
+              <label>Texto da opção:</label>
+              <input type="text" class="form-input" [(ngModel)]="phaseTransition.optionText" name="optText_{{i}}" placeholder="Ex.: Escolher caminho A" />
+            </div>
+          </div>
+          <div class="item-actions transition-card-actions">
+            <button type="button" class="btn-delete" (click)="removeTransitionRow(i)" title="Remover">🗑️</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="transition-actions" *ngIf="phaseTransitions.length > 0">
+        <button type="button" class="btn-primary" (click)="savePhaseTransitions()">💾 Salvar Transições</button>
+      </div>
+    </div>
+  </div>
+   
 
   <!-- Tip Tab -->
   <div *ngIf="activeTab === 'tips'" class="card">

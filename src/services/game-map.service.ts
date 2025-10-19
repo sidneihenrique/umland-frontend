@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { API_CONFIG } from '../config/api.config';
 import { Phase } from './phase.service';
 import { User } from './user.service';
+import { PhaseTransition } from './phase.service';
 
 // ✅ Interface PhaseUser baseada na entidade Java
 export interface PhaseUser {
@@ -15,7 +16,7 @@ export interface PhaseUser {
   coins: number;
   accuracy?: number;
   current?: boolean;
-  isCompleted?: boolean; // ✅ Novo campo para status de conclusão
+  isCompleted?: boolean;
   userDiagram?: string;
 }
 
@@ -110,5 +111,9 @@ export class GameMapService {
    */
   deleteGameMap(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/gamemaps/${id}`);
+  }
+
+  getPhaseTransitionsByGameMapId(gameMapId: number): Observable<PhaseTransition[]> {
+    return this.http.get<PhaseTransition[]>(`${this.apiUrl}/gamemaps/${gameMapId}/phase-transitions`);
   }
 }

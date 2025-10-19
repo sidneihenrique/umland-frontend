@@ -4,16 +4,58 @@
         [parentType]="'game-map'">
     </app-header>
 
-    <div id="activity-diagram">
-        <div class="uml-start-circle">
-            <img src="assets/uml-svg/arrow.svg" class="arrow" alt="arrow" *ngIf="phaseUsers.length > 0"> 
-        </div>
-        <div *ngFor="let phaseUser of phaseUsers; let last = last">
-            <node-activity 
-                [phase]="phaseUser"
-                [last]="last">
-            </node-activity>
-        </div>
-    </div>
+    <div class="wrapper">
+        <div class="swiper-button-prev"></div>
+        <div class="swiper" #swiperContainer>
+            <div class="swiper-wrapper" *ngIf="phaseUsersAvailable.length > 0">
+                <div class="swiper-slide" *ngFor="let phaseUser of phaseUsersAvailable">
+                    <div class="phase-card">
+                        <div class="left">
+                            <div class="left-top">
+                                <h3>{{ phaseUser.phase.title }}</h3>
+                                <p>{{ phaseUser.phase.description }}</p>
+                                <div class="phase-data" *ngIf="phaseUser.phase.nodeType !== 'DECISION'">
+                                    <div class="accuracy">
+                                        <lucide-icon name="square-check" class="lucide-icon" [size]="24" color="#00D819"></lucide-icon>
+                                        <span>{{ phaseUser.accuracy }}%</span>
+                                    </div>
+                                    <div class="reputation">
+                                        <span>{{ phaseUser.reputation }}</span>
+                                        <lucide-icon name="sparkles" class="lucide-icon" [size]="20" color="#000000"></lucide-icon>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="left-bottom">
+                                <!-- se for DECISION e já está COMPLETED/AVAILABLE e tem outgoing, renderiza botões -->
+                                <div *ngIf="phaseUser.phase.nodeType === 'DECISION'">
+                                    <ng-container *ngFor="let t of outgoingMapForPhase(phaseUser.phase.id)">
+                                        <button (click)="onDecisionChoice(phaseUser, t)">{{ t.optionText || 'Escolher' }}</button>
+                                    </ng-container>
+                                </div>
 
+                               <button
+                                *ngIf="phaseUser.phase.nodeType !== 'DECISION'"
+                                class="active"
+                                [disabled]="phaseUser.status !== 'AVAILABLE'"
+                                [ngClass]="{ 'disabled': phaseUser.status !== 'AVAILABLE' }"
+                                (click)="openGamePhase(phaseUser)">
+                                Jogar
+                                </button>
+    
+                            </div>
+                        </div>
+    
+                        <img [src]="getCharacterImageUrl(phaseUser)" 
+                            [alt]="phaseUser.phase.character.name" 
+                            class="character"
+                        >
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Paginação -->
+            <div class="swiper-pagination"></div>
+        </div>
+        <div class="swiper-button-next"></div>
+    </div>
 </div>

@@ -2,7 +2,8 @@
     <div class="node" (click)="openGamePhase()">
         <span>{{ phase.phase.title }}</span>
     </div>
-    <img src="assets/uml-svg/arrow.svg" class="arrow" alt="arrow" *ngIf="!last"> 
+    
+    
     <!-- ✅ Usando método que constrói URL correta -->
     <img [src]="getCharacterImageUrl()" [alt]="phase.phase.character.name" class="character">
     <div class="user-icon" *ngIf="phase.current === true">
