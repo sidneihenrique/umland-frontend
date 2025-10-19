@@ -56,12 +56,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     characterDialogues: [],
     nodeType: 'ACTIVITY'
   };
-  
-  item: Item = { 
-    title: '', 
-    description: '', 
-    price: 0 
-  };
+
   
   tip: CreateTipRequest = { 
     tip: '' 
@@ -75,7 +70,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   avatars: Avatar[] = [];
   characters: Character[] = [];
   phases: Phase[] = [];
-  items: Item[] = [];
   tips: Tip[] = [];
   gameMaps: GameMap[] = [];
 
@@ -83,17 +77,14 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   editAvatarId?: number;
   editCharacterId?: number;
   editPhaseId?: number;
-  editItemId?: number;
   editTipId?: number;
 
   // ✅ File handling
   avatarImageFile?: File;
   characterImageFile?: File;
-  itemImageFile?: File;
 
   avatarPreview?: string;
   characterPreview?: string;
-  itemPreview?: string;
 
   // ✅ User data - usando configuração global
   user?: User | null;
@@ -119,7 +110,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     { id: 'gamemaps', name: 'GameMaps', icon: '🗺️' }, // ✅ NOVA TAB
     { id: 'phases', name: 'Fases', icon: '🎮' },
     { id: 'phase-transitions', name: 'Transições', icon: '➡️' },
-    { id: 'items', name: 'Items', icon: '🛒' },
     { id: 'tips', name: 'Dicas', icon: '💡' }
   ];
 
@@ -204,10 +194,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     return FileUrlBuilder.character(fileName);
   }
 
-  getItemImageUrl(fileName: string): string {
-    return FileUrlBuilder.item(fileName);
-  }
-
   ngOnInit() {
     this.loadAll();
     this.user = this.authService.getCurrentUser();
@@ -222,7 +208,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     this.loadAvatars();
     this.loadCharacters();
     this.loadPhases();
-    this.loadItems();
     this.loadTips();
     this.loadGameMaps();
   }
@@ -253,13 +238,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   // ===== Transições (somente SAINDO da fase atual) =====
   private getPhaseId(ref: any): number {
     return ref && typeof ref === 'object' ? (ref.id ?? 0) : (typeof ref === 'number' ? ref : 0);
-  }
-
-  loadItems() {
-    this.adminService.getItems().subscribe({
-      next: (data) => this.items = data,
-      error: (error) => console.error('Erro ao carregar items:', error)
-    });
   }
 
   loadTips() {
@@ -594,71 +572,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       this.adminService.deletePhase(p.id).subscribe({
         next: () => this.loadPhases(),
         error: (error) => console.error('Erro ao deletar phase:', error)
-      });
-    }
-  }
-
-  // ✅ CRUD Item
-  onSubmitItem() {
-    if (!this.itemImageFile && !this.editItemId) {
-      alert('Por favor, selecione uma imagem para o item.');
-      return;
-    }
-    
-    if (this.editItemId != null) {
-      this.adminService.updateItem(this.editItemId, this.item, this.itemImageFile).subscribe({
-        next: () => {
-          this.loadItems();
-          this.resetItemForm();
-        },
-        error: (error) => console.error('Erro ao atualizar item:', error)
-      });
-    } else {
-      this.adminService.createItem(this.item, this.itemImageFile!).subscribe({
-        next: () => {
-          this.loadItems();
-          this.resetItemForm();
-        },
-        error: (error) => console.error('Erro ao criar item:', error)
-      });
-    }
-  }
-  
-  resetItemForm() {
-    this.item = { title: '', description: '', price: 0 };
-    this.itemImageFile = undefined;
-    this.itemPreview = undefined;
-    this.editItemId = undefined;
-    
-    // Limpar input de arquivo
-    const fileInput = document.querySelector('input[name="itemImage"]') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
-  }
-  
-  onItemImageChange(event: any) {
-    const file = event.target?.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      this.itemImageFile = file;
-      const reader = new FileReader();
-      reader.onload = (e) => this.itemPreview = e.target?.result as string;
-      reader.readAsDataURL(file);
-    }
-  }
-  
-  editItem(index: number) {
-    const it = this.items[index];
-    this.item = { ...it };
-    this.editItemId = it.id;
-    // ✅ Usando método utilitário
-    this.itemPreview = it.filePath ? this.getItemImageUrl(it.filePath) : undefined;
-  }
-
-  deleteItem(index: number) {
-    const it = this.items[index];
-    if (it.id != null) {
-      this.adminService.deleteItem(it.id).subscribe({
-        next: () => this.loadItems(),
-        error: (error) => console.error('Erro ao deletar item:', error)
       });
     }
   }
