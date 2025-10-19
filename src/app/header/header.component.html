@@ -3,9 +3,27 @@
         <button class="btn-icon filled" id="exit" *ngIf="parentType === 'game-phase'" (click)="exitGame()">
             <lucide-icon class="lucide-icon" name="X"></lucide-icon>
         </button>
-        <button class="btn-icon log-out" *ngIf="parentType === 'game-map'" (click)="logout()">
-            <lucide-icon class="lucide-icon" name="log-out"></lucide-icon>
-        </button>
+        
+        <div class="logout-container" *ngIf="parentType === 'game-map'">
+            <button 
+                class="btn-icon log-out accordion-button" 
+                [class.active]="isAccordionOpen"
+                (click)="isInMapRoute ? toggleAccordion() : logout()">
+                <lucide-icon class="lucide-icon" name="log-out"></lucide-icon>
+            </button>
+            
+            <div class="accordion-menu" *ngIf="isInMapRoute && isAccordionOpen">
+                <button class="accordion-option" (click)="returnToMapSelection()">
+                    <lucide-icon class="lucide-icon" name="map" [size]="20"></lucide-icon>
+                    <span>Seleção de Mapas</span>
+                </button>
+                <button class="accordion-option logout-option" (click)="logout()">
+                    <lucide-icon class="lucide-icon" name="log-out" [size]="20"></lucide-icon>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div>
+        
         <button class="btn-icon" (click)="toggleStore()">
             <lucide-icon class="lucide-icon" name="store"></lucide-icon>
         </button>
@@ -47,7 +65,6 @@
 <app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
 <app-backpack #backpack></app-backpack>
 
-<!-- ✅ ADICIONAR: Modal de confirmação de logout -->
 <app-confirm-dialog 
     [visible]="confirmDialogVisible" 
     [title]="confirmDialogTitle" 
