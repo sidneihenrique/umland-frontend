@@ -22,6 +22,7 @@ export class RegisterComponent implements OnInit {
   isLoading: boolean = false;
   errorMessage: string = '';
   isLoadingAvatars: boolean = false;
+  avatarsLoadError: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -46,6 +47,7 @@ export class RegisterComponent implements OnInit {
   loadAvatars() {
     this.isLoadingAvatars = true;
     this.errorMessage = '';
+    this.avatarsLoadError = false;
 
     this.userService.getAllAvatars().subscribe({
       next: (avatars: Avatar[]) => {
@@ -56,30 +58,19 @@ export class RegisterComponent implements OnInit {
         }
         
         this.isLoadingAvatars = false;
+        this.avatarsLoadError = false;
       },
       error: (error) => {
+        console.error('Erro ao carregar avatares:', error);
         this.isLoadingAvatars = false;
-        
-        this.loadStaticAvatars();
+        this.avatarsLoadError = true;
       }
     });
   }
 
 
-  private loadStaticAvatars() {
-    this.avatars = [
-      { id: 1, filePath: 'homem1.png' },
-      { id: 2, filePath: 'homem2.png' },
-      { id: 3, filePath: 'homem3.png' },
-      { id: 4, filePath: 'mulher1.png' },
-      { id: 5, filePath: 'mulher2.png' },
-      { id: 6, filePath: 'robo1.png' }
-    ];
-
-
-    if (this.avatars.length > 0) {
-      this.selectAvatar(this.avatars[0]);
-    }
+  retryLoadAvatars() {
+    this.loadAvatars();
   }
 
   getAvatarImageUrl(avatar: Avatar): string {
