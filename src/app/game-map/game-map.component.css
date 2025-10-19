@@ -111,17 +111,10 @@ header .right {
 }
 
 #activity-diagram {
+    position: relative;
     width: 100%;
-
-    overflow-y: auto;
-
-    display: flex;
-    align-items: center;
-    gap: 88px;
-
-    height: 60vh;
-
-    padding: 16px;
+    height: 100%;
+    overflow: auto;
 }
 
 .uml-start-circle {
@@ -139,4 +132,161 @@ header .right {
     left: 0;
     top: 50%;
     transform: translate(50%, -50%);
+}
+
+
+.phase-card {
+
+    width: 100%;
+    height: 60vh;
+
+    border: 4px solid var(--yellow);
+    border-radius: 20px;
+
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    padding: 24px;
+}
+
+.phase-card .left {
+    width: 70%;
+    height: 100%;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.phase-card .left .left-top {
+    width: 100%;
+
+    margin-bottom: auto;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.phase-card .left .left-top h3 {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--black);
+
+}
+
+.phase-card .left .left-top p {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--black);
+
+}
+
+.phase-card .character {
+    height: 100%;
+}
+
+.phase-card .left-bottom {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.phase-card button {
+    cursor: pointer;
+    background: transparent;
+
+    margin-top: 16px;
+    width: 100%;
+
+    padding: 12px 24px;
+
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--green);
+
+    border: 2px solid var(--green);
+    border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+
+    transition: 0.3s;
+
+}
+
+.phase-card button.active {
+    background: var(--green);
+    color: var(--white);
+}
+
+.phase-card button.disabled {
+    background: var(--light-gray);
+    color: var(--gray);
+    border-color: var(--gray);
+    cursor: not-allowed;
+}
+
+.phase-card button:hover:not(.disabled) {
+    background: var(--green);
+    color: var(--white);
+    filter: brightness(1.1);
+    transform: scale(1.02);
+    transition: 0.3s;
+}
+
+
+
+.wrapper {
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    gap: 24px;
+}
+
+.swiper {
+    width: 100%;
+    max-width: 780px;
+}
+
+.swiper-button-prev, .swiper-button-next {
+    color: var(--black);
+}
+
+.swiper-button-prev {
+    position: initial;
+}
+
+.swiper-button-next {
+    position: initial;
+}
+
+.phase-data {
+    display: flex;
+    gap: 16px;
+}
+
+.phase-data * {
+    font-weight: 700;
+}
+
+.phase-data .reputation {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.phase-data .accuracy {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }

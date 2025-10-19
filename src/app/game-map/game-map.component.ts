@@ -1,20 +1,26 @@
-import { Component, ViewChild, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
+import { Component, ViewChild, OnInit, Inject, PLATFORM_ID, OnDestroy, ElementRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { Subscription } from 'rxjs';
-import { StorageService } from '../../services/storage.service';
 import { StoreComponent } from "../store/store.component";
+import { PhaseTransition, Phase } from '../../services/phase.service';
 import { AuthService } from '../auth/auth.service';
-import { DataService, UserResponse } from '../../services/data.service';
+import { DataService } from '../../services/data.service';
 import { User, UserService } from '../../services/user.service';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { NodeActivityComponent } from './node-activity/node-activity.component';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../header/header.component';
 
+import Swiper from 'swiper';
+import { Navigation, Pagination } from 'swiper/modules';
+import { EffectCoverflow } from 'swiper/modules'; 
+
+
+
 // ✅ Imports atualizados
 import { GameMapService, PhaseUser } from '../../services/game-map.service';
-import { Phase, Character } from '../../services/phase.service';
+import { PhaseUserService } from '../../services/phase-user.service'; // para atualizar status
+import { FileUrlBuilder } from '../../config/files.config';
 
 @Component({
   selector: 'game-map',
@@ -23,7 +29,6 @@ import { Phase, Character } from '../../services/phase.service';
     HeaderComponent,
     LucideIconsModule,
     RouterModule,
-    NodeActivityComponent,
     CommonModule
   ],
   templateUrl: './game-map.component.html',
@@ -40,6 +45,8 @@ export class GameMapComponent implements OnInit, OnDestroy {
 
   // ✅ Usando PhaseUser diretamente
   phaseUsers: PhaseUser[] = [];
+  // Phase data
+  phaseTransitions: PhaseTransition[] = [];
   gameMapId: number = 0;
   userId: number = 0;
   isLoadingPhases: boolean = false;
@@ -49,6 +56,16 @@ export class GameMapComponent implements OnInit, OnDestroy {
   isAssociatingUser: boolean = false;
   associationError: string = '';
 
+  // Lista filtrada de phaseUsers disponíveis para mostrar no mapa
+  phaseUsersAvailable: PhaseUser[] = [];
+  private idToPhaseUser = new Map<number, PhaseUser>();
+  private outgoingMap = new Map<number, PhaseTransition[]>();
+  private incomingCount = new Map<number, number>();
+
+  @ViewChild('swiperContainer', { static: false }) swiperContainer!: ElementRef;
+
+  private swiper!: Swiper;
+
   constructor(
     private authService: AuthService,
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -56,14 +73,14 @@ export class GameMapComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private router: Router,
     private route: ActivatedRoute,
-    private gameMapService: GameMapService
+    private gameMapService: GameMapService,
+    private phaseUserService: PhaseUserService
   ) {}
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       // ✅ Obter gameMapId da URL
       this.gameMapId = Number(this.route.snapshot.paramMap.get('id'));
-      console.log('🗺️ GameMapId obtido da URL:', this.gameMapId);
 
       // ✅ Verificar se gameMapId é válido
       if (!this.gameMapId || this.gameMapId <= 0) {
@@ -78,7 +95,6 @@ export class GameMapComponent implements OnInit, OnDestroy {
       if (currentUser && currentUser.id) {
         this.userId = currentUser.id;
         this.userData = currentUser;
-        console.log('👤 Usuário atual obtido:', { id: this.userId, name: currentUser.name });
         
         // Inscreve-se nas atualizações de dados do usuário
         this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
@@ -120,6 +136,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
         // ✅ Após associar, carregar dados do usuário e fases
         this.loadUserData(this.userId);
         this.loadPhaseUsers();
+        this.loadPhaseTransitions();
       },
       error: (error) => {
         console.error('❌ Erro ao associar usuário ao GameMap:', error);
@@ -133,6 +150,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
           // ✅ Tentar carregar mesmo assim (pode já estar associado)
           this.loadUserData(this.userId);
           this.loadPhaseUsers();
+          this.loadPhaseTransitions();
           
         } else if (error.status === 400) {
           console.log('⚠️ Dados inválidos - usuário pode já estar associado');
@@ -173,10 +191,12 @@ export class GameMapComponent implements OnInit, OnDestroy {
     });
         
     this.gameMapService.getAllPhasesByUser(this.gameMapId, this.userId).subscribe({
-      next: (phaseUsers: PhaseUser[]) => {
+      next: async (phaseUsers: PhaseUser[]) => {
         this.phaseUsers = phaseUsers;
         this.isLoadingPhases = false;
-        console.log('✅ Fases carregadas:', phaseUsers.length);
+        console.log('✅ Fases carregadas:', phaseUsers);
+        await this.buildPhaseUsersAvailable();
+        this.initSwiper();
       },
       error: (error) => {
         console.error('❌ Erro ao carregar fases:', error);
@@ -188,107 +208,21 @@ export class GameMapComponent implements OnInit, OnDestroy {
           this.phasesError = 'Erro ao carregar fases do mapa';
         }
         
-        // ✅ Fallback para dados estáticos se a API falhar
-        this.loadStaticPhaseUsers();
       }
     });
   }
 
-  // ✅ Fallback usando PhaseUser diretamente (mantido igual)
-  private loadStaticPhaseUsers() {
-    console.log('📝 Carregando dados estáticos como fallback');
-    this.phaseUsers = [
-      {
-        id: 1,
-        phase: {
-          id: 1,
-          title: 'Explorar o Campus',
-          description: 'Primeira fase do jogo',
-          type: 'BUILD',
-          mode: 'BASIC',
-          maxTime: 3600,
-          character: { 
-            id: 1, 
-            name: 'Professor', 
-            filePath: 'character_teacher_01.png' 
-          },
-          gameMap: {
-            id: this.gameMapId,
-            title: 'Campus Virtual',
-            users: [],
-            phases: []
-          },
-          diagramInitial: '',
-          correctDiagrams: [],
-          characterDialogues: []
-        },
-        user: this.userData!,
-        status: 'COMPLETED',
-        reputation: 140,
-        coins: 50
+  loadPhaseTransitions() {
+    this.gameMapService.getPhaseTransitionsByGameMapId(this.gameMapId).subscribe({
+      next: (transitions) => {
+        this.phaseTransitions = transitions;
+        console.log('✅ Transições carregadas:', transitions);
       },
-      {
-        id: 2,
-        phase: {
-          id: 2,
-          title: 'Construir Diagrama',
-          description: 'Segunda fase do jogo',
-          type: 'BUILD',
-          mode: 'BASIC',
-          maxTime: 3600,
-          character: { 
-            id: 1, 
-            name: 'Professor', 
-            filePath: 'character_teacher_01.png' 
-          },
-          gameMap: {
-            id: this.gameMapId,
-            title: 'Campus Virtual',
-            users: [],
-            phases: []
-          },
-          diagramInitial: '',
-          correctDiagrams: [],
-          characterDialogues: []
-        },
-        user: this.userData!,
-        status: 'AVAILABLE',
-        reputation: 0,
-        coins: 0
-      },
-      {
-        id: 3,
-        phase: {
-          id: 3,
-          title: 'Corrigir Erros',
-          description: 'Terceira fase do jogo',
-          type: 'FIX',
-          mode: 'INTERMEDIATE',
-          maxTime: 2400,
-          character: { 
-            id: 1, 
-            name: 'Professor', 
-            filePath: 'character_teacher_01.png' 
-          },
-          gameMap: {
-            id: this.gameMapId,
-            title: 'Campus Virtual',
-            users: [],
-            phases: []
-          },
-          diagramInitial: '',
-          correctDiagrams: [],
-          characterDialogues: []
-        },
-        user: this.userData!,
-        status: 'LOCKED',
-        reputation: 0,
-        coins: 0
-      }
-    ];
+      error: (error) => console.error('Erro ao carregar transições:', error)
+    });
   }
 
-  // ✅ Métodos auxiliares (mantidos iguais)
+
   isPhaseUnlocked(phaseUser: PhaseUser): boolean {
     return phaseUser.status === 'AVAILABLE' || phaseUser.status === 'COMPLETED';
   }
@@ -336,21 +270,15 @@ export class GameMapComponent implements OnInit, OnDestroy {
     this.userService.getUserById(userId).subscribe({
       next: (user: User) => {
         this.userData = user;
-        console.log('✅ Dados do usuário atualizados do backend:', user);
       },
       error: (error) => {
         console.error('⚠️ Erro ao carregar dados atualizados do usuário:', error);
-        console.log('📱 Usando dados do localStorage como fallback');
       }
     });
   }
 
   get userName(): string {
     return this.userData?.name || '';
-  }
-
-  openGamePhase() {
-    this.router.navigate(["/game"]);
   }
 
   // ✅ ADICIONAR: Getter para estado de loading geral
@@ -363,9 +291,221 @@ export class GameMapComponent implements OnInit, OnDestroy {
     return this.associationError || this.phasesError;
   }
 
+  // chamar após carregar phaseUsers e phaseTransitions:
+  private prepareGraph() {
+    this.idToPhaseUser.clear();
+    this.outgoingMap.clear();
+    this.incomingCount.clear();
+
+    // mapear PhaseUser por phase.id
+    for (const phaseUser of this.phaseUsers) {
+      if (phaseUser?.phase?.id) this.idToPhaseUser.set(phaseUser.phase.id as number, phaseUser);
+    }
+
+    // montar outgoingMap e incoming counts
+    for (const t of this.phaseTransitions || []) {
+      const fromId = t.fromPhase?.id;
+      const toId = t.toPhase?.id;
+      if (!fromId || !toId) continue;
+      if (!this.outgoingMap.has(fromId)) this.outgoingMap.set(fromId, []);
+      this.outgoingMap.get(fromId)!.push(t);
+      this.incomingCount.set(toId, (this.incomingCount.get(toId) || 0) + 1);
+    }
+  }
+
+  /**
+   * Constrói phaseUsersAvailable seguindo a regra:
+   * - começa no start (phase.current === true) ou em um root (sem incoming)
+   * - segue seguindo um único caminho vigente (prioriza next cujo phaseUser.status é AVAILABLE|COMPLETED)
+   * - se encontra DECISION que NÃO está isCompleted, STOP (não incluir essa DECISION)
+   */
+  buildPhaseUsersAvailable() {
+    this.prepareGraph();
+    this.phaseUsersAvailable = [];
+
+    // encontrar start ou root
+    let startPhaseUser = null;
+    
+    // procurar start
+    const root = this.phaseUsers.find(phaseUser => !this.incomingCount.has(phaseUser.phase.id!));
+    startPhaseUser = root || (this.phaseUsers[0] || null);
+   
+    if (!startPhaseUser) return;
+    
+    this.phaseUsersAvailable.push(startPhaseUser);
+   
+
+    // seguir adiante por um caminho linear (até encontrar DECISION não-completada)
+    let currentPhaseId = startPhaseUser.phase.id!;
+    const visited = new Set<number>();
+    while (true) {
+      if (visited.has(currentPhaseId)) break;
+      visited.add(currentPhaseId);
+
+      const outs = this.outgoingMap.get(currentPhaseId) || [];
+      if (outs.length === 0) break;
+
+      // priorizar destinos que já estão AVAILABLE/COMPLETED (mantém sequência que já está liberada)
+      const preferred = outs.find(t => {
+        const toId = t.toPhase?.id;
+        const pu = toId ? this.idToPhaseUser.get(toId) : undefined;
+        return pu && (pu.status === 'AVAILABLE' || pu.status === 'COMPLETED');
+      });
+      const nextTransition = preferred || outs[0]; // fallback para o primeiro
+      const nextId = nextTransition.toPhase?.id;
+      if (!nextId) break;
+
+      const nextPu = this.idToPhaseUser.get(nextId);
+      if (!nextPu) break;
+
+      // NOVO: se o nó atual for DECISION e o próximo estiver LOCKED, parar e não incluir
+      const currentPu = this.idToPhaseUser.get(currentPhaseId);
+      const prevIsDecision = currentPu?.phase?.nodeType === 'DECISION';
+      if (prevIsDecision && nextPu.status === 'LOCKED') {
+        break;
+      }
+
+      // 
+      this.phaseUsersAvailable.push(nextPu);
+      currentPhaseId = nextId;
+      continue;
+
+    }
+  }
+
+  // no GameMapComponent
+  outgoingMapForPhase(phaseId?: number): PhaseTransition[] {
+    if (!phaseId) return [];
+    return this.outgoingMap.get(phaseId) || [];
+  }
+
+  /**
+   * onDecisionChoice: ao escolher uma opção (transition),
+   * libera as phaseUsers subsequentes até a próxima DECISION (marcando status=AVAILABLE).
+   */
+  async onDecisionChoice(currentPu: PhaseUser, transition: PhaseTransition) {
+    const targetId = transition.toPhase?.id;
+    if (!targetId) return;
+
+    // coletar ids da sequência a partir do targetId até antes da próxima DECISION
+    const idsToUnlock: number[] = [];
+    const stack: number[] = [targetId];
+    const visited = new Set<number>();
+
+    // vamos percorrer linearmente preferindo primeiro outgoing (padrão); 
+    // se houver ramificações, percorre apenas o caminho principal (pode ajustar se quiser liberar múltiplas branches)
+    while (stack.length) {
+      const pid = stack.shift()!;
+      if (visited.has(pid)) break;
+      visited.add(pid);
+
+      const pu = this.idToPhaseUser.get(pid);
+      if (!pu) break;
+
+      // se encontramos uma DECISION (mesmo que já esteja COMPLETED) paramos (não incluímos)
+      if (pu.phase.nodeType === 'DECISION') {
+        break;
+      }
+
+      // marca para liberar
+      idsToUnlock.push(pu.id);
+
+      // pegar próximo (apenas o primeiro outgoing)
+      const outs = this.outgoingMap.get(pid) || [];
+      if (outs.length === 0) break;
+      const next = outs[0].toPhase?.id;
+      if (!next) break;
+      stack.push(next);
+    }
+
+    if (idsToUnlock.length === 0) return;
+
+    // Chamada de API em lote (ou sequencial) para atualizar status das phaseUsers
+    try {
+      // exemplo sequencial; você pode implementar endpoint batch atualizando vários de uma vez
+      for (const puId of idsToUnlock) {
+        const pu = this.phaseUsers.find(p => p.id === puId);
+        if (!pu) continue;
+        const updated = { ...pu, status: 'AVAILABLE' } as any;
+        await this.phaseUserService.updatePhaseUser(puId, updated).toPromise();
+        // Atualiza localmente para resposta imediata
+        pu.status = 'AVAILABLE';
+      }
+
+      // depois de liberar, recalcule a lista disponível
+      this.buildPhaseUsersAvailable();
+
+    } catch (err) {
+      console.error('Erro ao liberar path da decisão:', err);
+    }
+  }
+
+  openGamePhase(phaseUser: PhaseUser) {
+    if (phaseUser.status === 'AVAILABLE' || phaseUser.status === 'COMPLETED') {
+      this.router.navigate(['/game', phaseUser.phase.id]);
+    }
+  }
+
+  // ✅ Método para construir URL correta da imagem do character
+  getCharacterImageUrl(phaseUser: PhaseUser): string {
+    return FileUrlBuilder.character(phaseUser.phase.character.filePath);
+  }
+  
+
+  // adiciona este método na classe
+  private initSwiper() {
+    // proteção básica
+    if (!this.swiperContainer || !this.swiperContainer.nativeElement) return;
+    const containerEl = this.swiperContainer.nativeElement as HTMLElement;
+
+    // esperar próximo ciclo de render e um RAF para garantir que os .swiper-slide estejam no DOM
+    Promise.resolve().then(() => {
+      requestAnimationFrame(() => {
+        const slides = containerEl.querySelectorAll('.swiper-slide');
+        if (!slides || slides.length === 0) {
+          // nada a inicializar
+          return;
+        }
+
+        // destruir instancia anterior, se existir
+        if (this.swiper) {
+          try { this.swiper.destroy(true, true); } catch (e) { /* ignore */ }
+          this.swiper = undefined as any;
+        }
+
+        // inicializar
+        this.swiper = new Swiper(containerEl, {
+          modules: [Navigation, Pagination, EffectCoverflow],
+          effect: "coverflow",
+          slidesPerView: 'auto',
+          grabCursor: true,
+          centeredSlides: true,
+          coverflowEffect: {
+            rotate: 50,
+            stretch: 0,
+            depth: 100,
+            modifier: 1,
+            slideShadows: true,
+          },
+          autoHeight: true,
+          navigation: {
+            nextEl: document.querySelector<HTMLElement>('.wrapper .swiper-button-next'),
+            prevEl: document.querySelector<HTMLElement>('.wrapper .swiper-button-prev')
+          },
+          loop: false,
+          spaceBetween: 64,
+          speed: 1000
+        });
+      });
+    });
+  }
+
   ngOnDestroy() {
     if (this.userDataSubscription) {
       this.userDataSubscription.unsubscribe();
+    }
+    if (this.swiper) {
+      try { this.swiper.destroy(true, true); } catch (e) { /* ignore */ }
     }
   }
 }

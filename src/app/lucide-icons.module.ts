@@ -31,7 +31,8 @@ import {
   Users,
   User,
   Calendar,
-  MousePointerClick
+  MousePointerClick,
+  MapPinOff
 } from 'lucide-angular';
 
 @NgModule({
@@ -65,7 +66,8 @@ import {
     Users,
     User,
     Calendar,
-    MousePointerClick
+    MousePointerClick,
+    MapPinOff
   })],
   exports: [LucideAngularModule],
 })

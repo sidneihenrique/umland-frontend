@@ -1125,3 +1125,130 @@ diagram-editor {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==== Transitions (Phase) ==== */
+.transitions-section {
+  border: 2px dashed #e1e5e9;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #fbfcfe;
+}
+
+.transitions-section > label {
+  display: block;
+  font-weight: 700;
+  color: #39424e;
+  margin-bottom: 0.5rem;
+}
+
+.activity-transition,
+.decision-transitions {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.transition-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.transitions-list {
+  grid-template-columns: 1fr;              /* 1 por linha para formulário ficar legível */
+  gap: 1rem;
+}
+
+.transition-card {
+  position: relative;
+  border: 1px solid #e9ecef;
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding-bottom: 0.5rem;
+}
+
+.transition-card::before {
+  content: '➡️';
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  opacity: 0.7;
+}
+
+.transition-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+}
+
+.transition-card-actions {
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+
+.transition-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr;        /* texto maior que destino */
+  gap: 0.75rem;
+  padding-left: 2rem;                      /* espaço para o ícone ➡️ */
+}
+
+.transition-row .form-group label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.activity-transition .form-select {
+  max-width: 420px;
+}
+
+.decision-transitions .form-input,
+.decision-transitions .form-select {
+  background: #fcfcff;
+}
+
+.decision-transitions .form-input:focus,
+.decision-transitions .form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+
+/* Pequenos toques visuais */
+.transitions-section .btn-primary {
+  border-radius: 10px;
+  padding-inline: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .transition-row {
+    grid-template-columns: 1fr;
+    padding-left: 1.75rem;
+  }
+  .activity-transition .form-select {
+    max-width: 100%;
+  }
+}
+
+.transition-card {
+  border: 1px solid #e9ecef;
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.transition-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.transition-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}

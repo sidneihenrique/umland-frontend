@@ -20,7 +20,7 @@ export interface Character {
     LucideIconsModule,
     RouterModule,
     CommonModule
-],
+  ],
   templateUrl: './node-activity.component.html',
   styleUrl: './node-activity.component.css'
 })
