@@ -1,0 +1,14 @@
+footer {
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.footer-content {
+    text-align: center;
+    padding: 15px;
+    background-color: var(--black);
+    color: var(--white);
+    font-size: 14px;
+    border-top: 2px solid var(--yellow);
+    width: 100%;
+}

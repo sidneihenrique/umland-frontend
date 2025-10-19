@@ -1,0 +1,29 @@
+<!-- Container para notificações de toast (base da página) -->
+<div class="toast-container">
+  <app-notification
+    *ngFor="let notification of toastNotifications; trackBy: trackByNotificationId"
+    [type]="notification.type"
+    [message]="notification.message"
+    [duration]="notification.duration || 4000"
+    [autoDismiss]="notification.autoDismiss !== false"
+    [isVisible]="true"
+    [displayMode]="'toast'"
+    [id]="notification.id"
+    (dismissed)="onNotificationDismissed(notification.id)">
+  </app-notification>
+</div>
+
+<!-- Container para notificações de conquistas (canto superior direito) -->
+<div class="snackbar-container">
+  <app-notification
+    *ngFor="let notification of snackbarNotifications; trackBy: trackByNotificationId"
+    [type]="notification.type"
+    [message]="notification.message"
+    [duration]="notification.duration || 5000"
+    [autoDismiss]="notification.autoDismiss !== false"
+    [isVisible]="true"
+    [displayMode]="'snackbar'"
+    [id]="notification.id"
+    (dismissed)="onNotificationDismissed(notification.id)">
+  </app-notification>
+</div>

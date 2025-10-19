@@ -1,10 +1,11 @@
-import { Component, OnInit, Inject, PLATFORM_ID, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, Output, EventEmitter } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { StoreItemComponent } from "./store-item/store-item.component";
 import { DataService } from '../../services/data.service';
 import { StorageService } from '../../services/storage.service';
-import { User } from '../../services/user.service';
+import { User, UserService } from '../../services/user.service';
+import { Subscription } from 'rxjs';
 
 interface StoreItem {
   imageUrl: string;
@@ -21,14 +22,18 @@ interface StoreItem {
   templateUrl: './store.component.html',
   styleUrl: './store.component.css'
 })
-export class StoreComponent implements OnInit {
+export class StoreComponent implements OnInit, OnDestroy {
   visible: boolean = false;
   userMoney: number = 0;
+  userData?: User;
   private userInventory: { [key: string]: number } = {};
+  private userDataSubscription?: Subscription;
   @Output() storeStateChanged = new EventEmitter<boolean>();
+  
   constructor(
     private dataService: DataService,
     private storageService: StorageService,
+    private userService: UserService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -36,18 +41,60 @@ export class StoreComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       const userId = localStorage.getItem('userId');
       if (userId) {
-        this.loadUserData();
+        this.loadUserData(userId);
+        this.subscribeToUserData();
       }
     }
   }
 
-  private loadUserData() {
+  ngOnDestroy() {
+    if (this.userDataSubscription) {
+      this.userDataSubscription.unsubscribe();
+    }
+  }
+
+  private subscribeToUserData() {
+    this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
+      if (userData) {
+        this.userData = userData;
+        this.userMoney = userData.coins;
+      }
+    });
+  }
+
+  private loadUserData(userId: string) {
+    this.userService.getUserById(Number(userId)).subscribe({
+      next: (response: User) => {
+        this.userData = response;
+        this.userMoney = response.coins;
+        this.dataService.updateUserData(response);
+        this.loadInventory();
+      },
+      error: (error) => {
+        console.error('Erro ao carregar dados do usuário:', error);
+        // Fallback para dados do localStorage se houver erro na API
+        this.loadUserDataFromStorage();
+      }
+    });
+  }
+
+  private loadUserDataFromStorage() {
     const userJson = localStorage.getItem('user');
     const inventoryJson = localStorage.getItem('inventory');
     if (userJson && inventoryJson) {
       const userData = JSON.parse(userJson);
-      this.userMoney = userData.money;
+      this.userData = userData;
+      this.userMoney = userData.coins || userData.money || 0; // Compatibilidade com diferentes nomes de campo
       this.userInventory = JSON.parse(inventoryJson);
+    }
+  }
+
+  private loadInventory() {
+    if (isPlatformBrowser(this.platformId)) {
+      const inventoryJson = localStorage.getItem('inventory');
+      if (inventoryJson) {
+        this.userInventory = JSON.parse(inventoryJson);
+      }
     }
   }
 
@@ -83,7 +130,12 @@ export class StoreComponent implements OnInit {
   ];
 
   show() {
-    this.loadUserData(); // Recarrega os dados quando a loja é aberta
+    if (isPlatformBrowser(this.platformId)) {
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        this.loadUserData(userId); // Recarrega os dados quando a loja é aberta
+      }
+    }
     this.visible = true;
   }
 
@@ -94,30 +146,71 @@ export class StoreComponent implements OnInit {
   toggle() {
     this.visible = !this.visible;
     this.storeStateChanged.emit(this.visible);
-    if (this.visible) {
-      this.loadUserData();
+    if (this.visible && isPlatformBrowser(this.platformId)) {
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        this.loadUserData(userId);
+      }
     }
   }
 
   onBuy(item: StoreItem) {
-    if (this.userMoney >= item.price) {
-      const userJson = localStorage.getItem('user');
-      const inventoryJson = localStorage.getItem('inventory');
-      if (userJson && inventoryJson) {
-        const userData = JSON.parse(userJson);
-        const inventory = JSON.parse(inventoryJson);
-        
-        // Atualiza o dinheiro do usuário
-        userData.money -= item.price;
-        this.userMoney = userData.money;
+    if (!this.userData || this.userMoney < item.price) {
+      console.warn('Moedas insuficientes para comprar o item');
+      return;
+    }
+
+    const newCoinsAmount = this.userMoney - item.price;
+    
+    this.userService.updateUserCoins(this.userData.id, newCoinsAmount).subscribe({
+      next: (updatedUser: User) => {
+        // Atualiza os dados locais
+        this.userData = updatedUser;
+        this.userMoney = updatedUser.coins;
         
         // Atualiza o inventário
-        inventory[item.key] = (inventory[item.key] || 0) + 1;
-        this.userInventory = inventory;
-          // Salva as alterações usando os serviços
-        this.dataService.updateUserData(userData);
-        this.storageService.updateInventory(inventory);
+        this.updateInventory(item.key);
+        
+        // Notifica outros componentes sobre a mudança
+        this.dataService.updateUserData(updatedUser);
+        
+        console.log(`Item ${item.title} comprado com sucesso!`);
+      },
+      error: (error) => {
+        console.error('Erro ao atualizar moedas no backend:', error);
+        // Em caso de erro, ainda atualiza localmente como fallback
+        this.updateLocalUserData(item);
       }
+    });
+  }
+
+  private updateInventory(itemKey: string) {
+    if (isPlatformBrowser(this.platformId)) {
+      const inventoryJson = localStorage.getItem('inventory');
+      let inventory = inventoryJson ? JSON.parse(inventoryJson) : {};
+      
+      inventory[itemKey] = (inventory[itemKey] || 0) + 1;
+      this.userInventory = inventory;
+      
+      localStorage.setItem('inventory', JSON.stringify(inventory));
+      this.storageService.updateInventory(inventory);
+    }
+  }
+
+  private updateLocalUserData(item: StoreItem) {
+    if (this.userData && isPlatformBrowser(this.platformId)) {
+      // Atualiza dados locais como fallback
+      this.userData.coins -= item.price;
+      this.userMoney = this.userData.coins;
+      
+      // Salva no localStorage
+      localStorage.setItem('user', JSON.stringify(this.userData));
+      
+      // Atualiza inventário
+      this.updateInventory(item.key);
+      
+      // Notifica outros componentes
+      this.dataService.updateUserData(this.userData);
     }
   }
 

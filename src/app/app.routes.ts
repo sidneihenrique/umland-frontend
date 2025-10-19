@@ -6,6 +6,7 @@ import { AdminPanelComponent } from './admin-panel/admin-panel.component';
 import { GameMapComponent } from './game-map/game-map.component';
 import { RegisterComponent } from './register/register.component';
 import { SelectMapComponent } from './select-map/select-map.component';
+import { CreditsComponent } from './credits/credits.component';
 
 
 export const routes: Routes = [
@@ -21,7 +22,7 @@ export const routes: Routes = [
     { 
       path: 'game/:id', 
       component: GamePhaseComponent,
-      canActivate: [AuthGuard] // <--- proteje a rota
+      canActivate: [AuthGuard]
     },
     {
       path: 'admin',
@@ -31,5 +32,9 @@ export const routes: Routes = [
       path: 'select-map',
       component: SelectMapComponent,
       canActivate: [AuthGuard]
+    },
+    {
+      path: 'credits',
+      component: CreditsComponent
     }
 ];
