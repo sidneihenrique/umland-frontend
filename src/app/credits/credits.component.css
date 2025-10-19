@@ -10,19 +10,6 @@ img {
   -ms-user-select: none;
 }
 
-@keyframes appear {
-  0% {
-    top: 80%;
-  }
-  95% {
-    opacity: 1;
-  }
-  100% {
-    top: -200%;
-    opacity: 0;
-  }
-}
-
 @keyframes disappear {
   0% {
     width: 150%;
@@ -111,7 +98,19 @@ section {
   margin: 0 auto;
   font-size: 5em;
   font-weight: 600;
+  display: none;
 }
+
+#container .content .amazing-credits {
+  position: relative;
+  opacity: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
 
 #container .content h1 {
   margin-bottom: 30px;
@@ -122,24 +121,57 @@ section {
   margin-bottom: 40px;
 }
 
-#container .content .amazing-credits {
-  position: relative;
-}
-
-.animate {
-  -webkit-animation-name: appear;
-  -webkit-animation-duration: 87s;
-  -webkit-animation-fill-mode: forwards;
-  animation-name: appear;
-  animation-duration: 87s;
-  animation-fill-mode: forwards;
-}
-
 .animate-logo {
   -webkit-animation-name: disappear;
   -webkit-animation-duration: 10s;
   -webkit-animation-fill-mode: forwards;
   animation-name: disappear;
-  animation-duration: 10s;
+  animation-duration: 9s;
   animation-fill-mode: forwards;
+}
+
+.return-button-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1s ease-in-out, visibility 0s linear 1s;
+}
+
+.return-button-container.show {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1s ease-in-out, visibility 0s linear 0s;
+}
+
+.return-button {
+  background: none;
+  border: 2px solid #fdd835;
+  color: #ffffff;
+  font-size: 1.5em;
+  cursor: pointer;
+  padding: 16px 32px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  background-color: #121212;
+}
+
+.return-button:hover {
+  background-color: #fdd835;
+  color: #121212;
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(253, 216, 53, 0.5);
+}
+
+.return-button:active {
+  transform: scale(0.98);
 }
