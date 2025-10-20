@@ -1,10 +1,8 @@
 <div class="select-map-overlay" [class.visible]="isOpen" (click)="close()">
   <div class="select-map-dialog" (click)="$event.stopPropagation()">
     
-    <!-- Header Component -->
     <app-header parentType="game-map"></app-header>
     
-    <!-- Select Map Header -->
     <div class="select-map-header">
       <div class="title">
         <lucide-icon name="map" class="lucide-icon" [size]="32" color="#FFFFFF"></lucide-icon>
@@ -12,7 +10,6 @@
       </div>
     </div>
 
-    <!-- Loading State -->
     <div *ngIf="loading" class="loading-state">
       <div class="loading-spinner">
         <lucide-icon name="loader-2" class="lucide-icon spinning" [size]="48"></lucide-icon>
@@ -20,17 +17,14 @@
       <p>Carregando mapas...</p>
     </div>
 
-    <!-- GameMaps Content -->
     <div class="select-map-content" *ngIf="!loading">
       
-      <!-- GameMaps Grid -->
       <div class="gamemaps-grid" *ngIf="gameMaps.length > 0">
         <div 
           *ngFor="let gameMap of gameMaps; let i = index" 
           class="gamemap-card"
           (click)="selectMap(gameMap)">
           
-          <!-- GameMap Header -->
           <div class="gamemap-header">
             <div class="gamemap-icon">
               <lucide-icon name="map-pin" class="lucide-icon" [size]="24"></lucide-icon>
@@ -41,7 +35,6 @@
             </div>
           </div>
 
-          <!-- GameMap Stats -->
           <div class="gamemap-stats">
             <div class="stat-item phases">
               <lucide-icon name="gamepad-2" class="lucide-icon" [size]="16"></lucide-icon>
@@ -56,7 +49,6 @@
             </div>
           </div>
 
-          <!-- GameMap Details -->
           <div class="gamemap-details">
             <div class="detail-item" *ngIf="gameMap.createdAt">
               <lucide-icon name="calendar" class="lucide-icon" [size]="14"></lucide-icon>
@@ -69,7 +61,6 @@
             </div>
           </div>
 
-          <!-- Selection Indicator -->
           <div class="selection-indicator">
             <lucide-icon name="mouse-pointer-click" class="lucide-icon" [size]="20"></lucide-icon>
             <span>Clique para selecionar</span>
@@ -77,7 +68,6 @@
         </div>
       </div>
 
-      <!-- Empty State -->
       <div *ngIf="gameMaps.length === 0" class="empty-state">
         <div class="empty-icon">
           <lucide-icon name="map-pin-off" class="lucide-icon" [size]="64"></lucide-icon>
