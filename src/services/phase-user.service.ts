@@ -51,4 +51,8 @@ export class PhaseUserService {
       }
     });
   }
+
+  unlockNextPhaseForUser(phaseId: number, userId: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/phase-users/unlock-next`, { phaseId, userId });
+  }
 }

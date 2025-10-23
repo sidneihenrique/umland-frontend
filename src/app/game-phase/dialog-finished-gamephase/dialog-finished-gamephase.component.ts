@@ -16,7 +16,7 @@ import { PhaseUser } from '../../../services/game-map.service';
 export class DialogFinishedGamephaseComponent implements OnInit {
   visible: boolean = false;
   @Input() accuracy: number = 0;
-  @Input() phaseUser: PhaseUser | null | undefined = null; // ✅ ADICIONAR: Receber PhaseUser
+  @Input() phaseUser: PhaseUser | null | undefined = null; 
   
   reputationSum: number = 0;
   coinsSum: number = 0;
@@ -26,8 +26,8 @@ export class DialogFinishedGamephaseComponent implements OnInit {
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private dataService: DataService,
-    private phaseUserService: PhaseUserService, // ✅ ADICIONAR
-    private userService: UserService // ✅ ADICIONAR
+    private phaseUserService: PhaseUserService,
+    private userService: UserService 
   ) {}
 
   ngOnInit() {
@@ -41,20 +41,20 @@ export class DialogFinishedGamephaseComponent implements OnInit {
     }
   }
 
-  // ✅ CORRIGIR: Método principal para atualizar dados
+  // Método principal para atualizar dados
   private updateSums() {
     this.reputationSum = this.calculateReputationSum(this.accuracy);
     this.coinsSum = this.calculateCoinsSum(this.accuracy);
     
-    // ✅ Atualizar dados no backend
+    // dados no backend
     this.updateBackendData();
   }
 
-  // ✅ NOVO: Método para atualizar dados no backend
+  // Método para atualizar dados no backend
   private updateBackendData() {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // ✅ USAR: getCurrentUser() ao invés de localStorage diretamente
+    // utiliza getCurrentUser() ao invés de localStorage diretamente
     const userData = this.userService.getCurrentUser();
     
     if (!userData || !this.phaseUser) {
@@ -70,6 +70,8 @@ export class DialogFinishedGamephaseComponent implements OnInit {
         accuracy: this.accuracy, // Salvar acurácia final (se existir campo)
         coins: this.coinsSum,
         reputation: this.reputationSum,
+        current: false, // Garantir que não está mais em andamento
+        status: 'COMPLETED',
         userDiagram: JSON.stringify(this.phaseUser.userDiagram) // Garantir que o diagrama do usuário seja salvo
       };
 
@@ -81,23 +83,24 @@ export class DialogFinishedGamephaseComponent implements OnInit {
         progressing: this.reputationSum >= 0
       };
 
-      console.log('💾 Atualizando dados:', {
-        phaseUserId: this.phaseUser.id,
-        userId: userData.id,
-        accuracy: this.accuracy,
-        coinsGain: this.coinsSum,
-        reputationGain: this.reputationSum
-      });
-
       // ✅ 3. Salvar PhaseUser no backend
       this.phaseUserService.updatePhaseUser(this.phaseUser.id, updatedPhaseUser).subscribe({
         next: (savedPhaseUser) => {
-          console.log('✅ PhaseUser atualizada:', savedPhaseUser);
+
+          if (updatedPhaseUser.accuracy && updatedPhaseUser.accuracy >= 70) {
+            this.phaseUserService.unlockNextPhaseForUser(savedPhaseUser.user.id, savedPhaseUser.id).subscribe({
+              next: () => {
+                console.log('✅ Próxima fase desbloqueada com sucesso!');
+              },
+              error: (error) => {
+                console.error('❌ Erro ao desbloquear próxima fase:', error);
+              }
+            });
+          }
           
           // ✅ 4. Salvar usuário no backend usando getCurrentUser
           this.userService.updateUser(userData.id, updatedUser).subscribe({
             next: (savedUser) => {
-              console.log('✅ Usuário atualizado:', savedUser);
               
               // ✅ 5. Atualizar localStorage
               localStorage.setItem('currentUser', JSON.stringify(savedUser));
@@ -129,7 +132,6 @@ export class DialogFinishedGamephaseComponent implements OnInit {
   private updateLocalData(userData: User) {
     localStorage.setItem('currentUser', JSON.stringify(userData));
     this.dataService.updateUserData(userData);
-    console.log('📱 Dados atualizados localmente como fallback');
   }
 
   // ✅ CORRIGIR: Sistema de cálculo mais equilibrado

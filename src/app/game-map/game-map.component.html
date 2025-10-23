@@ -36,8 +36,8 @@
                                <button
                                 *ngIf="phaseUser.phase.nodeType !== 'DECISION'"
                                 class="active"
-                                [disabled]="phaseUser.status !== 'AVAILABLE'"
-                                [ngClass]="{ 'disabled': phaseUser.status !== 'AVAILABLE' }"
+                                [disabled]="phaseUser.status !== 'AVAILABLE' && phaseUser.status !== 'COMPLETED'"
+                                [ngClass]="{ 'disabled': phaseUser.status !== 'AVAILABLE' && phaseUser.status !== 'COMPLETED' }"
                                 (click)="openGamePhase(phaseUser)">
                                 Jogar
                                 </button>

@@ -546,13 +546,21 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     this.finishedGamePhaseVisible = false;
     this.saveDisabled = true;
     this.headerComponent.refreshUserData();
-    this.router.navigate(['/map']);
+
+    // tenta pegar o id do mapa a partir da fase carregada
+    const mapId = this.phase?.gameMap?.id ?? this.phaseUser?.phase?.gameMap?.id;
+
+    if (mapId) {
+      // navega para /map/:id
+      this.router.navigate(['/map', mapId]);
+    } else {
+      // fallback genérico
+      this.router.navigate(['/map']);
+    }
   }
 
   checkDiagram() {
-    console.log('Tentando verificar diagrama, tentativas restantes:', this.checkDiagramLeft);
     if(this.checkDiagramLeft > 0) {
-      console.log('Verificando diagrama, tentativas restantes:', this.checkDiagramLeft);
       this.diagramEditorComponentRef.checkUMLInconsistencies();
       this.checkDiagramLeft--;
     }
