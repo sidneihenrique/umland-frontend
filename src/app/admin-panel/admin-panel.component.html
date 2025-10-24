@@ -102,6 +102,15 @@
     </div>
     <div class="card-content">
       <form (ngSubmit)="onSubmitPhase()" #phaseForm="ngForm" class="form">
+        
+        <div class="form-group">
+          <label>Nó do Fluxo:</label>
+          <select name="nodeType" [(ngModel)]="phase.nodeType" required class="form-select">
+            <option value="ACTIVITY">🏃 Atividade</option>
+            <option value="DECISION">⚖️ Decisão</option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label>Título da Fase:</label>
           <input type="text" name="title" [(ngModel)]="phase.title" required class="form-input" />
@@ -112,7 +121,7 @@
           <textarea name="description" [(ngModel)]="phase.description" class="form-textarea" rows="3"></textarea>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" *ngIf="phase?.nodeType !== 'DECISION'">
           <div class="form-group">
             <label>Tipo da Fase:</label>
             <select name="type" [(ngModel)]="phase.type" required class="form-select">
@@ -130,16 +139,8 @@
             </select>
           </div>
         </div>
-
-        <div class="form-group">
-          <label>Nó do Fluxo:</label>
-          <select name="nodeType" [(ngModel)]="phase.nodeType" required class="form-select">
-            <option value="ACTIVITY">🏃 Atividade</option>
-            <option value="DECISION">⚖️ Decisão</option>
-          </select>
-        </div>
         
-        <div class="form-group">
+        <div class="form-group" *ngIf="phase?.nodeType !== 'DECISION'">
           <label>Tempo Máximo (segundos):</label>
           <input type="number" name="maxTime" [(ngModel)]="phase.maxTime" required class="form-input" min="60" />
         </div>
@@ -165,7 +166,7 @@
         </div>
 
         <!-- ✅ NEW: Seção de Falas do Personagem -->
-        <div class="form-group">
+        <div class="form-group" *ngIf="phase?.nodeType !== 'DECISION'">
           <label>💬 Falas do Personagem:</label>
           
           <!-- Campo para adicionar/editar fala -->
@@ -195,7 +196,7 @@
           </div>
 
           <!-- Lista de falas adicionadas -->
-          <div class="dialogues-list" *ngIf="phase.characterDialogues.length > 0">
+          <div class="dialogues-list" *ngIf="phase.characterDialogues.length > 0 && phase?.nodeType !== 'DECISION'">
             <div *ngFor="let dialogue of phase.characterDialogues; let i = index" class="dialogue-item" [class.editing]="editingDialogueIndex === i">
               
               <div class="dialogue-number">{{ i + 1 }}</div>
@@ -243,13 +244,13 @@
           </div>
 
           <!-- Contador de falas -->
-          <div class="dialogues-counter" *ngIf="phase.characterDialogues.length > 0">
+          <div class="dialogues-counter" *ngIf="phase.characterDialogues.length > 0 && phase?.nodeType !== 'DECISION'">
             <small>{{ phase.characterDialogues.length }} fala(s) adicionada(s)</small>
           </div>
         </div>
 
         <!-- ✅ EDITOR 1: Para diagrama inicial -->
-        <div class="form-group">
+        <div class="form-group" *ngIf="phase?.nodeType !== 'DECISION'">
           <label>Diagrama Inicial:</label>
           
           <div class="diagram-editor-section">
@@ -273,7 +274,7 @@
         </div>
 
         <!-- ✅ EDITOR 2: Para diagramas corretos -->
-        <div class="form-group">
+        <div class="form-group" *ngIf="phase?.nodeType !== 'DECISION'">
           <label>📊 Diagramas Corretos:</label>
           
           <div class="diagram-editor-section">

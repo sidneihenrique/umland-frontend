@@ -258,6 +258,24 @@ header .right {
     max-width: 780px;
 }
 
+.swiper-slide {
+    padding: 16px 0;
+}
+
+.swiper-slide > h1 {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 32px;
+
+    transition: 0.5s;
+}
+
+.swiper-slide:hover > h1 {
+    font-size: 40px;
+    color: var(--yellow);
+    text-shadow: 0 0 8px rgba(255, 223, 0, 0.8);
+}
+
 .swiper-button-prev, .swiper-button-next {
     color: var(--black);
 }

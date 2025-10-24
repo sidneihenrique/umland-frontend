@@ -426,8 +426,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
             this.selectedGameMapId = phase.gameMap?.id || this.selectedGameMapId;
             this.loadOutgoingTransitions(phase.id); // << apenas saídas
           }
-          this.editPhase(undefined, phase); // Carregar a fase recém-criada para edição
-
+          this.resetPhaseForm();
         },
         error: (error) => console.error('Erro ao atualizar phase:', error)
       });
@@ -440,8 +439,9 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
             this.selectedGameMapId = phase.gameMap?.id || this.selectedGameMapId;
             this.loadIncomingTransitions(phase.id); // << apenas entradas
             alert('✅ Fase criada. Configure as transições (entradas) desta fase.');
+            this.resetPhaseForm();
+
           }
-          this.editPhase(undefined, phase); // Carregar a fase recém-criada para edição
         },
         error: (error) => console.error('Erro ao criar phase:', error)
       });
