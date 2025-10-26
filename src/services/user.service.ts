@@ -8,7 +8,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  password?: string; // Opcional para não exposição
+  password?: string;
   reputation: number;
   coins: number;
   avatar?: Avatar;
@@ -17,7 +17,7 @@ export interface User {
     items: any[];
   };
   gameMaps?: any[];
-  progressing?: boolean; // Indica se a reputação está aumentando ou diminuindo
+  progressing?: boolean;
 }
 
 export interface CreateUserRequest {

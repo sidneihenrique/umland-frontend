@@ -12,6 +12,7 @@ import { User } from '../../services/user.service';
 import { AuthService } from '../auth/auth.service';
 import { isPlatformBrowser } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 import { FileUrlBuilder } from '../../config/files.config';
 
@@ -55,6 +56,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
   private watchStartTime: number = 0;
   private watchDuration: number = 59 * 1000;
   private startTime: number = 0;
+  private userDataSubscription?: Subscription;
 
   constructor(
     private dataService: DataService,
@@ -66,6 +68,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
 
   ngOnInit(): void {
     this.loadUserData();
+    this.subscribeToUserData();
     if (this.parentType === 'game-phase') {
       this.startTimer();
     }
@@ -85,6 +88,9 @@ export class HeaderComponent implements OnInit, OnDestroy{
     }
     if (this.watchTimerInterval) {
       clearInterval(this.watchTimerInterval);
+    }
+    if (this.userDataSubscription) {
+      this.userDataSubscription.unsubscribe();
     }
   }
 
@@ -169,6 +175,15 @@ export class HeaderComponent implements OnInit, OnDestroy{
       console.error('❌ Usuário não encontrado no localStorage');
       this.router.navigate(['/login']);
     }
+  }
+
+  private subscribeToUserData() {
+    this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
+      if (userData) {
+        this.userData = userData;
+        console.log('✅ Dados do usuário atualizados no header:', this.userData);
+      }
+    });
   }
 
   public refreshUserData(): void {
