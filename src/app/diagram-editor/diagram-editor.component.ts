@@ -61,6 +61,13 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
 
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
+  @ViewChild('wrapperBoard', { static: true }) wrapperBoard!: ElementRef<HTMLElement>;
+  @ViewChild('clues', { static: false }) clues?: ElementRef<HTMLElement>;
+  @ViewChild('inspector', { static: false }) inspectorRef!: ElementRef<HTMLElement>;
+
+  // bound handler for scroll/resize to keep the inspector positioned correctly
+  private boundUpdateInspectorPosition = () => this.updateInspectorPosition();
+  private boundUpdateCluesPosition = () => this.updateCluesPosition();
 
   public inconsistencies: string[] = [];
 
@@ -96,7 +103,18 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
   
   ngAfterViewInit(): void {
-    
+    // register scroll/resize listeners so the inspector stays aligned to the visible
+    // area of the wrapper-board whenever the user scrolls or resizes the window
+    try {
+      if (this.wrapperBoard && this.wrapperBoard.nativeElement) {
+        this.wrapperBoard.nativeElement.addEventListener('scroll', this.boundUpdateInspectorPosition, { passive: true });
+        this.wrapperBoard.nativeElement.addEventListener('scroll', this.boundUpdateCluesPosition, { passive: true });
+      }
+    } catch (e) {
+      // ignore listener registration errors
+    }
+    window.addEventListener('resize', this.boundUpdateInspectorPosition);
+    window.addEventListener('resize', this.boundUpdateCluesPosition);
   }
 
   public initializeJointJS(phase?: Phase, phaseUser?: PhaseUser): void {
@@ -664,6 +682,64 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
+  /**
+   * Position the inspector element so it stays fixed to the visible corner of the wrapper-board.
+   */
+  private updateInspectorPosition() {
+    try {
+      if (!this.inspectorRef || !this.inspectorRef.nativeElement) return;
+      if (!this.wrapperBoard || !this.wrapperBoard.nativeElement) return;
+      if (!this.inspectorVisible) return;
+
+      const wrapperRect = this.wrapperBoard.nativeElement.getBoundingClientRect();
+      const inspectorEl = this.inspectorRef.nativeElement as HTMLElement;
+
+      inspectorEl.style.position = 'fixed';
+      inspectorEl.style.zIndex = '8';
+
+      const margin = 12;
+      const inspectorWidth = inspectorEl.offsetWidth || 320;
+
+      const top = Math.max(8, wrapperRect.top + margin);
+      const left = wrapperRect.left + wrapperRect.width - inspectorWidth - margin;
+
+      inspectorEl.style.top = `${top}px`;
+      inspectorEl.style.left = `${Math.max(8, left)}px`;
+    } catch (err) {
+      // ignore
+    }
+  }
+
+  /**
+   * Position the clues element so it stays fixed to the visible corner (top-left)
+   * of the wrapper-board. Works similarly to updateInspectorPosition.
+   */
+  private updateCluesPosition() {
+    try {
+      if (!this.clues || !this.clues.nativeElement) return;
+      if (!this.wrapperBoard || !this.wrapperBoard.nativeElement) return;
+
+      console.warn('Updating clues position');
+
+      const wrapperRect = this.wrapperBoard.nativeElement.getBoundingClientRect();
+      const cluesEl = this.clues.nativeElement as HTMLElement;
+
+      cluesEl.style.position = 'fixed';
+      cluesEl.style.zIndex = '8';
+
+      const margin = 12;
+      const cluesWidth = cluesEl.offsetWidth;
+
+      const top = Math.max(8, wrapperRect.top + margin);
+      const left = wrapperRect.left + wrapperRect.width - cluesWidth - margin;
+
+      cluesEl.style.top = `${top}px`;
+      cluesEl.style.left = `${left}px`;
+    } catch (err) {
+      // ignore positioning errors
+    }
+  }
+
   // Cálcula se o graph do usuário está correto
   calculateGraphAccuracy(): number {
     if (!this.graph || !this.correctsJSON.length) {
@@ -825,6 +901,9 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   toggleTips() {
     this.tipsVisible = !this.tipsVisible;
+    if (this.tipsVisible) {
+      setTimeout(() => this.updateCluesPosition(), 0);
+    }
   }
 
   // método para alternar
@@ -837,6 +916,20 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   ngOnDestroy(): void {
+    // Cancel listeners we registered in ngAfterViewInit
+    try {
+      this.wrapperBoard?.nativeElement?.removeEventListener('scroll', this.boundUpdateInspectorPosition);
+      this.wrapperBoard?.nativeElement?.removeEventListener('scroll', this.boundUpdateCluesPosition);
+    } catch (e) {
+      // ignore
+    }
+    try {
+      window.removeEventListener('resize', this.boundUpdateInspectorPosition);
+      window.removeEventListener('resize', this.boundUpdateCluesPosition);
+    } catch (e) {
+      // ignore
+    }
+
     // ✅ Cancelar operações ativas antes de destruir
     this.cancelActiveOperation();
     
@@ -969,6 +1062,9 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       attributes: attributes,
       operations: operations
     };
+
+    // position inspector after it becomes visible and DOM updates
+    setTimeout(() => this.updateInspectorPosition(), 0);
   }
 
   // Fecha o inspector
