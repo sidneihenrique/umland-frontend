@@ -71,13 +71,13 @@
         <div class="inspector" *ngIf="inspectorVisible" #inspector>
             <div class="inspector-header">
                 <span class="inspector-title">Class Inspector</span>
-                <button class="inspector-close" (click)="closeInspector()">×</button>
+                <button class="inspector-close" (click)="closeInspector()" type="button">×</button>
             </div>
 
             <div class="inspector-tabs">
-                <button [class.active]="inspectorTab === 'general'" (click)="inspectorTab = 'general'">General</button>
-                <button [class.active]="inspectorTab === 'attributes'" (click)="inspectorTab = 'attributes'">Attributes</button>
-                <button [class.active]="inspectorTab === 'operations'" (click)="inspectorTab = 'operations'">Operations</button>
+                <button [class.active]="inspectorTab === 'general'" (click)="inspectorTab = 'general'" type="button">General</button>
+                <button [class.active]="inspectorTab === 'attributes'" (click)="inspectorTab = 'attributes'" type="button">Attributes</button>
+                <button [class.active]="inspectorTab === 'operations'" (click)="inspectorTab = 'operations'" type="button">Operations</button>
             </div>
 
             <div class="inspector-body">
@@ -93,7 +93,7 @@
                 <!-- Attributes -->
                 <div *ngIf="inspectorTab === 'attributes'">
                 <div class="inspector-actions">
-                    <button (click)="addAttribute()">Add Attribute</button>
+                    <button (click)="addAttribute()" type="button">Add Attribute</button>
                 </div>
 
                 <div *ngFor="let a of inspectorData.attributes; let i = index" class="inspector-card">
@@ -118,7 +118,7 @@
                     </div>
 
                     <div class="card-row card-actions">
-                    <button (click)="removeAttribute(i)">Remove</button>
+                    <button (click)="removeAttribute(i)" type="button">Remove</button>
                     </div>
                 </div>
                 </div>
@@ -126,7 +126,7 @@
                 <!-- Operations -->
                 <div *ngIf="inspectorTab === 'operations'">
                 <div class="inspector-actions">
-                    <button (click)="addOperation()">Add Operation</button>
+                    <button (click)="addOperation()" type="button">Add Operation</button>
                 </div>
 
                 <div *ngFor="let op of inspectorData.operations; let j = index" class="inspector-card">
@@ -151,7 +151,7 @@
                     </div>
 
                     <div class="card-row card-actions">
-                    <button (click)="removeOperation(j)">Remove</button>
+                    <button (click)="removeOperation(j)" type="button">Remove</button>
                     </div>
                 </div>
                 </div>
