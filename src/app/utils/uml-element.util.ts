@@ -1,5 +1,5 @@
 import { dia, shapes, util } from '@joint/core';
-import { CustomActor, CustomUseCase } from './uml-shapes';
+import { CustomActor, CustomUseCase, CustomClass } from './uml-shapes';
 
 export class UMLElementUtil {
   static createElement(
@@ -74,33 +74,6 @@ export class UMLElementUtil {
     return actor;
   }
 
-  // static createUseCase(x: number, y: number): dia.Element {
-  //   const width = 100;
-  //   const height = 50;
-  //   const ellipse = new shapes.standard.Ellipse();
-  //   ellipse.position(x - width / 2, y - height / 2);
-  //   ellipse.resize(width, height);
-  //   ellipse.attr({
-  //     body: {
-  //       fill: '#FFF7D0',
-  //       stroke: '#000',
-  //       strokeWidth: 2,
-  //     },
-  //     label: {
-  //       text: 'Caso de uso',
-  //       fill: '#000',
-  //       fontSize: 16,
-  //       textWrap: {
-  //         width: 200,      // limite de largura
-  //         height: null,    // ou defina um limite de altura se quiser
-  //         ellipsis: false, // ou true para adicionar "..." no final
-  //         breakWord: true  // quebra palavras longas
-  //       }
-  //     }
-  //   });
-  //   ellipse.set('type', 'custom.UseCase');
-  //   return ellipse;
-  // }
 
   static createUseCase(x: number, y: number): dia.Element {
     const width = 100;
@@ -190,5 +163,30 @@ export class UMLElementUtil {
     }
 
     return link;
+  }
+
+  static createClass(
+    x: number,
+    y: number,
+    data?: { stereotype?: string; name?: string; attributes?: string[]; operations?: string[] },
+    width = 220,
+    height = 104
+  ): dia.Element {
+    const name = data?.name || 'ClassName';
+    const stereotype = data?.stereotype || '';
+    const attributes = (data?.attributes || []).join('\n');
+    const operations = (data?.operations || []).join('\n');
+
+    const cls = new CustomClass();
+    cls.position(x - width / 2, y - height / 2);
+    cls.resize(width, height);
+
+    // set texts/attrs
+    cls.attr('stereotype/text', stereotype ? `<<${stereotype}>>` : '');
+    cls.attr('title/text', name);
+    cls.attr('attrsText/text', attributes);
+    cls.attr('opsText/text', operations);
+
+    return cls;
   }
 }

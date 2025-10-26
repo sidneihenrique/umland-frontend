@@ -470,7 +470,8 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       diagramInitial: undefined,
       correctDiagrams: [],
       characterDialogues: [],
-      nodeType: 'ACTIVITY'
+      nodeType: 'ACTIVITY',
+      diagramType: 'USE_CASE'
     };
     
     
@@ -533,7 +534,8 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       diagramInitial: p.diagramInitial || undefined,
       correctDiagrams: p.correctDiagrams || [],
       characterDialogues: p.characterDialogues || [],
-      nodeType: p.nodeType || 'ACTIVITY'
+      nodeType: p.nodeType || 'ACTIVITY',
+      diagramType: p.diagramType || 'USE_CASE'
     };
     
     // Setar IDs auxiliares para os selects
@@ -1080,7 +1082,6 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     // Encontra a fase atual
     const currentPhase = this.phases.find(p => p.id === phaseId);
     if (!currentPhase || !currentPhase.incomingTransitions) {
-      console.warn('Current Phase or incomingTransitionsIds not found', currentPhase);
       return null; // Sem transições de entrada
     }
 
