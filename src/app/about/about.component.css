@@ -1,0 +1,440 @@
+img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+:host {
+    display: block;
+    min-height: 100vh;
+}
+
+:host::ng-deep body {
+    overflow: auto !important;
+}
+
+.about-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--black);
+    padding: 2rem;
+    padding-bottom: 4rem;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+}
+
+.matrix-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 1em;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 2px solid var(--yellow);
+    z-index: 10;
+}
+
+.back-button:hover {
+    background-color: var(--yellow);
+    color: var(--black);
+    transform: translateX(-3px);
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    position: relative;
+    z-index: 5;
+}
+
+.logo {
+    max-width: 250px;
+    height: auto;
+    filter: invert(1);
+    animation: floatLogo 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes floatLogo {
+    0% {
+        transform: translateY(0) scale(1.02);
+        filter: invert(1) drop-shadow(0 2px 8px var(--yellow));
+    }
+
+    100% {
+        transform: translateY(-18px) scale(1.07);
+        filter: invert(1) drop-shadow(0 8px 16px var(--gray));
+    }
+}
+
+.team-title {
+    color: var(--white);
+    font-size: 1.4rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 1.5rem 0 2rem 0;
+    position: relative;
+    z-index: 5;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.team-section {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 5;
+    flex-wrap: wrap;
+    max-width: 1400px;
+    width: 100%;
+    padding: 0 1rem;
+}
+
+.team-member {
+    background: linear-gradient(145deg, rgba(20, 20, 20, 0.95), rgba(0, 0, 0, 0.9));
+    border: 3px solid var(--yellow);
+    border-radius: 12px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4), 0 0 30px rgba(235, 178, 53, 0.3);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    flex: 1;
+    min-width: 300px;
+    max-width: 380px;
+    overflow: hidden;
+    position: relative;
+}
+
+.team-member::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--yellow), var(--white), var(--yellow));
+    border-radius: 12px;
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+}
+
+.team-member:hover::before {
+    opacity: 0.3;
+    animation: borderGlow 2s linear infinite;
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        background: linear-gradient(45deg, var(--yellow), var(--white), var(--yellow));
+    }
+    50% {
+        background: linear-gradient(45deg, var(--white), var(--yellow), var(--white));
+    }
+}
+
+.team-member:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5), 0 0 40px rgba(235, 178, 53, 0.5);
+    border-color: var(--white);
+}
+
+.member-photo {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    border-bottom: 3px solid var(--yellow);
+    transition: all 0.4s ease;
+    filter: grayscale(20%) brightness(0.95);
+}
+
+.team-member:hover .member-photo {
+    filter: grayscale(0%) brightness(1.05);
+    transform: scale(1.05);
+}
+
+.member-name {
+    color: var(--white);
+    font-size: 1.05rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 0;
+    padding: 1.8rem 1.5rem;
+    width: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.7));
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.member-name .highlight {
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.team-member:hover .member-name {
+    background: linear-gradient(to top, rgba(235, 178, 53, 0.2), rgba(20, 20, 20, 0.8));
+    letter-spacing: 0.5px;
+}
+
+.team-member:hover .member-name .highlight {
+    color: var(--yellow);
+    text-shadow: 0 0 10px rgba(235, 178, 53, 0.6);
+    transform: scale(1.15);
+    font-weight: 900;
+    margin: 0 4px;
+    letter-spacing: 1px;
+}
+
+.social-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.2rem 1.5rem;
+    width: 100%;
+    background: linear-gradient(to bottom, rgba(20, 20, 20, 0.7), rgba(0, 0, 0, 0.9));
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--white);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    padding: 0.4rem 0;
+}
+
+.social-link:hover {
+    color: var(--yellow);
+    transform: translateX(5px);
+}
+
+.social-icon {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-link span {
+    font-weight: 500;
+    line-height: 1;
+}
+
+.content-section {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 5;
+}
+
+.about-board {
+    background-color: rgba(20, 20, 20, 0.95);
+    color: var(--white);
+    padding: 2rem;
+    border-radius: 8px;
+    border: 3px solid var(--yellow);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(253, 216, 53, 0.3);
+    width: 100%;
+}
+
+.about-board h1 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 1.2rem;
+    color: var(--white);
+    text-align: left;
+}
+
+.about-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--white);
+    margin-bottom: 1.2rem;
+    text-align: justify;
+}
+
+.about-text:last-child {
+    margin-bottom: 0;
+}
+
+.about-text strong {
+    font-weight: bold;
+    color: var(--white);
+}
+
+.advisor-info {
+    color: var(--white);
+    font-size: 1.05rem;
+    text-align: center;
+    font-style: italic;
+    margin: 0;
+    padding: 1rem;
+}
+
+.footer-quote {
+    margin-top: 3rem;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 5;
+}
+
+.quote-text {
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: var(--yellow);
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0 0 0.5rem 0;
+    overflow: hidden;
+    border-right: 3px solid transparent;
+    white-space: nowrap;
+    display: inline-block;
+    width: 0;
+}
+
+.footer-quote.visible .quote-text {
+    border-right: 3px solid var(--yellow);
+    animation: typing 3s steps(35) 0.5s 1 normal both, blink 0.75s step-end infinite;
+}
+
+.quote-source {
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: var(--white);
+    font-size: 0.95rem;
+    margin: 0;
+    opacity: 0;
+}
+
+.footer-quote.visible .quote-source {
+    animation: fadeIn 1s ease-in 3.5s forwards;
+}
+
+@keyframes typing {
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes blink {
+    from, to {
+        border-color: transparent;
+    }
+    50% {
+        border-color: var(--yellow);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-container {
+        padding: 1rem;
+        padding-top: 4rem;
+    }
+
+    .back-button {
+        top: 10px;
+        left: 10px;
+        font-size: 0.9em;
+    }
+
+    .logo {
+        max-width: 180px;
+    }
+
+    .team-title {
+        font-size: 1.4rem;
+        margin: 1.5rem 0 1rem 0;
+    }
+
+    .team-section {
+        gap: 1.5rem;
+    }
+
+    .team-member {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .content-section {
+        max-width: 100%;
+    }
+
+    .about-board {
+        padding: 1.5rem;
+    }
+
+    .about-board h1 {
+        font-size: 1.5rem;
+    }
+
+    .about-text {
+        font-size: 0.95rem;
+    }
+
+    .footer-quote {
+        padding: 1.5rem 1rem;
+        margin-top: 2rem;
+    }
+
+    .quote-text {
+        font-size: 1rem;
+    }
+
+    .quote-source {
+        font-size: 0.85rem;
+    }
+}

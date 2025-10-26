@@ -7,6 +7,7 @@ import { GameMapComponent } from './game-map/game-map.component';
 import { RegisterComponent } from './register/register.component';
 import { SelectMapComponent } from './select-map/select-map.component';
 import { CreditsComponent } from './credits/credits.component';
+import { AboutComponent } from './about/about.component';
 
 
 export const routes: Routes = [
@@ -36,5 +37,9 @@ export const routes: Routes = [
     {
       path: 'credits',
       component: CreditsComponent
+    },
+    {
+      path: 'about',
+      component: AboutComponent
     }
 ];
