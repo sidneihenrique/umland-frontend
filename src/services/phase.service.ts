@@ -39,6 +39,7 @@ export interface Phase {
   correctDiagrams: string[];
   characterDialogues: string[];
   nodeType?: PhaseNodeType;  // 'ACTIVITY' | 'DECISION'
+  diagramType?: 'CLASS' | 'USE_CASE';
   phaseTransitions?: PhaseTransition[];
   incomingTransitions?: number[];
   outgoingTransitions?: number[];

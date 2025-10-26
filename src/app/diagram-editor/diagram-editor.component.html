@@ -1,59 +1,53 @@
 <div class="content">
-    <div class="drag-and-drop-buttons">
-        <button 
-            class="btn-icon filled" 
-            [class.active]="isButtonActive('link-association')"
-            (click)="addLink('association')" 
-            type="button">
-            <img src="assets/icons/association.svg" alt="">
-        </button>
-        
-        <button 
-            class="btn-icon filled"
-            [class.active]="isButtonActive('actor')"
-            draggable="true" 
-            (dragstart)="onDragStart($event, 'actor')"
-            (click)="addElement('actor')"
-            type="button">
-            <img src="assets/icons/actor.svg" alt="">
-        </button>
-        
-        <button
-            class="btn-icon filled"
-            [class.active]="isButtonActive('usecase')"
-            draggable="true" 
-            (dragstart)="onDragStart($event, 'usecase')"
-            (click)="addElement('usecase')"    
-            type="button">
-            <img src="assets/icons/use_case.svg" alt="">
-        </button>
-        
-        <button 
-            class="btn-icon filled" 
-            [class.active]="isButtonActive('link-extend')"
-            (click)="addLink('extend')" 
-            type="button">
-            <img src="assets/icons/extend.svg" alt="">
-        </button>
-        
-        <button 
-            class="btn-icon filled" 
-            [class.active]="isButtonActive('link-include')"
-            (click)="addLink('include')" 
-            type="button">
-            <img src="assets/icons/include.svg" alt="">
-        </button>
-        
-        <button 
-            class="btn-icon filled" 
-            [class.active]="isButtonActive('link-dependency')"
-            (click)="addLink('dependency')" 
-            type="button">
-            <img src="assets/icons/dependency.svg" alt="">
+    <!-- Toggle de tipo de diagrama -->
+    <div class="diagram-toggle" style="display:flex; gap:8px; align-items:center;">
+        <button class="btn-toggle" (click)="toggleDiagramType()" type="button">
+            {{ diagramType === 'USE_CASE' ? 'Modo: Casos de Uso' : 'Modo: Classes' }}
         </button>
     </div>
 
-    <div class="wrapper-board">
+    <div class="drag-and-drop-buttons">
+        <!-- Botões para DIAGRAMA DE CASOS DE USO (padrão) -->
+        <ng-container *ngIf="diagramType === 'USE_CASE'">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-association')" (click)="addLink('association')" type="button">
+                <img src="assets/icons/association.svg" alt="">
+            </button>
+
+            <button class="btn-icon filled" [class.active]="isButtonActive('actor')" draggable="true" (dragstart)="onDragStart($event, 'actor')" (click)="addElement('actor')" type="button">
+                <img src="assets/icons/actor.svg" alt="">
+            </button>
+
+            <button class="btn-icon filled" [class.active]="isButtonActive('usecase')" draggable="true" (dragstart)="onDragStart($event, 'usecase')" (click)="addElement('usecase')" type="button">
+                <img src="assets/icons/use_case.svg" alt="">
+            </button>
+
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-extend')" (click)="addLink('extend')" type="button">
+                <img src="assets/icons/extend.svg" alt="">
+            </button>
+
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-include')" (click)="addLink('include')" type="button">
+                <img src="assets/icons/include.svg" alt="">
+            </button>
+
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-dependency')" (click)="addLink('dependency')" type="button">
+                <img src="assets/icons/dependency.svg" alt="">
+            </button>
+        </ng-container>
+
+        <!-- Botões para DIAGRAMA DE CLASSES -->
+        <ng-container *ngIf="diagramType === 'CLASS'">
+            <button class="btn-icon filled" [class.active]="isButtonActive('uml-class')" draggable="true" (dragstart)="onDragStart($event, 'class')" (click)="addElement('class')" type="button" title="Inserir Classe">
+                <!-- troque o SVG por um ícone de classe se tiver -->
+                <img src="assets/icons/class.svg" alt="Classe">
+            </button>
+
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-association')" (click)="addLink('association')" type="button" title="Inserir Associação">
+                <img src="assets/icons/association.svg" alt="">
+            </button>
+        </ng-container>
+    </div>
+
+    <div class="wrapper-board" #wrapperBoard>
 
         <div class="inconsistency_indicator" *ngIf="inconsistencies.length > 0">
             <lucide-icon name="triangle-alert" class="lucide-icon"></lucide-icon>
@@ -73,13 +67,104 @@
             <app-carousel [items]="tips || []"></app-carousel>
             
         </div>
-        
+
+        <div class="inspector" *ngIf="inspectorVisible" #inspector>
+            <div class="inspector-header">
+                <span class="inspector-title">Class Inspector</span>
+                <button class="inspector-close" (click)="closeInspector()">×</button>
+            </div>
+
+            <div class="inspector-tabs">
+                <button [class.active]="inspectorTab === 'general'" (click)="inspectorTab = 'general'">General</button>
+                <button [class.active]="inspectorTab === 'attributes'" (click)="inspectorTab = 'attributes'">Attributes</button>
+                <button [class.active]="inspectorTab === 'operations'" (click)="inspectorTab = 'operations'">Operations</button>
+            </div>
+
+            <div class="inspector-body">
+                <!-- General -->
+                <div *ngIf="inspectorTab === 'general'">
+                <label>Class name</label>
+                <input [(ngModel)]="inspectorData.name" (ngModelChange)="applyGeneral()" />
+
+                <label>Stereotype</label>
+                <input [(ngModel)]="inspectorData.stereotype" (ngModelChange)="applyGeneral()" />
+                </div>
+
+                <!-- Attributes -->
+                <div *ngIf="inspectorTab === 'attributes'">
+                <div class="inspector-actions">
+                    <button (click)="addAttribute()">Add Attribute</button>
+                </div>
+
+                <div *ngFor="let a of inspectorData.attributes; let i = index" class="inspector-card">
+                    <div class="card-row">
+                    <label>Visibility</label>
+                    <select [(ngModel)]="a.visibility" (ngModelChange)="applyAttributes()">
+                        <option value="public">Public (+)</option>
+                        <option value="private">Private (-)</option>
+                        <option value="protected">Protected (#)</option>
+                        <option value="package">Package (~)</option>
+                    </select>
+                    </div>
+
+                    <div class="card-row">
+                    <label>Attribute</label>
+                    <input [(ngModel)]="a.name" (ngModelChange)="applyAttributes()" />
+                    </div>
+
+                    <div class="card-row">
+                    <label>Type</label>
+                    <input [(ngModel)]="a.type" (ngModelChange)="applyAttributes()" />
+                    </div>
+
+                    <div class="card-row card-actions">
+                    <button (click)="removeAttribute(i)">Remove</button>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Operations -->
+                <div *ngIf="inspectorTab === 'operations'">
+                <div class="inspector-actions">
+                    <button (click)="addOperation()">Add Operation</button>
+                </div>
+
+                <div *ngFor="let op of inspectorData.operations; let j = index" class="inspector-card">
+                    <div class="card-row">
+                    <label>Visibility</label>
+                    <select [(ngModel)]="op.visibility" (ngModelChange)="applyOperations()">
+                        <option value="public">Public (+)</option>
+                        <option value="private">Private (-)</option>
+                        <option value="protected">Protected (#)</option>
+                        <option value="package">Package (~)</option>
+                    </select>
+                    </div>
+
+                    <div class="card-row">
+                    <label>Signature</label>
+                    <input [(ngModel)]="op.signature" (ngModelChange)="applyOperations()" />
+                    </div>
+
+                    <div class="card-row">
+                    <label>Return Type</label>
+                    <input [(ngModel)]="op.returnType" (ngModelChange)="applyOperations()" />
+                    </div>
+
+                    <div class="card-row card-actions">
+                    <button (click)="removeOperation(j)">Remove</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+         
         <div 
             class="board" 
             #paperContainer
             (dragover)="onDragOver($event)"
             (drop)="onDrop($event)">
         </div>
+
         
     </div>    
 </div>
