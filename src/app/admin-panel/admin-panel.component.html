@@ -121,6 +121,15 @@
           <textarea name="description" [(ngModel)]="phase.description" class="form-textarea" rows="3"></textarea>
         </div>
 
+        <!-- Novo: Tipo de Diagrama -->
+        <div class="form-group" *ngIf="phase?.nodeType !== 'DECISION'">
+            <label>Tipo de Diagrama:</label>
+            <select name="diagramType" [(ngModel)]="phase.diagramType" class="form-select">
+              <option [ngValue]="'CLASS'">Class</option>
+              <option [ngValue]="'USE_CASE'">Use Case</option>
+            </select>
+        </div>
+
         <div class="form-row" *ngIf="phase?.nodeType !== 'DECISION'">
           <div class="form-group">
             <label>Tipo da Fase:</label>

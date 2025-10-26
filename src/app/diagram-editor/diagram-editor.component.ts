@@ -2,8 +2,6 @@ import { Component, ElementRef, OnInit, AfterViewInit, OnDestroy, ViewChild, Hos
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import * as joint from '@joint/core';
 import { UMLElementUtil } from '../utils/uml-element.util';
-import Swiper from 'swiper';
-import { SwiperOptions } from 'swiper/types';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DataService } from '../../services/data.service';
 import { CarouselComponent } from '../utils/carousel/carousel.component';
@@ -11,12 +9,13 @@ import { Phase } from '../../services/phase.service';
 import { PhaseUser } from '../../services/game-map.service';
 
 import '../utils/uml-shapes'; // ← Isso garante que o registro aconteça
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
   standalone: true,
   selector: 'diagram-editor',
-  imports: [CommonModule, LucideIconsModule, CarouselComponent],
+  imports: [CommonModule, LucideIconsModule, CarouselComponent, FormsModule],
   templateUrl: './diagram-editor.component.html',
   styleUrl: './diagram-editor.component.css'
 })
@@ -62,11 +61,37 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
 
   @ViewChild('paperContainer', { static: true }) paperContainer!: ElementRef;
+  @ViewChild('wrapperBoard', { static: true }) wrapperBoard!: ElementRef<HTMLElement>;
+  @ViewChild('clues', { static: false }) clues?: ElementRef<HTMLElement>;
+  @ViewChild('inspector', { static: false }) inspectorRef!: ElementRef<HTMLElement>;
+
+  // bound handler for scroll/resize to keep the inspector positioned correctly
+  private boundUpdateInspectorPosition = () => this.updateInspectorPosition();
+  private boundUpdateCluesPosition = () => this.updateCluesPosition();
 
   public inconsistencies: string[] = [];
 
   // ✅ ADICIONAR: Propriedade para armazenar o handler ativo
   private activeClickHandler: ((evt: MouseEvent) => void) | null = null;
+
+  // controle do tipo atual do diagrama (default USE_CASE)
+  public diagramType: 'USE_CASE' | 'CLASS' = 'USE_CASE';
+
+  public inspectorVisible: boolean = false;
+  public inspectorTab: 'general' | 'attributes' | 'operations' = 'general';
+  public selectedClassElement: joint.dia.Element | null = null;
+
+  public inspectorData: {
+    name: string;
+    stereotype: string;
+    attributes: Array<{ name: string; visibility: string; type: string }>;
+    operations: Array<{ signature: string; visibility: string; returnType: string }>;
+  } = {
+    name: '',
+    stereotype: '',
+    attributes: [],
+    operations: []
+  };
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -78,7 +103,18 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
   
   ngAfterViewInit(): void {
-    
+    // register scroll/resize listeners so the inspector stays aligned to the visible
+    // area of the wrapper-board whenever the user scrolls or resizes the window
+    try {
+      if (this.wrapperBoard && this.wrapperBoard.nativeElement) {
+        this.wrapperBoard.nativeElement.addEventListener('scroll', this.boundUpdateInspectorPosition, { passive: true });
+        this.wrapperBoard.nativeElement.addEventListener('scroll', this.boundUpdateCluesPosition, { passive: true });
+      }
+    } catch (e) {
+      // ignore listener registration errors
+    }
+    window.addEventListener('resize', this.boundUpdateInspectorPosition);
+    window.addEventListener('resize', this.boundUpdateCluesPosition);
   }
 
   public initializeJointJS(phase?: Phase, phaseUser?: PhaseUser): void {
@@ -172,6 +208,21 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         this.updateFloatingElementsPosition();
       }
     });
+
+    this.paper.on('element:pointerclick', (cellView: joint.dia.ElementView) => {
+      const el = cellView.model;
+      if (el && el.get('type') === 'custom.Class') {
+        // abre inspector
+        this.openInspector(el);
+      } else {
+        this.closeInspector();
+      }
+    });
+
+    // Esconde inspector quando clicar no espaço em branco
+    this.paper.on('blank:pointerdown', () => {
+      this.closeInspector();
+    });
   }
 
   private onMouseWheel(event: WheelEvent) {
@@ -233,7 +284,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     const type = event.dataTransfer?.getData('uml-type');
     if(this.graph && this.paper) {
       // Verifica se o tipo é válido
-      if (!type || (type !== 'actor' && type !== 'usecase')) {
+      if (!type || (type !== 'actor' && type !== 'usecase' && type !== 'class')) {
         console.error('Invalid UML element type:', type);
         return;
       }
@@ -306,6 +357,16 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
           case 'usecase': {
             const useCase = UMLElementUtil.createUseCase(scaledX, scaledY);
             useCase.addTo(this.graph);
+            break;
+          }
+          case 'class': {
+            // Insere a classe na posição do mouse (mesma lógica de actor/usecase)
+            const cls = UMLElementUtil.createClass(scaledX, scaledY, {
+              name: 'NewClass',
+              attributes: ['+ attr1: type'],
+              operations: ['+ operation(): void']
+            });
+            cls.addTo(this.graph);
             break;
           }
           // Adicione outros tipos conforme necessário
@@ -621,6 +682,64 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
+  /**
+   * Position the inspector element so it stays fixed to the visible corner of the wrapper-board.
+   */
+  private updateInspectorPosition() {
+    try {
+      if (!this.inspectorRef || !this.inspectorRef.nativeElement) return;
+      if (!this.wrapperBoard || !this.wrapperBoard.nativeElement) return;
+      if (!this.inspectorVisible) return;
+
+      const wrapperRect = this.wrapperBoard.nativeElement.getBoundingClientRect();
+      const inspectorEl = this.inspectorRef.nativeElement as HTMLElement;
+
+      inspectorEl.style.position = 'fixed';
+      inspectorEl.style.zIndex = '8';
+
+      const margin = 12;
+      const inspectorWidth = inspectorEl.offsetWidth || 320;
+
+      const top = Math.max(8, wrapperRect.top + margin);
+      const left = wrapperRect.left + wrapperRect.width - inspectorWidth - margin;
+
+      inspectorEl.style.top = `${top}px`;
+      inspectorEl.style.left = `${Math.max(8, left)}px`;
+    } catch (err) {
+      // ignore
+    }
+  }
+
+  /**
+   * Position the clues element so it stays fixed to the visible corner (top-left)
+   * of the wrapper-board. Works similarly to updateInspectorPosition.
+   */
+  private updateCluesPosition() {
+    try {
+      if (!this.clues || !this.clues.nativeElement) return;
+      if (!this.wrapperBoard || !this.wrapperBoard.nativeElement) return;
+
+      console.warn('Updating clues position');
+
+      const wrapperRect = this.wrapperBoard.nativeElement.getBoundingClientRect();
+      const cluesEl = this.clues.nativeElement as HTMLElement;
+
+      cluesEl.style.position = 'fixed';
+      cluesEl.style.zIndex = '8';
+
+      const margin = 12;
+      const cluesWidth = cluesEl.offsetWidth;
+
+      const top = Math.max(8, wrapperRect.top + margin);
+      const left = wrapperRect.left + wrapperRect.width - cluesWidth - margin;
+
+      cluesEl.style.top = `${top}px`;
+      cluesEl.style.left = `${left}px`;
+    } catch (err) {
+      // ignore positioning errors
+    }
+  }
+
   // Cálcula se o graph do usuário está correto
   calculateGraphAccuracy(): number {
     if (!this.graph || !this.correctsJSON.length) {
@@ -782,9 +901,35 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   toggleTips() {
     this.tipsVisible = !this.tipsVisible;
+    if (this.tipsVisible) {
+      setTimeout(() => this.updateCluesPosition(), 0);
+    }
+  }
+
+  // método para alternar
+  public toggleDiagramType(): void {
+    this.diagramType = this.diagramType === 'USE_CASE' ? 'CLASS' : 'USE_CASE';
+    // cancelar operação ativa se houver
+    this.clearActiveButton();
+    this.isWaitingForClick = false;
+    // opcional: desfazer estado de link em andamento etc.
   }
 
   ngOnDestroy(): void {
+    // Cancel listeners we registered in ngAfterViewInit
+    try {
+      this.wrapperBoard?.nativeElement?.removeEventListener('scroll', this.boundUpdateInspectorPosition);
+      this.wrapperBoard?.nativeElement?.removeEventListener('scroll', this.boundUpdateCluesPosition);
+    } catch (e) {
+      // ignore
+    }
+    try {
+      window.removeEventListener('resize', this.boundUpdateInspectorPosition);
+      window.removeEventListener('resize', this.boundUpdateCluesPosition);
+    } catch (e) {
+      // ignore
+    }
+
     // ✅ Cancelar operações ativas antes de destruir
     this.cancelActiveOperation();
     
@@ -863,6 +1008,249 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       this.initializeJointJS(phase); // Inicializa novamente
     } else {
       this.initializeJointJS(); // Inicializa novamente
+    }
+  }
+
+  // Abre o inspector para um elemento class
+  private openInspector(element: joint.dia.Element) {
+    this.selectedClassElement = element;
+    this.inspectorVisible = true;
+    this.inspectorTab = 'general';
+
+    // popula dados
+    const name = element.attr('title/text') || '';
+    const stereotype = element.attr('stereotype/text') || '';
+
+    const attrsRaw = (element.attr('attrsText/text') || '') as string;
+    const opsRaw = (element.attr('opsText/text') || '') as string;
+
+    // parse attributes: linhas "± name: type"
+    const attributes = attrsRaw.split('\n').filter(l => l.trim().length).map(line => {
+      const trimmed = line.trim();
+      // detect visibility symbol
+      const visSymbol = ['+','-','#','~'].includes(trimmed[0]) ? trimmed[0] : '';
+      let rest = visSymbol ? trimmed.substring(1).trim() : trimmed;
+      const parts = rest.split(':');
+      const namePart = (parts[0] || '').trim();
+      const typePart = (parts.slice(1).join(':') || '').trim();
+      return {
+        name: namePart,
+        type: typePart,
+        visibility: this.visibilityFromSymbol(visSymbol)
+      };
+    });
+
+    // parse operations: linhas "± signature: return"
+    const operations = opsRaw.split('\n').filter(l => l.trim().length).map(line => {
+      const trimmed = line.trim();
+      const visSymbol = ['+','-','#','~'].includes(trimmed[0]) ? trimmed[0] : '';
+      let rest = visSymbol ? trimmed.substring(1).trim() : trimmed;
+      // if has ": return" split, else everything is signature
+      const parts = rest.split(':');
+      const signature = (parts[0] || '').trim();
+      const returnType = (parts.slice(1).join(':') || '').trim();
+      return {
+        signature,
+        returnType,
+        visibility: this.visibilityFromSymbol(visSymbol)
+      };
+    });
+
+    this.inspectorData = {
+      name: name.toString(),
+      stereotype: stereotype.toString().replace(/^<<|>>$/g, ''),
+      attributes: attributes,
+      operations: operations
+    };
+
+    // position inspector after it becomes visible and DOM updates
+    setTimeout(() => this.updateInspectorPosition(), 0);
+  }
+
+  // Fecha o inspector
+  public closeInspector() {
+    this.inspectorVisible = false;
+    this.selectedClassElement = null;
+  }
+
+  // helpers de visibilidade
+  private visibilityFromSymbol(sym: string) {
+    switch (sym) {
+      case '+': return 'public';
+      case '-': return 'private';
+      case '#': return 'protected';
+      case '~': return 'package';
+      default: return 'private';
+    }
+  }
+  private symbolFromVisibility(vis: string) {
+    switch (vis) {
+      case 'public': return '+';
+      case 'private': return '-';
+      case 'protected': return '#';
+      case 'package': return '~';
+      default: return '-';
+    }
+  }
+
+  // aplicar mudanças gerais (name/stereotype)
+  public applyGeneral() {
+    if (!this.selectedClassElement) return;
+    this.selectedClassElement.attr('title/text', this.inspectorData.name || '');
+    this.selectedClassElement.attr('stereotype/text', this.inspectorData.stereotype ? `<<${this.inspectorData.stereotype}>>` : '');
+  }
+
+  // aplicar attributes -> atualiza element.attrsText
+  public applyAttributes() {
+    if (!this.selectedClassElement) return;
+    const lines = this.inspectorData.attributes.map(a => {
+      const sym = this.symbolFromVisibility(a.visibility);
+      const t = a.type ? `: ${a.type}` : '';
+      return `${sym} ${a.name}${t}`.trim();
+    });
+    this.selectedClassElement.attr('attrsText/text', lines.join('\n'));
+    // opcional: redimensiona áreas com base no conteúdo (se implementado)
+    if ((this as any).adjustClassAreasToContent) {
+      try { (this as any).adjustClassAreasToContent(this.selectedClassElement); } catch(e) {}
+    }
+  }
+
+  // aplicar operations -> atualiza element.opsText
+  public applyOperations() {
+    if (!this.selectedClassElement) return;
+    const lines = this.inspectorData.operations.map(op => {
+      const sym = this.symbolFromVisibility(op.visibility);
+      const rt = op.returnType ? `: ${op.returnType}` : '';
+      return `${sym} ${op.signature}${rt}`.trim();
+    });
+    this.selectedClassElement.attr('opsText/text', lines.join('\n'));
+    if ((this as any).adjustClassAreasToContent) {
+      try { (this as any).adjustClassAreasToContent(this.selectedClassElement); } catch(e) {}
+    }
+  }
+
+  /**
+   * Ajusta a altura de uma área (attrsArea ou opsArea) e redimensiona a CustomClass inteira.
+   * delta: positivo para aumentar, negativo para diminuir.
+   * area: 'attrs' para attrsArea ou 'ops' para opsArea.
+   */
+  private adjustClassAreaHeight(el: joint.dia.Element, delta: number, area: 'attrs' | 'ops') {
+    if (!el) return;
+
+    const areaSelector = area === 'attrs' ? 'attrsArea' : 'opsArea';
+    const otherSelector = area === 'attrs' ? 'opsArea' : 'attrsArea';
+
+    const minAreaHeight = 32;   // mínimo por área
+    const headerHeight = 40;    // altura fixa do header conforme defaults
+    const widthDefault = 220;
+    const totalMinHeightFallback = 104;
+
+    // lê altura atual da área (fallback para 32)
+    const rawCurrentArea = Number(el.attr(`${areaSelector}/height`));
+    const currentArea = (isNaN(rawCurrentArea) || rawCurrentArea === 0) ? minAreaHeight : rawCurrentArea;
+
+    const newAreaHeight = Math.max(minAreaHeight, currentArea + delta);
+    el.attr(`${areaSelector}/height`, newAreaHeight);
+
+    // lê a outra área para garantir um min total coerente
+    const rawOther = Number(el.attr(`${otherSelector}/height`));
+    const otherAreaHeight = (isNaN(rawOther) || rawOther === 0) ? minAreaHeight : rawOther;
+
+    // calcula novo tamanho total esperado: atual + delta
+    const sizeProp = (el as any).size ? (el as any).size() : el.get('size');
+    const currentHeight = (sizeProp && sizeProp.height) ? sizeProp.height : totalMinHeightFallback;
+    const desiredHeight = currentHeight + delta;
+
+    // garante que a altura final ao menos comporte header + attrs + ops
+    const minRequiredHeight = headerHeight + (area === 'attrs' ? newAreaHeight : otherAreaHeight) + (area === 'ops' ? newAreaHeight : otherAreaHeight);
+    const finalHeight = Math.max(minRequiredHeight, desiredHeight, totalMinHeightFallback);
+
+    const currentWidth = (sizeProp && sizeProp.width) ? sizeProp.width : widthDefault;
+    try {
+      (el as any).resize(currentWidth, finalHeight);
+    } catch (err) {
+      // fallback seguro: set size via attr se resize não estiver disponível
+      try {
+        el.set('size', { width: currentWidth, height: finalHeight });
+      } catch (e) {
+        console.warn('adjustClassAreaHeight: resize failed', e);
+      }
+    }
+  }
+
+  public addAttribute() {
+    // adiciona um atributo default ao modelo do inspector
+    this.inspectorData.attributes.push({ name: 'attribute', visibility: 'public', type: 'string' });
+    this.applyAttributes();
+
+    // Ajusta a altura visual da classe no paper (+16)
+    const delta = 16;
+    const el = this.selectedClassElement;
+    if (el) {
+      try {
+        this.adjustClassAreaHeight(el, delta, 'attrs');
+      } catch (err) {
+        console.warn('Failed to adjust class height on addAttribute', err);
+      }
+    }
+  }
+
+  public removeAttribute(index: number) {
+    if (index < 0 || index >= this.inspectorData.attributes.length) {
+      return;
+    }
+
+    // remove do modelo do inspector
+    this.inspectorData.attributes.splice(index, 1);
+    this.applyAttributes();
+
+    // Ajusta a altura visual da classe (-16)
+    const delta = -16;
+    const el = this.selectedClassElement;
+    if (el) {
+      try {
+        this.adjustClassAreaHeight(el, delta, 'attrs');
+      } catch (err) {
+        console.warn('Failed to adjust class height on removeAttribute', err);
+      }
+    }
+  }
+
+  public addOperation() {
+    // adiciona uma operação default ao modelo do inspector
+    this.inspectorData.operations.push({ signature: 'operation()', visibility: 'public', returnType: 'void' });
+    this.applyOperations();
+
+    // Ajusta a altura visual da classe no paper (+16)
+    const delta = 16;
+    const el = this.selectedClassElement;
+    if (el) {
+      try {
+        this.adjustClassAreaHeight(el, delta, 'ops');
+      } catch (err) {
+        console.warn('Failed to adjust class height on addOperation', err);
+      }
+    }
+  }
+
+  public removeOperation(index: number) {
+    if (index < 0 || index >= this.inspectorData.operations.length) {
+      return;
+    }
+
+    // remove do modelo do inspector
+    this.inspectorData.operations.splice(index, 1);
+    this.applyOperations();
+
+    // Ajusta a altura visual da classe (-16)
+    const delta = -16;
+    const el = this.selectedClassElement;
+    if (el) {
+      try {
+        this.adjustClassAreaHeight(el, delta, 'ops');
+      } catch (err) {
+        console.warn('Failed to adjust class height on removeOperation', err);
+      }
     }
   }
 }
