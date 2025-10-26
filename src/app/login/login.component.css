@@ -24,7 +24,7 @@ img {
 .welcome-section {
     text-align: center;
     margin: 1rem;
-    background-color: var(--bg);
+    background-color: var(--black);
     color: var(--white);
     display: flex;
     align-items: center;
@@ -176,7 +176,7 @@ input:focus {
     text-align: center;
 }
 
-.register-card:hover {
+.register-card:hover, .welcome-section:hover {
     border-color: white;
 }
 

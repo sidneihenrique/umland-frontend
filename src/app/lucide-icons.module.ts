@@ -32,7 +32,9 @@ import {
   User,
   Calendar,
   MousePointerClick,
-  MapPinOff
+  MapPinOff,
+  Linkedin,
+  Instagram
 } from 'lucide-angular';
 
 @NgModule({
@@ -67,7 +69,9 @@ import {
     User,
     Calendar,
     MousePointerClick,
-    MapPinOff
+    MapPinOff,
+    Linkedin,
+    Instagram
   })],
   exports: [LucideAngularModule],
 })

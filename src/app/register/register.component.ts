@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, AfterViewInit, PLATFORM_ID, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { AuthService } from '../auth/auth.service';
@@ -15,7 +15,16 @@ import { FileUrlBuilder } from '../../config/files.config';
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('matrixCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  
+  private ctx!: CanvasRenderingContext2D;
+  private animationInterval: any;
+  private letters: string[] = [];
+  private drops: number[] = [];
+  private fontSize: number = 10;
+  private columns: number = 0;
+  private isBrowser: boolean;
   registerForm: FormGroup;
   avatars: Avatar[] = [];
   selectedAvatar: Avatar | null = null;
@@ -29,7 +38,8 @@ export class RegisterComponent implements OnInit {
     private dataService: DataService,
     private authService: AuthService,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.registerForm = this.fb.group({
       nome: ['', Validators.required],
@@ -38,10 +48,93 @@ export class RegisterComponent implements OnInit {
       confirmSenha: ['', Validators.required],
       avatar: ['', Validators.required]
     }, { validator: this.passwordMatchValidator });
+    this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   ngOnInit() {
     this.loadAvatars();
+    
+    const letterString = 'ABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZ';
+    this.letters = letterString.split('');
+  }
+
+  ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
+    
+    setTimeout(() => {
+      const canvas = this.canvasRef.nativeElement;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) return;
+      
+      this.ctx = ctx;
+      
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      this.columns = canvas.width / this.fontSize;
+      
+      for (let i = 0; i < this.columns; i++) {
+        if (Math.random() > 0.85) {
+          this.drops[i] = Math.floor(Math.random() * -100);
+        }
+      }
+      
+      this.animationInterval = setInterval(() => this.draw(), 100);
+      
+      window.addEventListener('resize', () => this.handleResize());
+    }, 100);
+  }
+
+  private draw(): void {
+    this.ctx.fillStyle = 'rgba(0, 0, 0, .08)';
+    this.ctx.fillRect(0, 0, this.canvasRef.nativeElement.width, this.canvasRef.nativeElement.height);
+    
+    for (let i = 0; i < this.drops.length; i++) {
+      if (this.drops[i] !== undefined) {
+        const text = this.letters[Math.floor(Math.random() * this.letters.length)];
+        this.ctx.fillStyle = '#fff';
+        this.ctx.fillText(text, i * this.fontSize, this.drops[i] * this.fontSize);
+        this.drops[i]++;
+        
+        if (this.drops[i] * this.fontSize > this.canvasRef.nativeElement.height) {
+          if (Math.random() > 0.95) {
+            this.drops[i] = Math.floor(Math.random() * -200);
+          } else {
+            delete this.drops[i];
+          }
+        }
+      } else if (Math.random() > 0.99) {
+        this.drops[i] = Math.floor(Math.random() * -100);
+      }
+    }
+  }
+
+  private handleResize(): void {
+    if (!this.isBrowser) return;
+    
+    const canvas = this.canvasRef.nativeElement;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    this.columns = canvas.width / this.fontSize;
+    this.drops = [];
+    
+    for (let i = 0; i < this.columns; i++) {
+      if (Math.random() > 0.85) {
+        this.drops[i] = Math.floor(Math.random() * -100);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (!this.isBrowser) return;
+    
+    if (this.animationInterval) {
+      clearInterval(this.animationInterval);
+    }
+    
+    window.removeEventListener('resize', () => this.handleResize());
   }
 
   loadAvatars() {
