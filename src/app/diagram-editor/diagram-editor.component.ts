@@ -171,9 +171,11 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
     this.paper.initialize();
 
-    container.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
+    
+    this.wrapperBoard.nativeElement.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
 
-    this.paperContainer.nativeElement.addEventListener('scroll', () => {
+    this.wrapperBoard.nativeElement.addEventListener('scroll', () => {
+      console.log('Scroll detected, updating floating elements position');
       this.updateFloatingElementsPosition();
     });
 
@@ -568,6 +570,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       if (e.key === 'Enter') {
         e.preventDefault();
         finishEditing();
+        this.currentCellView = null;
       }
     });
 

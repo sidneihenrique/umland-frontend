@@ -138,7 +138,7 @@ export class UMLElementUtil {
           },
           position: { distance: 0.5 }
         }]);
-        link.attr('line/strokeDasharray', '2.2'); // linha contínua
+        link.attr('line/strokeDasharray', '2.2'); 
         link.set('type', 'custom.Include');
         break;
       case 'dependency':
