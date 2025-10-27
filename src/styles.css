@@ -140,3 +140,23 @@ body {
   background: var(--yellow);
   color: var(--white);
 }
+
+/* multiplicity button style */
+.multiplicity-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* popup for multiplicity options */
+.multiplicity-popup .multiplicity-option:hover {
+  background: rgba(0,0,0,0.04);
+}
