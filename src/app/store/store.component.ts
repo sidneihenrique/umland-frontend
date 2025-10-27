@@ -5,6 +5,7 @@ import { StoreItemComponent } from "./store-item/store-item.component";
 import { DataService } from '../../services/data.service';
 import { StorageService } from '../../services/storage.service';
 import { User, UserService } from '../../services/user.service';
+import { NotificationService } from '../../services/notification.service';
 import { Subscription } from 'rxjs';
 
 interface StoreItem {
@@ -12,7 +13,7 @@ interface StoreItem {
   title: string;
   description: string;
   price: number;
-  key: 'watch' | 'bomb' | 'eraser' | 'lamp';
+  key: 'watch' | 'bomb' | 'eraser' | 'lamp' | 'ice' | '2xtime' | '2xrepu';
 }
 
 @Component({
@@ -34,6 +35,7 @@ export class StoreComponent implements OnInit, OnDestroy {
     private dataService: DataService,
     private storageService: StorageService,
     private userService: UserService,
+    private notificationService: NotificationService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -84,7 +86,7 @@ export class StoreComponent implements OnInit, OnDestroy {
     if (userJson && inventoryJson) {
       const userData = JSON.parse(userJson);
       this.userData = userData;
-      this.userMoney = userData.coins || userData.money || 0; // Compatibilidade com diferentes nomes de campo
+      this.userMoney = userData.coins || userData.money || 0;
       this.userInventory = JSON.parse(inventoryJson);
     }
   }
@@ -107,25 +109,25 @@ export class StoreComponent implements OnInit, OnDestroy {
       key: 'watch'
     },
     {
-      imageUrl: '/assets/store/bomb.png',
-      title: 'EXPLOSÃO DE ERROS',
-      description: 'Revele rapidamente todos os pontos críticos do diagrama. Use com sabedoria!',
-      price: 21,
-      key: 'bomb'
+      imageUrl: '/assets/store/ice.png',
+      title: 'CONGELAMENTO',
+      description: 'Congele o tempo da fase atual e resolva os desafios sem pressão!',
+      price: 200,
+      key: 'ice'
     },
     {
-      imageUrl: '/assets/store/eraser.png',
-      title: 'LIMPEZA INTELIGENTE',
-      description: 'Remove elementos corretos para que você foque apenas nos erros',
-      price: 21,
-      key: 'eraser'
+      imageUrl: '/assets/store/2xtime.png',
+      title: 'TEMPO DUPLICADO',
+      description: 'Duplique todo o tempo disponível na fase atual para uma experiência mais tranquila!',
+      price: 100,
+      key: '2xtime'
     },
     {
-      imageUrl: '/assets/store/lamp.png',
-      title: 'IDEIA BRILHANTE',
-      description: 'Receba uma dica certeira baseada na estrutura do seu diagrama.',
-      price: 21,
-      key: 'lamp'
+      imageUrl: '/assets/store/2xrepu.png',
+      title: 'REPUTAÇÃO EM DOBRO',
+      description: 'Ganhe o dobro de reputação ao completar a fase. Suba de nível mais rápido!',
+      price: 300,
+      key: '2xrepu'
     }
   ];
 
@@ -133,7 +135,16 @@ export class StoreComponent implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       const userId = localStorage.getItem('userId');
       if (userId) {
-        this.loadUserData(userId); // Recarrega os dados quando a loja é aberta
+        this.userService.getUserById(Number(userId)).subscribe({
+          next: (response: User) => {
+            this.userData = response;
+            this.userMoney = response.coins;
+            this.dataService.updateUserData(response);
+          },
+          error: (error) => {
+            console.error('Erro ao carregar dados do usuário:', error);
+          }
+        });
       }
     }
     this.visible = true;
@@ -149,20 +160,40 @@ export class StoreComponent implements OnInit, OnDestroy {
     if (this.visible && isPlatformBrowser(this.platformId)) {
       const userId = localStorage.getItem('userId');
       if (userId) {
-        this.loadUserData(userId);
+        this.userService.getUserById(Number(userId)).subscribe({
+          next: (response: User) => {
+            this.userData = response;
+            this.userMoney = response.coins;
+            this.dataService.updateUserData(response);
+          },
+          error: (error) => {
+            console.error('Erro ao carregar dados do usuário:', error);
+          }
+        });
       }
     }
   }
 
   onBuy(item: StoreItem) {
     if (!this.userData || this.userMoney < item.price) {
+      this.notificationService.showError('Moedas insuficientes para comprar este item!');
       console.warn('Moedas insuficientes para comprar o item');
       return;
     }
 
     const newCoinsAmount = this.userMoney - item.price;
     
-    this.userService.updateUserCoins(this.userData.id, newCoinsAmount).subscribe({
+    // Monta o objeto completo do usuário com as moedas atualizadas
+    const updatedUserData: any = {
+      name: this.userData.name,
+      email: this.userData.email,
+      password: this.userData.password,
+      reputation: this.userData.reputation,
+      coins: newCoinsAmount,
+      avatar: this.userData.avatar
+    };
+    
+    this.userService.updateUser(this.userData.id, updatedUserData).subscribe({
       next: (updatedUser: User) => {
         // Atualiza os dados locais
         this.userData = updatedUser;
@@ -174,10 +205,13 @@ export class StoreComponent implements OnInit, OnDestroy {
         // Notifica outros componentes sobre a mudança
         this.dataService.updateUserData(updatedUser);
         
+        // Notificação de sucesso
+        this.notificationService.showSuccess(`${item.title} comprado com sucesso!`);
         console.log(`Item ${item.title} comprado com sucesso!`);
       },
       error: (error) => {
         console.error('Erro ao atualizar moedas no backend:', error);
+        this.notificationService.showError('Erro ao processar a compra. Tente novamente.');
         // Em caso de erro, ainda atualiza localmente como fallback
         this.updateLocalUserData(item);
       }
@@ -236,6 +270,15 @@ export class StoreComponent implements OnInit, OnDestroy {
             break;
           case 'lamp':
             // Mostrar dica
+            break;
+          case 'ice':
+            // Congelar tempo
+            break;
+          case '2xtime':
+            // Duplicar tempo
+            break;
+          case '2xrepu':
+            // Duplicar reputação
             break;
         }
       }
