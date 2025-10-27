@@ -13,7 +13,7 @@ interface StoreItem {
   title: string;
   description: string;
   price: number;
-  key: 'watch' | 'bomb' | 'eraser' | 'lamp';
+  key: 'watch' | 'bomb' | 'eraser' | 'lamp' | 'ice' | '2xtime' | '2xrepu';
 }
 
 @Component({
@@ -102,11 +102,32 @@ export class StoreComponent implements OnInit, OnDestroy {
 
   storeItems: StoreItem[] = [
     {
-      imageUrl: '/assets/store/bomb.png',
-      title: 'EXPLOSÃO DE ERROS',
-      description: 'Revele rapidamente todos os pontos críticos do diagrama. Use com sabedoria!',
+      imageUrl: '/assets/store/watch.png',
+      title: 'TEMPO EXTRA',
+      description: 'Adicione +60 segundos à sua fase atual. Ideal para quando o tempo está apertado!',
       price: 21,
-      key: 'bomb'
+      key: 'watch'
+    },
+    {
+      imageUrl: '/assets/store/ice.png',
+      title: 'CONGELAMENTO',
+      description: 'Congele o tempo da fase atual e resolva os desafios sem pressão!',
+      price: 200,
+      key: 'ice'
+    },
+    {
+      imageUrl: '/assets/store/2xtime.png',
+      title: 'TEMPO DUPLICADO',
+      description: 'Duplique todo o tempo disponível na fase atual para uma experiência mais tranquila!',
+      price: 100,
+      key: '2xtime'
+    },
+    {
+      imageUrl: '/assets/store/2xrepu.png',
+      title: 'REPUTAÇÃO EM DOBRO',
+      description: 'Ganhe o dobro de reputação ao completar a fase. Suba de nível mais rápido!',
+      price: 300,
+      key: '2xrepu'
     }
   ];
 
@@ -249,6 +270,15 @@ export class StoreComponent implements OnInit, OnDestroy {
             break;
           case 'lamp':
             // Mostrar dica
+            break;
+          case 'ice':
+            // Congelar tempo
+            break;
+          case '2xtime':
+            // Duplicar tempo
+            break;
+          case '2xrepu':
+            // Duplicar reputação
             break;
         }
       }
