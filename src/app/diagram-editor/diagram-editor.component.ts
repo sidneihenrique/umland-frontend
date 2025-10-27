@@ -48,6 +48,9 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   private currentMultiplicityPopup: HTMLDivElement | null = null;
   private multiplicityOptions = ['1', '0..1', '0..*', '*', '1..*', 'Unspecified'];
 
+  private currentMultiplicityPopupAnchor: HTMLButtonElement | null = null;
+
+
   // Editor inline
   private currentInlineEditor: HTMLDivElement | null = null;
   private currentEditingCellView: joint.dia.ElementView | joint.dia.LinkView | null = null;
@@ -672,6 +675,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     if (this.currentMultiplicityPopup && this.currentMultiplicityPopup.parentNode) {
       this.currentMultiplicityPopup.parentNode.removeChild(this.currentMultiplicityPopup);
       this.currentMultiplicityPopup = null;
+      this.currentMultiplicityPopupAnchor = null; // limpa anchor
     }
   }
 
@@ -773,6 +777,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         // remove popup
         if (popup.parentNode) popup.parentNode.removeChild(popup);
         this.currentMultiplicityPopup = null;
+        this.currentMultiplicityPopupAnchor = null; // limpa a âncora
       });
       popup.appendChild(item);
     }
@@ -784,6 +789,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
     document.body.appendChild(popup);
     this.currentMultiplicityPopup = popup;
+    this.currentMultiplicityPopupAnchor = anchorBtn; // guarda a âncora
 
     // close popup when clicking elsewhere
     const closeFn = (ev: MouseEvent) => {
@@ -891,9 +897,6 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       this.linkBtn.style.top = `${point.y + window.scrollY}px`;
     }
 
-    // substitua o bloco existente que reposiciona multiplicityBtns por este:
-
-    // ...inside updateFloatingElementsPosition()
 
     if (this.multiplicityBtns && this.multiplicityBtns.length && this.currentMultiplicityLink && this.paper) {
       try {
@@ -970,6 +973,21 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         }
       } catch (err) {
         console.warn('Failed to reposition multiplicity buttons', err);
+      }
+    }
+
+    if (this.currentMultiplicityPopup) {
+      try {
+        const popup = this.currentMultiplicityPopup;
+        // prefere a âncora que abriu o popup; fallback para o primeiro multiplicity button
+        const anchor = this.currentMultiplicityPopupAnchor || (this.multiplicityBtns && this.multiplicityBtns[0]) || null;
+        if (anchor && typeof anchor.getBoundingClientRect === 'function') {
+          const rect = anchor.getBoundingClientRect();
+          popup.style.left = `${rect.left + window.scrollX + 20}px`;
+          popup.style.top  = `${rect.top + window.scrollY - 8}px`;
+        }
+      } catch (err) {
+        console.warn('Failed to reposition multiplicity popup', err);
       }
     }
   }
