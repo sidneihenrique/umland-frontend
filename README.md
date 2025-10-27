@@ -1,59 +1,74 @@
-# UmlandFrontend
+# 🎮 UMLand: Um Jogo Para Praticar UML
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.13.
+**UMLand** é um **Trabalho de Conclusão de Curso (TCC)** desenvolvido pela **Equipe Matrix** do curso de **Engenharia de Software** da **Pontifícia Universidade Católica do Paraná (PUCPR)**.  
+O projeto tem como propósito **tornar o estudo de UML (Unified Modeling Language)** mais dinâmico, acessível e envolvente, por meio de uma experiência **gamificada** de aprendizado interativo.
 
-## Development server
+---
 
-To start a local development server, run:
+## 🧩 Sobre o Projeto
 
-```bash
-ng serve
-```
+O **UMLand** combina **edição interativa de diagramas UML** com **mecânicas de gamificação**, permitindo que estudantes pratiquem **modelagem de software** em um ambiente lúdico e desafiador.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+A cada fase, o jogador é convidado a resolver **problemas reais de modelagem**, receber **feedback imediato** e conquistar **novos níveis de progresso**, enquanto aprimora suas habilidades e evolui na narrativa.
 
-## Code scaffolding
+O objetivo é **reduzir a complexidade do aprendizado técnico**, tornando o domínio da UML **mais intuitivo, motivador e prazeroso**.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+> “A Matrix está em todo lugar. Está à nossa volta.” — *Morpheus, Matrix (1999)*
 
-```bash
-ng generate component component-name
-```
+---
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 🧠 Tecnologias Utilizadas
 
-```bash
-ng generate --help
-```
+### 🌐 Frontend
+- **Framework:** Angular  
+- **Biblioteca de diagramas:** JointJS  
+- **Gerenciador de pacotes:** Node.js / npm  
 
-## Building
+🔗 Repositório: [umland-frontend](https://github.com/sidneihenrique/umland-frontend)
 
-To build the project run:
+### ⚙️ Backend
+- **Linguagem:** Java  
+- **Framework:** Spring Boot  
+- **Banco de Dados:** PostgreSQL  
 
-```bash
-ng build
-```
+🔗 Repositório: [umland-backend](https://github.com/sidneihenrique/umland-backend)
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## 🚀 Funcionalidades Principais
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+- Login e autenticação de usuários  
+- Mapa de fases baseado em diagrama de atividades  
+- Edição interativa de **diagramas de Casos de Uso** e **Classes**  
+- Validação automática de diagramas e **feedback em tempo real**  
+- Sistema de progresso e conquistas com **badges** e fases desbloqueáveis  
 
-```bash
-ng test
-```
+---
 
-## Running end-to-end tests
+## 🧑‍💻 Equipe de Desenvolvimento
 
-For end-to-end (e2e) testing, run:
+**Equipe Matrix**
+- Ângelo Dela Vedova Brocca  
+- João Elias Fadel  
+- Sidnei Henrique Reis dos Santos  
 
-```bash
-ng e2e
-```
+**Orientador:** Prof. Tiago Adelino Navarro  
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+---
 
-## Additional Resources
+## 🏛️ Instituição
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+**Pontifícia Universidade Católica do Paraná (PUCPR)**  
+**Curso:** Bacharelado em Engenharia de Software  
+**Ano:** 2025  
+
+---
+
+## ⚖️ Licença
+
+Este projeto é de uso acadêmico e foi desenvolvido para fins educacionais como parte do Trabalho de Conclusão de Curso.  
+Sinta-se à vontade para explorar, estudar e contribuir.
+
+---
+
+📍 *Desenvolvido pela Equipe Matrix*
