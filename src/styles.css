@@ -131,7 +131,7 @@ body {
   margin-left: 4px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   transition: background 0.2s;
-  z-index: 40;
+  z-index: 7;
 }
 .link-btn:hover {
   background: var(--blue);

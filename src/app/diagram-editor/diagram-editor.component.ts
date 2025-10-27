@@ -64,7 +64,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   private currentMultiplicityLink: joint.dia.Link | null = null;
 
-  // ✅ ADICIONAR: Propriedades para controlar botões ativos
+  //  Propriedades para controlar botões ativos
   private activeButton: string | null = null;
   private isWaitingForClick: boolean = false;
 
@@ -80,7 +80,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   public inconsistencies: string[] = [];
 
-  // ✅ ADICIONAR: Propriedade para armazenar o handler ativo
+  //  Propriedade para armazenar o handler ativo
   private activeClickHandler: ((evt: MouseEvent) => void) | null = null;
 
   // controle do tipo atual do diagrama (default USE_CASE)
@@ -141,7 +141,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       this.setupDiagramData();
     }
 
-    // ✅ CORRIGIR: Criar namespace que inclui as classes customizadas
+    //  Criar namespace que inclui as classes customizadas
     const cellNamespace = {
       ...joint.shapes,
       custom: (joint.shapes as any).custom
@@ -303,7 +303,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
-  // ✅ CORRIGIR: Método addElement para gerenciar estado ativo
+  //  Método addElement para gerenciar estado ativo
   addElement(type?: string, event?: MouseEvent) {
     // ✅ CANCELAR operação ativa anterior e limpar handlers
     if (this.isWaitingForClick) {
@@ -320,7 +320,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         this.setActiveButton(type || '');
         this.isWaitingForClick = true;
 
-        // ✅ CORRIGIR: Remover handler anterior se existir
+        //  Remover handler anterior se existir
         if (this.activeClickHandler) {
           container.removeEventListener('click', this.activeClickHandler);
         }
@@ -393,13 +393,13 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   }
 
-  // ✅ CORRIGIR: Método addLink para gerenciar estado ativo
+  // Método addLink para gerenciar estado ativo
   addLink(type: string) {
-    // ✅ ADICIONAR: Cancelar operação ativa 
+    // Cancelar operação ativa 
     if (this.isWaitingForClick) {
       this.cancelActiveOperation();
     }
-    // ✅ Ativar botão de link
+    // Ativar botão de link
     this.setActiveButton(`link-${type}`);
     this.isWaitingForClick = true;
 
@@ -436,29 +436,29 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     this.paper!.on('element:pointerclick', selectSource);
   }
 
-  // ✅ ADICIONAR: Método para definir botão ativo
+  // Método para definir botão ativo
   private setActiveButton(buttonType: string): void {
     this.activeButton = buttonType;
   }
 
-  // ✅ ADICIONAR: Método para limpar botão ativo
+  // Método para limpar botão ativo
   private clearActiveButton(): void {
     this.activeButton = null;
   }
 
-  // ✅ ADICIONAR: Método público para verificar se um botão está ativo
+  //  Método público para verificar se um botão está ativo
   public isButtonActive(buttonType: string): boolean {
     return this.activeButton === buttonType;
   }
 
-  // ✅ ADICIONAR: Método para cancelar operação ativa
+  //  Método para cancelar operação ativa
   public cancelActiveOperation(): void {
     if (this.isWaitingForClick) {
       this.clearActiveButton();
       this.isWaitingForClick = false;
       this.setCursor('default');
       
-      // ✅ ADICIONAR: Remover handler ativo de elemento
+      //  Remover handler ativo de elemento
       if (this.activeClickHandler) {
         const container = this.paperContainer.nativeElement as HTMLElement;
         container.removeEventListener('click', this.activeClickHandler);
@@ -581,7 +581,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     const btn = document.createElement('button');
     btn.className = 'remove-btn';
     btn.style.position = 'absolute';
-    btn.style.zIndex = '30';
+    btn.style.zIndex = '7';
 
     //Cria o ícone do Lucide
     const lucideIcon = document.createElement('img');
@@ -1108,7 +1108,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
             userLink.get('type') === modelLink.get('type') &&
             userSource && modelSource &&
             userTarget && modelTarget &&
-            // ✅ CORRIGIR: Aplicar toLowerCase() nas comparações de texto
+            //  Aplicar toLowerCase() nas comparações de texto
             (userSource.attr(['label', 'text']) || '').toLowerCase() === (modelSource.attr(['label', 'text']) || '').toLowerCase() &&
             (userTarget.attr(['label', 'text']) || '').toLowerCase() === (modelTarget.attr(['label', 'text']) || '').toLowerCase() &&
             userLabel === modelLabel
