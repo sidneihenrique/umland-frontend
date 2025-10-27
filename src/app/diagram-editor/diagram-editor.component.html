@@ -37,12 +37,28 @@
         <!-- Botões para DIAGRAMA DE CLASSES -->
         <ng-container *ngIf="diagramType === 'CLASS'">
             <button class="btn-icon filled" [class.active]="isButtonActive('uml-class')" draggable="true" (dragstart)="onDragStart($event, 'class')" (click)="addElement('class')" type="button" title="Inserir Classe">
-                <!-- troque o SVG por um ícone de classe se tiver -->
                 <img src="assets/icons/class.svg" alt="Classe">
             </button>
 
             <button class="btn-icon filled" [class.active]="isButtonActive('link-association')" (click)="addLink('association')" type="button" title="Inserir Associação">
-                <img src="assets/icons/association.svg" alt="">
+                <img src="assets/icons/association.svg" alt="Associação">
+            </button>
+
+            <!-- Novos botões UML -->
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-aggregation')" (click)="addLink('aggregation')" type="button" title="Agregação (losango aberto)">
+                <img src="assets/icons/aggregation.svg" alt="Agregação">
+            </button>
+
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-composition')" (click)="addLink('composition')" type="button" title="Composição (losango preenchido)">
+                <img src="assets/icons/composition.svg" alt="Composição">
+            </button>
+
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-inheritance')" (click)="addLink('inheritance')" type="button" title="Herança (generalização)">
+                <img src="assets/icons/generalization.svg" alt="Herança">
+            </button>
+
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-realization')" (click)="addLink('realization')" type="button" title="Realização (interface)">
+                <img src="assets/icons/realization.svg" alt="Realização">
             </button>
         </ng-container>
     </div>

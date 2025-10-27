@@ -131,7 +131,7 @@ body {
   margin-left: 4px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   transition: background 0.2s;
-  z-index: 40;
+  z-index: 7;
 }
 .link-btn:hover {
   background: var(--blue);
@@ -139,4 +139,24 @@ body {
 .link-btn.active {
   background: var(--yellow);
   color: var(--white);
+}
+
+/* multiplicity button style */
+.multiplicity-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* popup for multiplicity options */
+.multiplicity-popup .multiplicity-option:hover {
+  background: rgba(0,0,0,0.04);
 }

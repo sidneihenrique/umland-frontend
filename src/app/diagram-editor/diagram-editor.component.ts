@@ -44,6 +44,13 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   private removeBtn: HTMLButtonElement | null = null;
   private currentCellView: joint.dia.ElementView | joint.dia.LinkView | null = null;
 
+  private multiplicityBtns: Array<HTMLButtonElement> = [];
+  private currentMultiplicityPopup: HTMLDivElement | null = null;
+  private multiplicityOptions = ['1', '0..1', '0..*', '*', '1..*', 'Unspecified'];
+
+  private currentMultiplicityPopupAnchor: HTMLButtonElement | null = null;
+
+
   // Editor inline
   private currentInlineEditor: HTMLDivElement | null = null;
   private currentEditingCellView: joint.dia.ElementView | joint.dia.LinkView | null = null;
@@ -55,7 +62,9 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   // Tipo de link que está sendo criado
   private linkingType: string | null = null;
 
-  // ✅ ADICIONAR: Propriedades para controlar botões ativos
+  private currentMultiplicityLink: joint.dia.Link | null = null;
+
+  //  Propriedades para controlar botões ativos
   private activeButton: string | null = null;
   private isWaitingForClick: boolean = false;
 
@@ -71,7 +80,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   public inconsistencies: string[] = [];
 
-  // ✅ ADICIONAR: Propriedade para armazenar o handler ativo
+  //  Propriedade para armazenar o handler ativo
   private activeClickHandler: ((evt: MouseEvent) => void) | null = null;
 
   // controle do tipo atual do diagrama (default USE_CASE)
@@ -132,7 +141,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       this.setupDiagramData();
     }
 
-    // ✅ CORRIGIR: Criar namespace que inclui as classes customizadas
+    //  Criar namespace que inclui as classes customizadas
     const cellNamespace = {
       ...joint.shapes,
       custom: (joint.shapes as any).custom
@@ -162,9 +171,11 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
     this.paper.initialize();
 
-    container.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
+    
+    this.wrapperBoard.nativeElement.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
 
-    this.paperContainer.nativeElement.addEventListener('scroll', () => {
+    this.wrapperBoard.nativeElement.addEventListener('scroll', () => {
+      console.log('Scroll detected, updating floating elements position');
       this.updateFloatingElementsPosition();
     });
 
@@ -294,7 +305,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
-  // ✅ CORRIGIR: Método addElement para gerenciar estado ativo
+  //  Método addElement para gerenciar estado ativo
   addElement(type?: string, event?: MouseEvent) {
     // ✅ CANCELAR operação ativa anterior e limpar handlers
     if (this.isWaitingForClick) {
@@ -311,7 +322,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         this.setActiveButton(type || '');
         this.isWaitingForClick = true;
 
-        // ✅ CORRIGIR: Remover handler anterior se existir
+        //  Remover handler anterior se existir
         if (this.activeClickHandler) {
           container.removeEventListener('click', this.activeClickHandler);
         }
@@ -384,13 +395,13 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   }
 
-  // ✅ CORRIGIR: Método addLink para gerenciar estado ativo
+  // Método addLink para gerenciar estado ativo
   addLink(type: string) {
-    // ✅ ADICIONAR: Cancelar operação ativa 
+    // Cancelar operação ativa 
     if (this.isWaitingForClick) {
       this.cancelActiveOperation();
     }
-    // ✅ Ativar botão de link
+    // Ativar botão de link
     this.setActiveButton(`link-${type}`);
     this.isWaitingForClick = true;
 
@@ -427,29 +438,29 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     this.paper!.on('element:pointerclick', selectSource);
   }
 
-  // ✅ ADICIONAR: Método para definir botão ativo
+  // Método para definir botão ativo
   private setActiveButton(buttonType: string): void {
     this.activeButton = buttonType;
   }
 
-  // ✅ ADICIONAR: Método para limpar botão ativo
+  // Método para limpar botão ativo
   private clearActiveButton(): void {
     this.activeButton = null;
   }
 
-  // ✅ ADICIONAR: Método público para verificar se um botão está ativo
+  //  Método público para verificar se um botão está ativo
   public isButtonActive(buttonType: string): boolean {
     return this.activeButton === buttonType;
   }
 
-  // ✅ ADICIONAR: Método para cancelar operação ativa
+  //  Método para cancelar operação ativa
   public cancelActiveOperation(): void {
     if (this.isWaitingForClick) {
       this.clearActiveButton();
       this.isWaitingForClick = false;
       this.setCursor('default');
       
-      // ✅ ADICIONAR: Remover handler ativo de elemento
+      //  Remover handler ativo de elemento
       if (this.activeClickHandler) {
         const container = this.paperContainer.nativeElement as HTMLElement;
         container.removeEventListener('click', this.activeClickHandler);
@@ -559,6 +570,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       if (e.key === 'Enter') {
         e.preventDefault();
         finishEditing();
+        this.currentCellView = null;
       }
     });
 
@@ -572,7 +584,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     const btn = document.createElement('button');
     btn.className = 'remove-btn';
     btn.style.position = 'absolute';
-    btn.style.zIndex = '30';
+    btn.style.zIndex = '7';
 
     //Cria o ícone do Lucide
     const lucideIcon = document.createElement('img');
@@ -591,6 +603,19 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
     document.body.appendChild(btn);
     this.removeBtn = btn;
+
+    // Se for um link, adiciona botões extras (multiplicidade) se estiver ligado a duas classes
+    if (cellView.model.isLink()) {
+      const link = cellView.model as joint.dia.Link;
+      // Check if both ends are connected to elements of type custom.Class
+      const srcElem = link.getSourceElement();
+      const tgtElem = link.getTargetElement();
+
+      if (srcElem && tgtElem && srcElem.get('type') === 'custom.Class' && tgtElem.get('type') === 'custom.Class') {
+        // cria botões de multiplicidade (esquerda/direita)
+        this.showMultiplicityButtons(link);
+      }
+    }
     
     this.updateFloatingElementsPosition();
   }
@@ -637,6 +662,200 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       this.removeBtn = null;
       this.currentCellView = null;
     }
+
+    // Remove botões de multiplicidade
+    if (this.multiplicityBtns && this.multiplicityBtns.length) {
+      for (const mb of this.multiplicityBtns) {
+        if (mb.parentNode) mb.parentNode.removeChild(mb);
+      }
+      this.multiplicityBtns = [];
+    }
+
+    // limpa link atual de multiplicity
+    this.currentMultiplicityLink = null;
+
+    // Remove popup se existir
+    if (this.currentMultiplicityPopup && this.currentMultiplicityPopup.parentNode) {
+      this.currentMultiplicityPopup.parentNode.removeChild(this.currentMultiplicityPopup);
+      this.currentMultiplicityPopup = null;
+      this.currentMultiplicityPopupAnchor = null; // limpa anchor
+    }
+  }
+
+  /**
+   * Cria e posiciona (inicialmente) os botões de multiplicidade para um link que conecta duas classes.
+   * Um botão será posicionado próximo à extremidade de origem e outro na extremidade de destino.
+   * A posição real fica a cargo de updateFloatingElementsPosition() para garantir atualização contínua.
+   */
+  private showMultiplicityButtons(link: joint.dia.Link) {
+    if (!this.paper) return;
+    // remove anteriores por segurança
+    this.multiplicityBtns.forEach(b => { if (b.parentNode) b.parentNode.removeChild(b); });
+    this.multiplicityBtns = [];
+
+    try {
+      const srcElem = link.getSourceElement();
+      const tgtElem = link.getTargetElement();
+      if (!srcElem || !tgtElem) return;
+
+      // marque qual link está com botões ativos
+      this.currentMultiplicityLink = link;
+
+      // cria botão para source (posição inicial temporária; será recomputada)
+      const btnSrc = document.createElement('button');
+      btnSrc.className = 'multiplicity-btn';
+      btnSrc.type = 'button';
+      btnSrc.innerText = '*';
+      btnSrc.style.position = 'absolute';
+      btnSrc.style.left = `0px`;
+      btnSrc.style.top = `0px`;
+      btnSrc.style.zIndex = '40';
+      document.body.appendChild(btnSrc);
+      this.multiplicityBtns.push(btnSrc);
+
+      // cria botão para target (posição inicial temporária; será recomputada)
+      const btnTgt = document.createElement('button');
+      btnTgt.className = 'multiplicity-btn';
+      btnTgt.type = 'button';
+      btnTgt.innerText = '*';
+      btnTgt.style.position = 'absolute';
+      btnTgt.style.left = `0px`;
+      btnTgt.style.top = `0px`;
+      btnTgt.style.zIndex = '40';
+      document.body.appendChild(btnTgt);
+      this.multiplicityBtns.push(btnTgt);
+
+      // Handler: open popup com opções perto do botão (createMultiplicityPopup usa o botão como âncora)
+      btnSrc.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        this.createMultiplicityPopup(link, 'source', btnSrc);
+      });
+      btnTgt.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        this.createMultiplicityPopup(link, 'target', btnTgt);
+      });
+
+      // força uma computação imediata da posição via a rotina centralizada
+      this.updateFloatingElementsPosition();
+
+    } catch (err) {
+      console.warn('showMultiplicityButtons failed', err);
+    }
+  }
+
+    /**
+   * Cria pequeno popup com opções de multiplicidade e o posiciona perto do botão passado.
+   * side = 'source' | 'target'
+   */
+  private createMultiplicityPopup(link: joint.dia.Link, side: 'source' | 'target', anchorBtn: HTMLButtonElement) {
+    // limpa popup antigo
+    if (this.currentMultiplicityPopup && this.currentMultiplicityPopup.parentNode) {
+      this.currentMultiplicityPopup.parentNode.removeChild(this.currentMultiplicityPopup);
+      this.currentMultiplicityPopup = null;
+    }
+
+    const popup = document.createElement('div');
+    popup.className = 'multiplicity-popup';
+    popup.style.position = 'absolute';
+    popup.style.zIndex = '10';
+    popup.style.background = '#fff';
+    popup.style.border = '1px solid rgba(0,0,0,0.12)';
+    popup.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
+    popup.style.padding = '8px';
+    popup.style.borderRadius = '6px';
+    popup.style.minWidth = '120px';
+    popup.style.marginLeft = '12px';
+
+    // populate options
+    for (const opt of this.multiplicityOptions) {
+      const item = document.createElement('div');
+      item.className = 'multiplicity-option';
+      item.innerText = opt;
+      item.style.padding = '6px 8px';
+      item.style.cursor = 'pointer';
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // aplica multiplicidade no link
+        this.setLinkMultiplicity(link, side, opt === 'Unspecified' ? '' : opt);
+        // remove popup
+        if (popup.parentNode) popup.parentNode.removeChild(popup);
+        this.currentMultiplicityPopup = null;
+        this.currentMultiplicityPopupAnchor = null; // limpa a âncora
+      });
+      popup.appendChild(item);
+    }
+
+    // position popup near anchorBtn
+    const rect = anchorBtn.getBoundingClientRect();
+    popup.style.left = `${rect.left + window.scrollX + 20}px`;
+    popup.style.top = `${rect.top + window.scrollY - 8}px`;
+
+    document.body.appendChild(popup);
+    this.currentMultiplicityPopup = popup;
+    this.currentMultiplicityPopupAnchor = anchorBtn; // guarda a âncora
+
+    // close popup when clicking elsewhere
+    const closeFn = (ev: MouseEvent) => {
+      if (this.currentMultiplicityPopup && !this.currentMultiplicityPopup.contains(ev.target as Node)) {
+        if (this.currentMultiplicityPopup.parentNode) this.currentMultiplicityPopup.parentNode.removeChild(this.currentMultiplicityPopup);
+        this.currentMultiplicityPopup = null;
+        document.removeEventListener('click', closeFn);
+      }
+    };
+    // use next tick to avoid immediate close from the click that opened the popup
+    setTimeout(() => document.addEventListener('click', closeFn), 0);
+  }
+
+    /**
+   * Set/link multiplicity metadata and update the label shown on the link.
+   * side: 'source' or 'target'
+   */
+  private setLinkMultiplicity(link: joint.dia.Link, side: 'source' | 'target', value: string) {
+    // store metadata
+    const uml = (link as any).get('uml') || {};
+    if (side === 'source') {
+      uml.sourceMultiplicity = value || '';
+    } else {
+      uml.targetMultiplicity = value || '';
+    }
+    link.set('uml', uml);
+
+    // Update link labels: ensure two labels exist (source index 0, target index 1)
+    try {
+      const srcLabelText = uml.sourceMultiplicity || '';
+      const tgtLabelText = uml.targetMultiplicity || '';
+
+      // If link has labels, we will try to preserve existing other labels, but here we specifically set indexes 0 and 1
+      // distances near the ends
+      const labels = [
+        {
+          attrs: {
+            text: { text: srcLabelText, fontSize: 12, fill: '#333' },
+            rect: { fill: 'transparent', stroke: 'none' }
+          },
+          position: { distance: 0.1, offset: -10 }
+        },
+        {
+          attrs: {
+            text: { text: tgtLabelText, fontSize: 12, fill: '#333' },
+            rect: { fill: 'transparent', stroke: 'none' }
+          },
+          position: { distance: 0.90, offset: -10 }
+        }
+      ];
+
+      link.labels(labels);
+    } catch (err) {
+      console.warn('setLinkMultiplicity error', err);
+    }
+  }
+
+    /**
+   * Convenience: read multiplicity value stored on link ('' if unspecified)
+   */
+  private getLinkMultiplicity(link: joint.dia.Link, side: 'source' | 'target'): string {
+    const uml = (link as any).get('uml') || {};
+    return side === 'source' ? (uml.sourceMultiplicity || '') : (uml.targetMultiplicity || '');
   }
 
   private hideLinkButton() {
@@ -679,6 +898,100 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       const point = this.paper!.localToClientPoint({ x: bbox.x + bbox.width, y: bbox.y + 32 });
       this.linkBtn.style.left = `${point.x + window.scrollX}px`;
       this.linkBtn.style.top = `${point.y + window.scrollY}px`;
+    }
+
+
+    if (this.multiplicityBtns && this.multiplicityBtns.length && this.currentMultiplicityLink && this.paper) {
+      try {
+        const link = this.currentMultiplicityLink;
+
+        // Preferir os pontos reais de conexão do link (cobre vertical/diagonal/camada de vértices)
+        let srcLocalPoint: { x: number; y: number } | null = null;
+        let tgtLocalPoint: { x: number; y: number } | null = null;
+
+        // joint.dia.Link possui getSourcePoint/getTargetPoint que retornam pontos no sistema do paper
+        if (typeof (link as any).getSourcePoint === 'function' && typeof (link as any).getTargetPoint === 'function') {
+          try {
+            srcLocalPoint = (link as any).getSourcePoint();
+            tgtLocalPoint = (link as any).getTargetPoint();
+          } catch (e) {
+            srcLocalPoint = null;
+            tgtLocalPoint = null;
+          }
+        }
+
+        if (srcLocalPoint && tgtLocalPoint) {
+          // obtém elementos conectados para ler suas alturas (paper coords)
+          const srcElem = link.getSourceElement ? link.getSourceElement() : null;
+          const tgtElem = link.getTargetElement ? link.getTargetElement() : null;
+          const srcView = srcElem && this.paper ? (this.paper as any).findViewByModel(srcElem) : null;
+          const tgtView = tgtElem && this.paper ? (this.paper as any).findViewByModel(tgtElem) : null;
+
+          // ajusta a coordenada Y adicionando metade da altura do elemento (se disponível)
+          let adjSrcLocal = { ...srcLocalPoint };
+          let adjTgtLocal = { ...tgtLocalPoint };
+
+          if (srcView && typeof srcView.getBBox === 'function') {
+            try {
+              const bboxSrc = srcView.getBBox();
+              adjSrcLocal.y = adjSrcLocal.y + (bboxSrc.height / 2);
+            } catch (e) { /* fallback: mantém srcLocalPoint */ }
+          }
+
+          if (tgtView && typeof tgtView.getBBox === 'function') {
+            try {
+              const bboxTgt = tgtView.getBBox();
+              adjTgtLocal.y = adjTgtLocal.y + (bboxTgt.height / 2);
+            } catch (e) { /* fallback: mantém tgtLocalPoint */ }
+          }
+
+          // converte para client coords
+          const startClient = this.paper!.localToClientPoint(adjSrcLocal);
+          const endClient   = this.paper!.localToClientPoint(adjTgtLocal);
+
+          const btnSrc = this.multiplicityBtns[0];
+          const btnTgt = this.multiplicityBtns[1];
+
+          // centraliza os botões subtraindo metade da largura/altura do botão
+          if (btnSrc) {
+            const halfW = (btnSrc.offsetWidth || 24) / 2;
+            const halfH = (btnSrc.offsetHeight || 24) / 2;
+            btnSrc.style.left = `${startClient.x + window.scrollX - halfW}px`;
+            btnSrc.style.top  = `${startClient.y + window.scrollY - halfH + 24}px`;
+          }
+          if (btnTgt) {
+            const halfW = (btnTgt.offsetWidth || 24) / 2;
+            const halfH = (btnTgt.offsetHeight || 24) / 2;
+            btnTgt.style.left = `${endClient.x + window.scrollX - halfW}px`;
+            btnTgt.style.top  = `${endClient.y + window.scrollY - halfH + 24}px`;
+          }
+
+          // manter removeBtn no meio do link (comportamento anterior)
+          if (this.removeBtn && this.currentCellView && this.currentCellView.model.isLink()) {
+            const bbox = this.currentCellView.getBBox();
+            const mid = this.paper!.localToClientPoint({ x: bbox.x + bbox.width / 2, y: (bbox.y + 8) + bbox.height / 2 });
+            this.removeBtn.style.left = `${mid.x + window.scrollX}px`;
+            this.removeBtn.style.top = `${mid.y + window.scrollY}px`;
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to reposition multiplicity buttons', err);
+      }
+    }
+
+    if (this.currentMultiplicityPopup) {
+      try {
+        const popup = this.currentMultiplicityPopup;
+        // prefere a âncora que abriu o popup; fallback para o primeiro multiplicity button
+        const anchor = this.currentMultiplicityPopupAnchor || (this.multiplicityBtns && this.multiplicityBtns[0]) || null;
+        if (anchor && typeof anchor.getBoundingClientRect === 'function') {
+          const rect = anchor.getBoundingClientRect();
+          popup.style.left = `${rect.left + window.scrollX + 20}px`;
+          popup.style.top  = `${rect.top + window.scrollY - 8}px`;
+        }
+      } catch (err) {
+        console.warn('Failed to reposition multiplicity popup', err);
+      }
     }
   }
 
@@ -798,7 +1111,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
             userLink.get('type') === modelLink.get('type') &&
             userSource && modelSource &&
             userTarget && modelTarget &&
-            // ✅ CORRIGIR: Aplicar toLowerCase() nas comparações de texto
+            //  Aplicar toLowerCase() nas comparações de texto
             (userSource.attr(['label', 'text']) || '').toLowerCase() === (modelSource.attr(['label', 'text']) || '').toLowerCase() &&
             (userTarget.attr(['label', 'text']) || '').toLowerCase() === (modelTarget.attr(['label', 'text']) || '').toLowerCase() &&
             userLabel === modelLabel

@@ -138,7 +138,7 @@ export class UMLElementUtil {
           },
           position: { distance: 0.5 }
         }]);
-        link.attr('line/strokeDasharray', '2.2'); // linha contínua
+        link.attr('line/strokeDasharray', '2.2'); 
         link.set('type', 'custom.Include');
         break;
       case 'dependency':
@@ -158,7 +158,87 @@ export class UMLElementUtil {
         link.attr('line/targetMarker', { d: '' }); // remove a seta
         link.set('type', 'custom.Association')
         break;
+
+      // ---------- Novos tipos UML ----------
+      case 'aggregation':
+        // agregação = losango aberto no lado do "todo" (aqui colocamos no target)
+        link.attr('line/strokeDasharray', 'none');
+        link.attr({
+          line : {
+            targetMarker: {
+              'type': 'image',
+              'xlink:href': '/assets/uml-svg/aggregation.png',
+              'width': 24,
+              'height': 24,
+              'y': -12
+            }
+          }
+        });
+        link.labels([{
+          attrs: {
+            rect: { fill: '#fff', stroke: '#000', strokeWidth: 0 }
+          },
+          position: { distance: 0.5, offset: 12 }
+        }]);
+        link.set('type', 'custom.Aggregation');
+        break;
+
+      case 'composition':
+        // composição = losango preenchido (aqui no target)
+        link.attr('line/strokeDasharray', 'none');
+        link.attr({
+          line : {
+            targetMarker: {
+              'type': 'image',
+              'xlink:href': '/assets/uml-svg/composition.png',
+              'width': 24,
+              'height': 24,
+              'y': -12
+            }
+          }
+        });
+        link.labels([{
+          attrs: {
+            rect: { fill: '#fff', stroke: '#000', strokeWidth: 0 }
+          },
+          position: { distance: 0.5, offset: 12 }
+        }]);
+        link.set('type', 'custom.Composition');
+        break;
+
+      case 'inheritance':
+      case 'generalization':
+        // herança (generalization) = triângulo aberto (hollow) no target
+        link.attr('line/strokeDasharray', 'none');
+        link.labels([{
+          attrs: {
+            rect: { fill: '#fff', stroke: '#000', strokeWidth: 0 }
+          },
+          position: { distance: 0.5, offset: 12 }
+        }]);
+        link.set('type', 'custom.Generalization');
+        break;
+
+      case 'realization':
+        // realização (interface) = linha tracejada + triângulo aberto
+        link.attr('line/strokeDasharray', '5,5');
+        link.labels([{
+          attrs: {
+            rect: { fill: '#fff', stroke: '#000', strokeWidth: 0 }
+          },
+          position: { distance: 0.5, offset: 12 }
+        }]);
+        link.set('type', 'custom.Realization');
+        break;
+
       default:
+        link.set('type', 'custom.Association');
+        link.labels([{
+          attrs: {
+            rect: { fill: '#fff', stroke: '#000', strokeWidth: 0 }
+          },
+          position: { distance: 0.5, offset: 12 }
+        }]);
         break;
     }
 
