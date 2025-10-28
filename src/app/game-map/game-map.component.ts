@@ -458,6 +458,12 @@ export class GameMapComponent implements OnInit, OnDestroy {
     if (!this.swiperContainer || !this.swiperContainer.nativeElement) return;
     const containerEl = this.swiperContainer.nativeElement as HTMLElement;
 
+    // calcular índice inicial baseado em phase.current === true
+    const currentIndex = this.phaseUsersAvailable
+      ? this.phaseUsersAvailable.findIndex(pu => !!pu.phase && !!pu.current)
+      : -1;
+    const initialSlideIndex = currentIndex >= 0 ? currentIndex : 0;
+
     // esperar próximo ciclo de render e um RAF para garantir que os .swiper-slide estejam no DOM
     Promise.resolve().then(() => {
       requestAnimationFrame(() => {
@@ -473,13 +479,14 @@ export class GameMapComponent implements OnInit, OnDestroy {
           this.swiper = undefined as any;
         }
 
-        // inicializar
+        // inicializar com initialSlide baseado na currentPhase
         this.swiper = new Swiper(containerEl, {
           modules: [Navigation, Pagination, EffectCoverflow],
           effect: "coverflow",
           slidesPerView: 'auto',
           grabCursor: true,
           centeredSlides: true,
+          initialSlide: initialSlideIndex,
           coverflowEffect: {
             rotate: 50,
             stretch: 0,
@@ -496,6 +503,17 @@ export class GameMapComponent implements OnInit, OnDestroy {
           spaceBetween: 64,
           speed: 1000
         });
+
+        // Garanta que o Swiper realmente pule para o slide desejado após init
+        try {
+          if (initialSlideIndex > 0 && this.swiper && typeof this.swiper.slideTo === 'function') {
+            // tempo 0 para não animar (apenas posicionar)
+            this.swiper.slideTo(initialSlideIndex, 0);
+          }
+        } catch (e) {
+          // ignore se algo falhar aqui
+          console.debug('Swiper slideTo failed', e);
+        }
       });
     });
   }
