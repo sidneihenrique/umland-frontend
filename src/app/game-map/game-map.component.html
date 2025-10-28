@@ -12,6 +12,10 @@
                     <h1 *ngIf="phaseUser.phase.nodeType == 'ACTIVITY'">Complete o desafio</h1>
                     <h1 *ngIf="phaseUser.phase.nodeType == 'DECISION'">Tome sua decisão</h1>
                     <div class="phase-card">
+                        <!-- carimbo no canto superior direito quando COMPLETED -->
+                        <div *ngIf="phaseUser.status === 'COMPLETED'" class="stamp-complete" aria-hidden="true">
+                        COMPLETO
+                        </div>
                         <div class="left">
                             <div class="left-top">
                                 <h3>{{ phaseUser.phase.title }}</h3>
@@ -41,7 +45,7 @@
                                 [disabled]="phaseUser.status !== 'AVAILABLE' && phaseUser.status !== 'COMPLETED'"
                                 [ngClass]="{ 'disabled': phaseUser.status !== 'AVAILABLE' && phaseUser.status !== 'COMPLETED' }"
                                 (click)="openGamePhase(phaseUser)">
-                                Jogar
+                                {{ phaseUser.status === 'COMPLETED' ? 'Jogar novamente' : 'Jogar' }}
                                 </button>
     
                             </div>
