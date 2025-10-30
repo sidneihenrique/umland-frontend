@@ -122,15 +122,9 @@ export class GameMapComponent implements OnInit, OnDestroy {
 
     this.isAssociatingUser = true;
     this.associationError = '';
-    
-    console.log('🔗 Associando usuário ao GameMap:', { 
-      gameMapId: this.gameMapId, 
-      userId: this.userId 
-    });
 
     this.gameMapService.setGameMapToUser(this.gameMapId, this.userId).subscribe({
       next: (gameMap) => {
-        console.log('✅ Usuário associado ao GameMap com sucesso:', gameMap);
         this.isAssociatingUser = false;
         
         // ✅ Após associar, carregar dados do usuário e fases
@@ -144,7 +138,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
         
         // ✅ Tratar diferentes tipos de erro
         if (error.status === 204) {
-          console.log('📝 GameMap ou usuário não encontrado');
+          console.error('📝 GameMap ou usuário não encontrado');
           this.associationError = 'GameMap ou usuário não encontrado';
           
           // ✅ Tentar carregar mesmo assim (pode já estar associado)
@@ -153,7 +147,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
           this.loadPhaseTransitions();
           
         } else if (error.status === 400) {
-          console.log('⚠️ Dados inválidos - usuário pode já estar associado');
+          console.error('⚠️ Dados inválidos - usuário pode já estar associado');
           this.associationError = 'Usuário pode já estar associado ao GameMap';
           
           // ✅ Continuar normalmente
@@ -184,17 +178,11 @@ export class GameMapComponent implements OnInit, OnDestroy {
 
     this.isLoadingPhases = true;
     this.phasesError = '';
-    
-    console.log('📡 Carregando fases do mapa:', { 
-      gameMapId: this.gameMapId, 
-      userId: this.userId 
-    });
         
     this.gameMapService.getAllPhasesByUser(this.gameMapId, this.userId).subscribe({
       next: async (phaseUsers: PhaseUser[]) => {
         this.phaseUsers = phaseUsers;
         this.isLoadingPhases = false;
-        console.log('✅ Fases carregadas:', phaseUsers);
         await this.buildPhaseUsersAvailable();
         this.initSwiper();
       },
@@ -216,7 +204,6 @@ export class GameMapComponent implements OnInit, OnDestroy {
     this.gameMapService.getPhaseTransitionsByGameMapId(this.gameMapId).subscribe({
       next: (transitions) => {
         this.phaseTransitions = transitions;
-        console.log('✅ Transições carregadas:', transitions);
       },
       error: (error) => console.error('Erro ao carregar transições:', error)
     });

@@ -170,7 +170,6 @@ export class HeaderComponent implements OnInit, OnDestroy{
     
     if (currentUser) {
       this.userData = currentUser;
-      console.log('✅ Dados do usuário carregados no header:', this.userData);
     } else {
       console.error('❌ Usuário não encontrado no localStorage');
       this.router.navigate(['/login']);
@@ -181,7 +180,6 @@ export class HeaderComponent implements OnInit, OnDestroy{
     this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
       if (userData) {
         this.userData = userData;
-        console.log('✅ Dados do usuário atualizados no header:', this.userData);
       }
     });
   }
