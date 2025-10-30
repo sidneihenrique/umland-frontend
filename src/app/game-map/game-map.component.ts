@@ -518,6 +518,47 @@ export class GameMapComponent implements OnInit, OnDestroy {
     });
   }
 
+    /**
+   * Calcula o progresso (%) do usuário no mapa.
+   *
+   * Lógica:
+   * - Por padrão exclui fases com `phase.nodeType === 'DECISION'` do total,
+   *   pois são nós de decisão (opcionais para progresso linear).
+   * - Se não houver fases "não-DECISION", usa o total completo como fallback.
+   * - Retorna um inteiro entre 0 e 100.
+   */
+  calculateProgress(): number {
+    try {
+      const all = Array.isArray(this.phaseUsers) ? this.phaseUsers : [];
+
+      // Considera apenas fases que não são DECISION (opcional; altera aqui se quiser incluir DECISION)
+      const nonDecision = all.filter(pu => pu && pu.phase && pu.phase.nodeType !== 'DECISION');
+
+      // Se não houver fases não-DECISION, usa fallback para evitar divisão por zero
+      const pool = nonDecision.length > 0 ? nonDecision : all;
+      const total = pool.length;
+
+      if (total === 0) return 0;
+
+      const completed = pool.filter(pu => pu && pu.status === 'COMPLETED').length;
+      const percent = Math.round((completed / total) * 100);
+
+      return Math.max(0, Math.min(100, percent));
+    } catch (err) {
+      console.error('calculateProgress error', err);
+      return 0;
+    }
+  }
+
+  getUserAvatarUrl(): string {
+    // se não houver avatar definido, usa fallback local
+    if (!this.userData?.avatar?.filePath) {
+      return '';
+    }
+
+    return FileUrlBuilder.avatar(this.userData.avatar.filePath);
+  }
+
   ngOnDestroy() {
     if (this.userDataSubscription) {
       this.userDataSubscription.unsubscribe();

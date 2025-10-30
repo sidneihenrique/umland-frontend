@@ -64,4 +64,15 @@
         </div>
         <div class="swiper-button-next"></div>
     </div>
+    <div class="progress-bar">
+        <div class="progress" [style.width.%]="calculateProgress()">
+            <div class="user-avatar">
+                <img 
+                    [src]="getUserAvatarUrl()"
+                    [alt]="userData?.name || 'Avatar do usuário'"
+                >
+                <span class="percentage">{{ calculateProgress() }}%</span>
+            </div>
+        </div>
+    </div>
 </div>
