@@ -346,3 +346,56 @@ header .right {
         transform: rotate(12deg);
     }
 }
+
+.progress-bar {
+    width: 780px;
+    height: 10px;
+    background-color: var(--gray);
+    border-radius: 9999px;
+    position: relative;
+    align-self: center;
+}
+
+.progress-bar .progress {
+    height: 100%;
+    background-color: var(--yellow);
+    border-radius: 9999px;
+    transition: width 0.3s ease-in-out;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.progress .user-avatar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: -16px;
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--black);
+    border-radius: 50%;
+    background-color: var(--white);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress .user-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.progress .user-avatar .percentage {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 4px;
+}

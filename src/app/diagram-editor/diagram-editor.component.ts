@@ -24,6 +24,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   @Input() phaseUser!: PhaseUser | undefined;
   @Input() tips!: string[] | undefined;
+  @Input() diagramType!: 'USE_CASE' | 'CLASS';
 
   tipsVisible: boolean = false;
   
@@ -82,9 +83,6 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   //  Propriedade para armazenar o handler ativo
   private activeClickHandler: ((evt: MouseEvent) => void) | null = null;
-
-  // controle do tipo atual do diagrama (default USE_CASE)
-  public diagramType: 'USE_CASE' | 'CLASS' = 'USE_CASE';
 
   public inspectorVisible: boolean = false;
   public inspectorTab: 'general' | 'attributes' | 'operations' = 'general';

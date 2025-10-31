@@ -278,7 +278,7 @@
             </div>
             
             <!-- ✅ PRIMEIRO EDITOR: Diagrama inicial -->
-            <diagram-editor #diagramEditorInitial></diagram-editor>
+            <diagram-editor #diagramEditorInitial [diagramType]="phase.diagramType || 'USE_CASE'"></diagram-editor>
           </div>
         </div>
 
@@ -316,7 +316,7 @@
             </div>
             
             <!-- ✅ SEGUNDO EDITOR: Diagramas corretos -->
-            <diagram-editor #diagramEditorCorrect></diagram-editor>
+            <diagram-editor #diagramEditorCorrect [diagramType]="phase.diagramType || 'USE_CASE'"></diagram-editor>
           </div>
           
           <!-- ✅ Lista de diagramas corretos cadastrados (continua igual) -->

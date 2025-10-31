@@ -122,15 +122,9 @@ export class GameMapComponent implements OnInit, OnDestroy {
 
     this.isAssociatingUser = true;
     this.associationError = '';
-    
-    console.log('🔗 Associando usuário ao GameMap:', { 
-      gameMapId: this.gameMapId, 
-      userId: this.userId 
-    });
 
     this.gameMapService.setGameMapToUser(this.gameMapId, this.userId).subscribe({
       next: (gameMap) => {
-        console.log('✅ Usuário associado ao GameMap com sucesso:', gameMap);
         this.isAssociatingUser = false;
         
         // ✅ Após associar, carregar dados do usuário e fases
@@ -144,7 +138,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
         
         // ✅ Tratar diferentes tipos de erro
         if (error.status === 204) {
-          console.log('📝 GameMap ou usuário não encontrado');
+          console.error('📝 GameMap ou usuário não encontrado');
           this.associationError = 'GameMap ou usuário não encontrado';
           
           // ✅ Tentar carregar mesmo assim (pode já estar associado)
@@ -153,7 +147,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
           this.loadPhaseTransitions();
           
         } else if (error.status === 400) {
-          console.log('⚠️ Dados inválidos - usuário pode já estar associado');
+          console.error('⚠️ Dados inválidos - usuário pode já estar associado');
           this.associationError = 'Usuário pode já estar associado ao GameMap';
           
           // ✅ Continuar normalmente
@@ -184,17 +178,11 @@ export class GameMapComponent implements OnInit, OnDestroy {
 
     this.isLoadingPhases = true;
     this.phasesError = '';
-    
-    console.log('📡 Carregando fases do mapa:', { 
-      gameMapId: this.gameMapId, 
-      userId: this.userId 
-    });
         
     this.gameMapService.getAllPhasesByUser(this.gameMapId, this.userId).subscribe({
       next: async (phaseUsers: PhaseUser[]) => {
         this.phaseUsers = phaseUsers;
         this.isLoadingPhases = false;
-        console.log('✅ Fases carregadas:', phaseUsers);
         await this.buildPhaseUsersAvailable();
         this.initSwiper();
       },
@@ -216,7 +204,6 @@ export class GameMapComponent implements OnInit, OnDestroy {
     this.gameMapService.getPhaseTransitionsByGameMapId(this.gameMapId).subscribe({
       next: (transitions) => {
         this.phaseTransitions = transitions;
-        console.log('✅ Transições carregadas:', transitions);
       },
       error: (error) => console.error('Erro ao carregar transições:', error)
     });
@@ -516,6 +503,87 @@ export class GameMapComponent implements OnInit, OnDestroy {
         }
       });
     });
+  }
+
+    /**
+   * Calcula o progresso (%) do usuário no mapa.
+   *
+   * Lógica:
+   * - Por padrão exclui fases com `phase.nodeType === 'DECISION'` do total,
+   *   pois são nós de decisão (opcionais para progresso linear).
+   * - Se não houver fases "não-DECISION", usa o total completo como fallback.
+   * - Retorna um inteiro entre 0 e 100.
+   */
+  calculateProgress(): number {
+    try {
+      const all = Array.isArray(this.phaseUsers) ? this.phaseUsers : [];
+
+      // Considera apenas fases que não são DECISION (opcional; altera aqui se quiser incluir DECISION)
+      const nonDecision = all.filter(pu => pu && pu.phase && pu.phase.nodeType !== 'DECISION');
+
+      // Se não houver fases não-DECISION, usa fallback para evitar divisão por zero
+      const pool = nonDecision.length > 0 ? nonDecision : all;
+      const total = pool.length;
+
+      if (total === 0) return 0;
+
+      const completed = pool.filter(pu => pu && pu.status === 'COMPLETED').length;
+      const percent = Math.round((completed / total) * 100);
+
+      return Math.max(0, Math.min(100, percent));
+    } catch (err) {
+      console.error('calculateProgress error', err);
+      return 0;
+    }
+  }
+
+  getUserAvatarUrl(): string {
+    // se não houver avatar definido, usa fallback local
+    if (!this.userData?.avatar?.filePath) {
+      return '';
+    }
+
+    return FileUrlBuilder.avatar(this.userData.avatar.filePath);
+  }
+
+    /**
+   * Retorna true se, para a decision `phaseUser`, a opção representada por `transition`
+   * deve estar bloqueada porque outra opção já foi selecionada.
+   *
+   * Estratégia:
+   * - percorre as transições (usando o mapa `outgoingMap`) e checa o PhaseUser alvo (usando `idToPhaseUser`).
+   * - se algum target tiver status 'AVAILABLE' ou 'COMPLETED' consideramos que essa foi a opção escolhida.
+   * - então bloqueamos todos os botões cuja transition.toPhase.id !== chosenTargetId.
+   */
+  isDecisionOptionDisabled(phaseUser: PhaseUser, transition: PhaseTransition): boolean {
+    try {
+      if (!phaseUser || !phaseUser.phase || !phaseUser.phase.id) return false;
+
+      const outs = this.outgoingMap.get(phaseUser.phase.id) || [];
+      // procura a opção já escolhida (um target que já foi marcado AVAILABLE/COMPLETED)
+      let chosenTargetId: number | null = null;
+      for (const t of outs) {
+        const toId = t?.toPhase?.id;
+        if (!toId) continue;
+        const pu = this.idToPhaseUser.get(toId);
+        if (pu && (pu.status === 'AVAILABLE' || pu.status === 'COMPLETED')) {
+          chosenTargetId = toId;
+          break;
+        }
+      }
+
+      if (chosenTargetId === null) {
+        // nenhuma opção escolhida ainda -> nada desabilitado
+        return false;
+      }
+
+      // desabilita se esta transition NÃO é a escolhida
+      const thisToId = transition?.toPhase?.id;
+      return thisToId !== chosenTargetId;
+    } catch (err) {
+      console.error('isDecisionOptionDisabled error', err);
+      return false;
+    }
   }
 
   ngOnDestroy() {

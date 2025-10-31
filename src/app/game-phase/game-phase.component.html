@@ -7,10 +7,11 @@
     </app-header>
 
     <div class="action-buttons">
-        <button class="btn-icon filled" id="watch" (click)="activateWatch()">
+        <!-- Desativado temporariamente -->
+        <!-- <button class="btn-icon filled" id="watch" (click)="activateWatch()">
             <img src="assets/store/watch.png" alt="Watch" class="watch-icon">
             <div class="watch-counter" [style.display]="watchCount > 0 ? 'flex' : 'none'">{{watchCount}}</div>
-        </button>
+        </button> -->
 
         <button (click)="toggleTips()" class="btn-icon filled" [class.open-clues]="isOpen">
             <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
@@ -68,7 +69,7 @@
         </button>
     </div>
 
-    <diagram-editor #diagramEditor [phaseUser]="phaseUser" [tips]="tips"></diagram-editor>
+    <diagram-editor #diagramEditor [phaseUser]="phaseUser" [tips]="tips" [diagramType]="phase?.diagramType || 'USE_CASE'"></diagram-editor>
 
     <app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
 

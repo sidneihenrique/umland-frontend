@@ -35,7 +35,14 @@
                                 <!-- se for DECISION e já está COMPLETED/AVAILABLE e tem outgoing, renderiza botões -->
                                 <div *ngIf="phaseUser.phase.nodeType === 'DECISION'">
                                     <ng-container *ngFor="let t of outgoingMapForPhase(phaseUser.phase.id)">
-                                        <button (click)="onDecisionChoice(phaseUser, t)">{{ t.optionText || 'Escolher' }}</button>
+                                        <button
+                                        class="active"
+                                        (click)="onDecisionChoice(phaseUser, t)"
+                                        [disabled]="isDecisionOptionDisabled(phaseUser, t)"
+                                        [ngClass]="{ 'disabled': isDecisionOptionDisabled(phaseUser, t) }"
+                                        >
+                                        {{ t.optionText || 'Escolher' }}
+                                        </button>
                                     </ng-container>
                                 </div>
 
@@ -63,5 +70,16 @@
             <div class="swiper-pagination"></div>
         </div>
         <div class="swiper-button-next"></div>
+    </div>
+    <div class="progress-bar">
+        <div class="progress" [style.width.%]="calculateProgress()">
+            <div class="user-avatar">
+                <img 
+                    [src]="getUserAvatarUrl()"
+                    [alt]="userData?.name || 'Avatar do usuário'"
+                >
+                <span class="percentage">{{ calculateProgress() }}%</span>
+            </div>
+        </div>
     </div>
 </div>
