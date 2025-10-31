@@ -546,6 +546,46 @@ export class GameMapComponent implements OnInit, OnDestroy {
     return FileUrlBuilder.avatar(this.userData.avatar.filePath);
   }
 
+    /**
+   * Retorna true se, para a decision `phaseUser`, a opção representada por `transition`
+   * deve estar bloqueada porque outra opção já foi selecionada.
+   *
+   * Estratégia:
+   * - percorre as transições (usando o mapa `outgoingMap`) e checa o PhaseUser alvo (usando `idToPhaseUser`).
+   * - se algum target tiver status 'AVAILABLE' ou 'COMPLETED' consideramos que essa foi a opção escolhida.
+   * - então bloqueamos todos os botões cuja transition.toPhase.id !== chosenTargetId.
+   */
+  isDecisionOptionDisabled(phaseUser: PhaseUser, transition: PhaseTransition): boolean {
+    try {
+      if (!phaseUser || !phaseUser.phase || !phaseUser.phase.id) return false;
+
+      const outs = this.outgoingMap.get(phaseUser.phase.id) || [];
+      // procura a opção já escolhida (um target que já foi marcado AVAILABLE/COMPLETED)
+      let chosenTargetId: number | null = null;
+      for (const t of outs) {
+        const toId = t?.toPhase?.id;
+        if (!toId) continue;
+        const pu = this.idToPhaseUser.get(toId);
+        if (pu && (pu.status === 'AVAILABLE' || pu.status === 'COMPLETED')) {
+          chosenTargetId = toId;
+          break;
+        }
+      }
+
+      if (chosenTargetId === null) {
+        // nenhuma opção escolhida ainda -> nada desabilitado
+        return false;
+      }
+
+      // desabilita se esta transition NÃO é a escolhida
+      const thisToId = transition?.toPhase?.id;
+      return thisToId !== chosenTargetId;
+    } catch (err) {
+      console.error('isDecisionOptionDisabled error', err);
+      return false;
+    }
+  }
+
   ngOnDestroy() {
     if (this.userDataSubscription) {
       this.userDataSubscription.unsubscribe();
