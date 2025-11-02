@@ -66,6 +66,7 @@ export interface CreatePhaseRequest {
   diagramInitial: string;
   correctDiagrams: string[];
   characterDialogues: string[];
+  diagramType?: 'CLASS' | 'USE_CASE';
 }
 
 // Interface para atualizar Phase
@@ -89,6 +90,7 @@ export interface UpdatePhaseRequest {
   diagramInitial?: string;
   correctDiagrams?: string[];
   characterDialogues?: string[];
+  diagramType?: 'CLASS' | 'USE_CASE';
 }
 
 export interface PhaseType {
@@ -155,7 +157,8 @@ export class PhaseService {
       .set('gameMapId', phaseData.gameMap.id.toString())
       .set('diagramInitial', phaseData.diagramInitial)
       .set('correctDiagrams', JSON.stringify(phaseData.correctDiagrams))
-      .set('characterDialogues', JSON.stringify(phaseData.characterDialogues));
+      .set('characterDialogues', JSON.stringify(phaseData.characterDialogues))
+      .set('diagramType', phaseData.diagramType || 'USE_CASE');
 
     return this.http.post<Phase>(`${this.apiUrl}/phases`, null, { params });
   }
