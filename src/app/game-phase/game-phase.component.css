@@ -1,7 +1,7 @@
 #container {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 0;
 
     padding: 16px;
 
@@ -373,7 +373,8 @@ header .watch-time.active {
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid #e1e5e9;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 6px 12px;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -428,6 +429,16 @@ header .watch-time.active {
 .toggle-autosave:hover {
   background: rgba(0, 0, 0, 0.1);
   color: #333;
+}
+
+.title-phase  {
+    width: 80%;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--black);
+    text-align: left;
+    margin-left: 80px;
+    opacity: 0.6;
 }
 
 @keyframes spin {

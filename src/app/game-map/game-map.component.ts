@@ -21,6 +21,7 @@ import { EffectCoverflow } from 'swiper/modules';
 import { GameMapService, PhaseUser } from '../../services/game-map.service';
 import { PhaseUserService } from '../../services/phase-user.service'; // para atualizar status
 import { FileUrlBuilder } from '../../config/files.config';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'game-map',
@@ -74,7 +75,8 @@ export class GameMapComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private gameMapService: GameMapService,
-    private phaseUserService: PhaseUserService
+    private phaseUserService: PhaseUserService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -371,6 +373,10 @@ export class GameMapComponent implements OnInit, OnDestroy {
    * libera as phaseUsers subsequentes até a próxima DECISION (marcando status=AVAILABLE).
    */
   async onDecisionChoice(currentPu: PhaseUser, transition: PhaseTransition) {
+    if(currentPu.current !== true) {
+      this.notificationService.showNotification('error', 'Para selecionar uma opção, você deve estar na fase atual do jogo.');
+      return;
+    }
     const targetId = transition.toPhase?.id;
     if (!targetId) return;
 

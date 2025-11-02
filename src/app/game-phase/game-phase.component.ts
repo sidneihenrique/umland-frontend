@@ -23,6 +23,7 @@ import { TipService } from '../../services/tip.service';
 import { PhaseUserService } from '../../services/phase-user.service';
 import { PhaseUser } from '../../services/game-map.service';
 import { FileUrlBuilder } from '../../config/files.config';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'game-phase',
@@ -121,7 +122,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private tipService: TipService,
     private userService: UserService,
-    private phaseUserService: PhaseUserService
+    private phaseUserService: PhaseUserService,
+    private notificationService: NotificationService
   ) {
   }
 
@@ -561,8 +563,14 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
   checkDiagram() {
     if(this.checkDiagramLeft > 0) {
-      this.diagramEditorComponentRef.checkUMLInconsistencies();
+      if(this.diagramEditorComponentRef.checkUMLInconsistencies()) {
+        this.notificationService.showNotification('error', 'Foram encontradas inconsistências no seu diagrama. Por favor, corrija-as antes de prosseguir.');
+      } else {
+        this.notificationService.showNotification('success', 'Nenhuma inconsistência encontrada no diagrama!');
+      }
       this.checkDiagramLeft--;
+    } else {
+      this.notificationService.showNotification('error', 'Você não tem mais verificações disponíveis nesta fase.');
     }
   }
 

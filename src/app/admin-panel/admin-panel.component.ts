@@ -14,6 +14,7 @@ import { FILES_CONFIG, FileUrlBuilder } from '../../config/files.config';
 // ✅ Import do componente de editor de diagramas
 import { DiagramEditorComponent } from '../diagram-editor/diagram-editor.component';
 import { PhaseService, PhaseTransition } from '../../services/phase.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-admin-panel',
@@ -143,7 +144,8 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     private authService: AuthService,
     private tipService: TipService,
     private gameMapService: GameMapService,
-    private phaseService: PhaseService
+    private phaseService: PhaseService,
+    private notificationService: NotificationService
   ) {}
 
   // ✅ ADICIONAR: Método para trocar de tab
@@ -400,12 +402,12 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     const selectedGameMap = this.gameMaps.find(gm => gm.id === Number(this.selectedGameMapId));
 
     if (!selectedCharacter) {
-      alert('Personagem selecionado não encontrado.');
+      this.notificationService.showError('Personagem selecionado não encontrado.');
       return;
     }
 
     if (!selectedGameMap) {
-      alert('GameMap selecionado não encontrado.');
+      this.notificationService.showError('GameMap selecionado não encontrado.');
       return;
     }
 
@@ -438,7 +440,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
             this.editPhaseId = phase.id;
             this.selectedGameMapId = phase.gameMap?.id || this.selectedGameMapId;
             this.loadIncomingTransitions(phase.id); // << apenas entradas
-            alert('✅ Fase criada. Configure as transições (entradas) desta fase.');
+            this.notificationService.showNotification('success', 'Fase criada. Configure as transições (entradas) desta fase.')
             this.resetPhaseForm();
 
           }
@@ -581,7 +583,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   // ✅ CRUD Tip
   onSubmitTip() {
     if (!this.tip.tip.trim()) {
-      alert('Por favor, digite uma dica.');
+      this.notificationService.showError('Por favor, digite uma dica.');
       return;
     }
     
@@ -696,7 +698,7 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     const editor = this.getInitialDiagramEditor();
     
     if (!editor?.isInitialized()) {
-      alert('⚠️ Editor de diagrama inicial não está inicializado');
+      this.notificationService.showError('⚠️ Editor de diagrama inicial não está inicializado');
       return;
     }
 
@@ -704,9 +706,9 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     
     if (currentJSON && currentJSON.cells && currentJSON.cells.length > 0) {
       this.phase.diagramInitial = JSON.stringify(currentJSON);
-      alert('✅ Diagrama inicial salvo!');
+      this.notificationService.showNotification('success', '✅ Diagrama inicial salvo!');
     } else {
-      alert('⚠️ Adicione elementos ao diagrama antes de salvar');
+      this.notificationService.showError('⚠️ Adicione elementos ao diagrama antes de salvar');
     }
   }
 
@@ -715,14 +717,14 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     const initialEditor = this.getInitialDiagramEditor();
     
     if (!initialEditor?.isInitialized()) {
-      alert('⚠️ Editor de diagrama inicial não está disponível');
+      this.notificationService.showError('⚠️ Editor de diagrama inicial não está disponível');
       return;
     }
 
     if (confirm('🗑️ Limpar o diagrama inicial?')) {
       initialEditor.reinitialize();
       this.phase.diagramInitial = undefined;
-      alert('🗑️ Diagrama inicial limpo!');
+      this.notificationService.showNotification('success', '🗑️ Diagrama inicial limpo!');
     }
   }
 

@@ -1146,8 +1146,8 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     return bestAccuracy;
   }
 
-  checkUMLInconsistencies() {
-    if (!this.graph) return;
+  checkUMLInconsistencies(): boolean {
+    if (!this.graph) return false;
 
     this.inconsistencies = []; // Limpa as mensagens anteriores
 
@@ -1205,6 +1205,12 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         el.attr('body/strokeWidth', 3);
       }
     });
+
+    if(this.inconsistencies.length > 0) {
+      return true; // Há inconsistências
+    } else {
+      return false; // Sem inconsistências
+    }
 
     // Opcional: pode retornar a lista de inconsistências se quiser mostrar em tela
     // return elements.filter(el => el.attr('body/stroke') === '#FF0000');
