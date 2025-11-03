@@ -1052,93 +1052,300 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   // Cálcula se o graph do usuário está correto
+  // Helper: lê texto do label de um link (label index) sem lançar erro.
+  private getLinkLabelText(link: any, index = 0): string {
+    try {
+      const labelObj = (typeof link?.label === 'function') ? link.label(index) : undefined;
+      return String(labelObj?.attrs?.['text']?.text ?? '').trim();
+    } catch {
+      return '';
+    }
+  }
+
+    // Adicione este helper privado dentro da classe DiagramEditorComponent
+  private getElementTextLower(el: any): string {
+    if (!el) return '';
+    try {
+      // Links: pegar label[0].attrs['text'].text de forma segura
+      if (typeof el.isLink === 'function' && el.isLink()) {
+        const labelObj = (typeof el.label === 'function') ? el.label(0) : undefined;
+        const text = labelObj?.attrs?.['text']?.text ?? '';
+        return String(text).toLowerCase();
+      }
+
+      // Elementos: tentar title/text (CustomClass) primeiro, depois label/text, fallback ''
+      const titleText = (typeof el.attr === 'function')
+        ? (el.attr('title/text') ?? el.attr(['label', 'text']) ?? '')
+        : '';
+      return String(titleText ?? '').toLowerCase();
+    } catch (err) {
+      return '';
+    }
+  }
+
+  // Helper: parse simples das linhas de atributos armazenadas em attrsText/text.
+  // Aceita linhas como "+ id: number" ou "name: string" ou "- flag: boolean"
+  private parseClassAttributesFromElement(el: any): Array<{ name: string; type: string; visibility: string }> {
+    const raw = (typeof el?.attr === 'function') ? (el.attr('attrsText/text') ?? '') : (el?.attrs?.['attrsText']?.text ?? '');
+    const lines = String(raw).split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const attrs: Array<{ name: string; type: string; visibility: string }> = [];
+    for (const line of lines) {
+      const m = line.match(/^\s*([+#\-~])?\s*([A-Za-z0-9_]+)\s*(?:[:]\s*(.+))?$/);
+      if (m) {
+        const visibility = m[1] ?? '';
+        const name = m[2] ?? '';
+        const type = (m[3] ?? '').trim();
+        attrs.push({ name, type, visibility });
+      } else {
+        attrs.push({ name: line, type: '', visibility: '' });
+      }
+    }
+    return attrs;
+  }
+
+  /**
+   * calculateGraphAccuracy agora escolhe a estratégia com base no tipo do diagrama:
+   * - se phaseUser.phase.diagramType === 'CLASS' (ou this.diagramType === 'CLASS') => valida classes
+   * - caso contrário => valida casos de uso (comportamento compatível)
+   */
   calculateGraphAccuracy(): number {
-    if (!this.graph || !this.correctsJSON.length) {
+    if (!this.graph || !this.correctsJSON || !this.correctsJSON.length) {
       this.accuracyCalculated.emit(0);
       return 0;
     }
 
+    const userElements = this.graph.getElements();
+    const userLinks = this.graph.getLinks();
+
     let bestAccuracy = 0;
 
+    const isClassDiagram = (this.phaseUser && (this.phaseUser as any).phase && (this.phaseUser as any).phase.diagramType === 'CLASS')
+      || this.diagramType === 'CLASS';
+
     for (const correctJSON of this.correctsJSON) {
-      const formattedCorrectJSON = JSON.parse(correctJSON); // Parse para garantir que é um objeto
-      const graphJSONCorrect = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
-      graphJSONCorrect.fromJSON(formattedCorrectJSON);
+      try {
+        // extrai cells do correctJSON (suporta várias formas: { cells } ou { graph: { cells } })
+        const modelCells = (correctJSON && correctJSON.cells)
+          ? correctJSON.cells
+          : (correctJSON && correctJSON.graph && correctJSON.graph.cells)
+            ? correctJSON.graph.cells
+            : (correctJSON && Array.isArray(correctJSON) ? correctJSON : []);
 
-      // Obtenha elementos e links do usuário e do modelo
-      const userElements = this.graph.getElements();
-      const userLinks = this.graph.getLinks();
-      const modelElements = graphJSONCorrect.getElements();
-      const modelLinks = graphJSONCorrect.getLinks();
+        // separar elementos e links do modelo (objeto JSON)
+        const modelElements: any[] = [];
+        const modelLinks: any[] = [];
+        for (const c of modelCells) {
+          if (!c) continue;
+          const maybeLink = (c.type && String(c.type).toLowerCase().includes('link')) || c.source || c.target;
+          if (maybeLink) modelLinks.push(c); else modelElements.push(c);
+        }
 
-      let totalChecks = 0;
-      let correctChecks = 0;
+        let totalChecks = 0;
+        let correctChecks = 0;
 
-      // --- Verificação de elementos ---
-      totalChecks += modelElements.length;
-      for (const modelElem of modelElements) {
-        const match = userElements.find(userElem =>
-          userElem.get('type') === modelElem.get('type') &&
-          (userElem.attr(['label', 'text']).toLowerCase() || '') === (modelElem.attr(['label', 'text']).toLowerCase() || '')
-        );
-        if (match) correctChecks++;
-      }
+        if (!isClassDiagram) {
+          // ----------- USE-CASE accuracy (compatível) -----------
+          // Contabiliza elementos do modelo e links; compara por tipo e texto (com segurança)
+          // Element presence
+          totalChecks += modelElements.length;
+          for (const modelElem of modelElements) {
+            const modelType = modelElem?.type ?? '';
+            // nome no modelo: tenta attrs.title.text, attrs.label.text ou name
+            const modelName = ((modelElem?.attrs && (modelElem.attrs['title']?.text ?? modelElem.attrs['label']?.text)) ?? modelElem?.name ?? '') || '';
+            const modelNameLower = String(modelName ?? '').toLowerCase();
 
-      // Penaliza elementos extras do usuário
-      if (userElements.length > modelElements.length) {
-        totalChecks += userElements.length - modelElements.length;
-        correctChecks -= (userElements.length - modelElements.length);
-      }
+            const match = userElements.find(ue => {
+              const userType = ue.get?.('type') ?? '';
+              const userName = this.getElementTextLower(ue);
+              return String(userType) === String(modelType) && userName === modelNameLower;
+            });
+            if (match) correctChecks++;
+          }
 
-      // Penaliza elementos ausentes do usuário
-      if (modelElements.length > userElements.length) {
-        totalChecks += modelElements.length - userElements.length;
-      }
+          // Links: existence + label match (if model provides)
+          totalChecks += modelLinks.length;
+          for (const rawModelLink of modelLinks) {
+            const modelLinkLabel = (rawModelLink?.labels && Array.isArray(rawModelLink.labels) && rawModelLink.labels[0]?.attrs?.text?.text)
+              ? String(rawModelLink.labels[0].attrs.text.text).trim().toLowerCase()
+              : (rawModelLink?.attrs?.['label']?.text ? String(rawModelLink.attrs['label'].text).trim().toLowerCase() : '');
 
-      // --- Verificação de links ---
-      totalChecks += modelLinks.length;
-      for (const modelLink of modelLinks) {
-        const modelSource = modelLink.getSourceElement();
-        const modelTarget = modelLink.getTargetElement();
-        const modelLabel = modelLink.label(0)?.attrs?.['text']?.text?.toLowerCase() || '';
-        const match = userLinks.find(userLink => {
-          const userSource = userLink.getSourceElement();
-          const userTarget = userLink.getTargetElement();
-          const userLabel = userLink.label(0)?.attrs?.['text']?.text?.toLowerCase() || '';
-          return (
-            userLink.get('type') === modelLink.get('type') &&
-            userSource && modelSource &&
-            userTarget && modelTarget &&
-            //  Aplicar toLowerCase() nas comparações de texto
-            (userSource.attr(['label', 'text']) || '').toLowerCase() === (modelSource.attr(['label', 'text']) || '').toLowerCase() &&
-            (userTarget.attr(['label', 'text']) || '').toLowerCase() === (modelTarget.attr(['label', 'text']) || '').toLowerCase() &&
-            userLabel === modelLabel
-          );
-        });
-        if (match) correctChecks++;
-      }
+            // try find user link by endpoints (resolve model endpoint names if possible)
+            const modelSourceName = (() => {
+              try {
+                if (rawModelLink?.source?.id) {
+                  const el = modelCells.find((c: any) => c.id === rawModelLink.source.id);
+                  return (el?.attrs?.title?.text ?? el?.attrs?.label?.text ?? el?.name ?? '') || '';
+                }
+                return rawModelLink?.source?.label || '';
+              } catch { return ''; }
+            })();
+            const modelTargetName = (() => {
+              try {
+                if (rawModelLink?.target?.id) {
+                  const el = modelCells.find((c: any) => c.id === rawModelLink.target.id);
+                  return (el?.attrs?.title?.text ?? el?.attrs?.label?.text ?? el?.name ?? '') || '';
+                }
+                return rawModelLink?.target?.label || '';
+              } catch { return ''; }
+            })();
 
-      // Penaliza links extras do usuário
-      if (userLinks.length > modelLinks.length) {
-        totalChecks += userLinks.length - modelLinks.length;
-        correctChecks -= (userLinks.length - modelLinks.length);
-      }
+            const mSrc = String(modelSourceName ?? '').toLowerCase();
+            const mTgt = String(modelTargetName ?? '').toLowerCase();
 
-      // Penaliza links ausentes do usuário
-      if (modelLinks.length > userLinks.length) {
-        totalChecks += modelLinks.length - userLinks.length;
-      }
+            const foundUserLink = userLinks.find(ul => {
+              const uSrcEl = (ul.getSourceElement && ul.getSourceElement()) || null;
+              const uTgtEl = (ul.getTargetElement && ul.getTargetElement()) || null;
+              if (!uSrcEl || !uTgtEl) return false;
+              const uSrcName = this.getElementTextLower(uSrcEl);
+              const uTgtName = this.getElementTextLower(uTgtEl);
+              if (!mSrc && !mTgt) return true; // modelo sem endpoints explícitos -> match any link
+              if (uSrcName === mSrc && uTgtName === mTgt) return true;
+              if (uSrcName === mTgt && uTgtName === mSrc) return true; // swapped
+              return false;
+            });
 
-      // Garante que não fique negativo
-      correctChecks = Math.max(0, correctChecks);
+            if (foundUserLink) {
+              // se o modelo tem um label específico, verificamos se coincide
+              if (modelLinkLabel) {
+                const userLabel = this.getLinkLabelText(foundUserLink, 0).toLowerCase();
+                if (userLabel === modelLinkLabel) correctChecks++;
+              } else {
+                // link existe -> conta como correto
+                correctChecks++;
+              }
+            }
+          }
 
-      // Calcula a porcentagem
-      const accuracy = totalChecks > 0 ? (correctChecks / totalChecks) * 100 : 0;
-      const finalAccuracy = Math.round(accuracy);
+        } else {
+          // ----------- CLASS diagram accuracy -----------
+          // 1) elementos (tipo + nome)
+          totalChecks += modelElements.length;
+          for (const modelElem of modelElements) {
+            const modelType = modelElem?.type ?? '';
+            const modelName = ((modelElem?.attrs && (modelElem.attrs['title']?.text ?? modelElem.attrs['label']?.text)) ?? modelElem?.name ?? '') || '';
+            const modelNameLower = String(modelName ?? '').toLowerCase();
 
-      // Guarda o melhor resultado
-      if (finalAccuracy > bestAccuracy) {
-        bestAccuracy = finalAccuracy;
+            const match = userElements.find(ue => {
+              const userType = ue.get?.('type') ?? '';
+              const userName = this.getElementTextLower(ue);
+              return String(userType) === String(modelType) && userName === modelNameLower;
+            });
+            if (match) correctChecks++;
+          }
+
+          // 2) atributos das classes (por classe)
+          for (const rawModelEl of modelElements) {
+            const modelType = rawModelEl?.type ?? '';
+            if (!String(modelType).toLowerCase().includes('class')) continue;
+
+            // wrapper que expõe attr() como o JointJS element para o parser
+            const modelElWrapper = {
+              attr: (path: string) => {
+                try {
+                  if (!rawModelEl.attrs) return undefined;
+                  const parts = path.split('/');
+                  let cur: any = rawModelEl.attrs;
+                  for (const p of parts) {
+                    if (cur == null) return undefined;
+                    cur = cur[p];
+                  }
+                  return cur;
+                } catch { return undefined; }
+              }
+            };
+
+            const modelClassName = (modelElWrapper.attr('title/text') ?? '') as string;
+            const modelAttrs = this.parseClassAttributesFromElement(modelElWrapper);
+            if (modelAttrs.length > 0) {
+              totalChecks += modelAttrs.length;
+              const userClass = userElements.find(ue => {
+                return ue.get && String(ue.get('type')).toLowerCase().includes('class') &&
+                  this.getElementTextLower(ue) === String(modelClassName ?? '').toLowerCase();
+              });
+              if (userClass) {
+                const userAttrs = this.parseClassAttributesFromElement(userClass);
+                for (const mAttr of modelAttrs) {
+                  const found = userAttrs.find(u => u.name === mAttr.name && (mAttr.type ? u.type === mAttr.type : true));
+                  if (found) correctChecks++;
+                }
+              }
+            }
+          }
+
+          // 3) links: tipo + multiplicidades
+          for (const rawModelLink of modelLinks) {
+            // endpoints names
+            const modelSourceName = (() => {
+              try {
+                if (rawModelLink?.source?.id) {
+                  const el = modelCells.find((c: any) => c.id === rawModelLink.source.id);
+                  return (el?.attrs?.title?.text ?? el?.attrs?.label?.text ?? el?.name ?? '') || '';
+                }
+                return rawModelLink?.source?.label || '';
+              } catch { return ''; }
+            })();
+            const modelTargetName = (() => {
+              try {
+                if (rawModelLink?.target?.id) {
+                  const el = modelCells.find((c: any) => c.id === rawModelLink.target.id);
+                  return (el?.attrs?.title?.text ?? el?.attrs?.label?.text ?? el?.name ?? '') || '';
+                }
+                return rawModelLink?.target?.label || '';
+              } catch { return ''; }
+            })();
+
+            const modelLinkType = rawModelLink?.type ?? rawModelLink?.linkType ?? '';
+            const modelUml = rawModelLink?.uml ?? {};
+            const modelSourceMult = String(modelUml?.sourceMultiplicity ?? '').trim();
+            const modelTargetMult = String(modelUml?.targetMultiplicity ?? '').trim();
+
+            // existence/type check
+            totalChecks++;
+            const foundUserLink = userLinks.find(ul => {
+              const uSrcEl = (ul.getSourceElement && ul.getSourceElement()) || null;
+              const uTgtEl = (ul.getTargetElement && ul.getTargetElement()) || null;
+              if (!uSrcEl || !uTgtEl) return false;
+              const uSrcName = this.getElementTextLower(uSrcEl);
+              const uTgtName = this.getElementTextLower(uTgtEl);
+              const mSrcLower = String(modelSourceName ?? '').toLowerCase();
+              const mTgtLower = String(modelTargetName ?? '').toLowerCase();
+              if (!mSrcLower && !mTgtLower) return false;
+              if (uSrcName === mSrcLower && uTgtName === mTgtLower) return true;
+              if (uSrcName === mTgtLower && uTgtName === mSrcLower) return true;
+              return false;
+            });
+
+            if (foundUserLink) {
+              // type
+              const userType = foundUserLink.get?.('type') ?? '';
+              if (String(userType) === String(modelLinkType)) {
+                correctChecks++;
+              }
+              // multiplicities (count as checks only if model specified them)
+              if (modelSourceMult) {
+                totalChecks++;
+                const userSourceMult = this.getLinkMultiplicity(foundUserLink, 'source') || '';
+                if (String(userSourceMult).trim() === String(modelSourceMult).trim()) correctChecks++;
+              }
+              if (modelTargetMult) {
+                totalChecks++;
+                const userTargetMult = this.getLinkMultiplicity(foundUserLink, 'target') || '';
+                if (String(userTargetMult).trim() === String(modelTargetMult).trim()) correctChecks++;
+              }
+            } else {
+              // model expects link but user did not create it
+              if (modelSourceMult) totalChecks++;
+              if (modelTargetMult) totalChecks++;
+            }
+          }
+        }
+
+        const accuracy = totalChecks > 0 ? Math.round((correctChecks / totalChecks) * 100) : 0;
+        if (accuracy > bestAccuracy) bestAccuracy = accuracy;
+
+      } catch (err) {
+        console.warn('calculateGraphAccuracy: parsing error for correctJSON', err);
+        // continue to next correctJSON
       }
     }
 
