@@ -3,6 +3,7 @@ import { LucideIconsModule } from '../lucide-icons.module';
 import { StorageService } from '../../services/storage.service';
 import { StoreComponent } from "../store/store.component";
 import { BackpackComponent } from "../backpack/backpack.component";
+import { MapComponent } from "../map/map.component";
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { DataService, UserResponse } from '../../services/data.service';
 import { Router, NavigationEnd } from '@angular/router';
@@ -21,7 +22,8 @@ import { FileUrlBuilder } from '../../config/files.config';
   imports: [
     LucideIconsModule, 
     StoreComponent, 
-    BackpackComponent, 
+    BackpackComponent,
+    MapComponent,
     CommonModule,
     ConfirmDialogComponent
   ],
@@ -34,11 +36,14 @@ export class HeaderComponent implements OnInit, OnDestroy{
   @Output() storeToggleEvent = new EventEmitter<boolean>();
 
   @Input() parentType!: 'game-phase' | 'game-map' | 'game-map-select';
+  @Input() currentPhaseId?: number;
+  @Input() gameMapId?: number;
 
   userData?: User;
 
   @ViewChild(StoreComponent) store!: StoreComponent;
   @ViewChild(BackpackComponent) backpack!: BackpackComponent;
+  @ViewChild(MapComponent) map!: MapComponent;
 
   confirmDialogVisible: boolean = false;
   confirmDialogTitle: string = '';
@@ -158,6 +163,20 @@ export class HeaderComponent implements OnInit, OnDestroy{
   toggleBackpack() {
     if (this.backpack) {
       this.backpack.toggle();
+    }
+  }
+
+  toggleMap() {
+    if (this.map) {
+      // Atualiza o ID da fase antes de abrir o mapa
+      if (this.currentPhaseId) {
+        this.map.currentPhaseId = this.currentPhaseId;
+      }
+      // Se não tiver fase mas tiver gameMapId, passa o gameMapId
+      if (this.gameMapId) {
+        this.map.gameMapId = this.gameMapId;
+      }
+      this.map.toggle();
     }
   }
   

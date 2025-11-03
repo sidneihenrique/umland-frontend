@@ -1,0 +1,27 @@
+<div class="map-overlay" *ngIf="isOpen" (click)="close()">
+  <div class="map-dialog" (click)="$event.stopPropagation()">
+    <div class="map-header">
+      <div class="header-left">
+        <button class="btn-icon close-button" (click)="close()">
+          <lucide-icon name="x" class="lucide-icon"></lucide-icon>
+        </button>
+      </div>
+      <div class="title">
+        <lucide-icon name="map-pinned" class="lucide-icon" [size]="32" color="#FFFFFF"></lucide-icon>
+        <h2>MAPA DE PROGRESSO</h2>
+      </div>
+    </div>
+    <div class="map-content">
+      <div class="map-container" *ngIf="hasMap()">
+        <img 
+          [src]="getMapSvgUrl()" 
+          alt="Mapa de progresso"
+          class="map-svg">
+      </div>
+      <div class="no-map-message" *ngIf="!hasMap()">
+        <lucide-icon name="map-pin-off" [size]="64" color="#848484"></lucide-icon>
+        <p>Nenhum mapa disponível para esta fase</p>
+      </div>
+    </div>
+  </div>
+</div>

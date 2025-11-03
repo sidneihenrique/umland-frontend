@@ -30,6 +30,9 @@
         <button class="btn-icon" (click)="toggleBackpack()">
             <lucide-icon class="lucide-icon" name="backpack"></lucide-icon>
         </button>
+        <button class="btn-icon" (click)="toggleMap()">
+            <lucide-icon class="lucide-icon" name="map-pinned"></lucide-icon>
+        </button>
     </div>
     <div class="game-timers" *ngIf="parentType === 'game-phase'">
         <span class="game-time">{{currentTime}}</span>
@@ -64,6 +67,7 @@
 
 <app-store #store (storeStateChanged)="onStoreStateChanged($event)"></app-store>
 <app-backpack #backpack></app-backpack>
+<app-map #map></app-map>
 
 <app-confirm-dialog 
     [visible]="confirmDialogVisible" 
