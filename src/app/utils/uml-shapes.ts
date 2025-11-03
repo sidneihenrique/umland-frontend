@@ -74,6 +74,36 @@ export class CustomAssociation extends joint.shapes.standard.Link {
   }
 }
 
+// ---------- Novas classes de link UML ----------
+export class CustomAggregation extends joint.shapes.standard.Link {
+  constructor(...args: any[]) {
+    super(...args);
+    this.set('type', 'custom.Aggregation');
+  }
+}
+
+export class CustomComposition extends joint.shapes.standard.Link {
+  constructor(...args: any[]) {
+    super(...args);
+    this.set('type', 'custom.Composition');
+  }
+}
+
+export class CustomGeneralization extends joint.shapes.standard.Link {
+  constructor(...args: any[]) {
+    super(...args);
+    this.set('type', 'custom.Generalization');
+  }
+}
+
+export class CustomRealization extends joint.shapes.standard.Link {
+  constructor(...args: any[]) {
+    super(...args);
+    this.set('type', 'custom.Realization');
+  }
+}
+// ----------------------------------------------
+
 export class CustomClass extends joint.shapes.standard.Rectangle {
   // markup com 3 retângulos (body/header/sections) e 3 textos
   override markup = [
@@ -146,7 +176,7 @@ export class CustomClass extends joint.shapes.standard.Rectangle {
           fill: '#111'
         },
         attrsText: {
-          text: '', 
+          text: '',
           ref: 'attrsArea',
           refX: 8,
           refY: '5%',
@@ -181,5 +211,11 @@ export class CustomClass extends joint.shapes.standard.Rectangle {
 (joint.shapes as any)['custom'].Include = CustomInclude;
 (joint.shapes as any)['custom'].Dependency = CustomDependency;
 (joint.shapes as any)['custom'].Association = CustomAssociation;
+
+// Registrar novos tipos de link UML
+(joint.shapes as any)['custom'].Aggregation = CustomAggregation;
+(joint.shapes as any)['custom'].Composition = CustomComposition;
+(joint.shapes as any)['custom'].Generalization = CustomGeneralization;
+(joint.shapes as any)['custom'].Realization = CustomRealization;
 
 (joint.shapes as any)['custom'].Class = CustomClass;
