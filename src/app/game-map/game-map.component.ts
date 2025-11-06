@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, Inject, PLATFORM_ID, OnDestroy, ElementRef } from '@angular/core';
+import { Component, ViewChild, OnInit, Inject, PLATFORM_ID, OnDestroy, ElementRef, NgZone, ChangeDetectorRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { Subscription } from 'rxjs';
@@ -76,7 +76,9 @@ export class GameMapComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private gameMapService: GameMapService,
     private phaseUserService: PhaseUserService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private ngZone: NgZone,
+    private cd: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -132,7 +134,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
         // ✅ Após associar, carregar dados do usuário e fases
         this.loadUserData(this.userId);
         this.loadPhaseUsers();
-        this.loadPhaseTransitions();
+
       },
       error: (error) => {
         console.error('❌ Erro ao associar usuário ao GameMap:', error);
@@ -146,7 +148,6 @@ export class GameMapComponent implements OnInit, OnDestroy {
           // ✅ Tentar carregar mesmo assim (pode já estar associado)
           this.loadUserData(this.userId);
           this.loadPhaseUsers();
-          this.loadPhaseTransitions();
           
         } else if (error.status === 400) {
           console.error('⚠️ Dados inválidos - usuário pode já estar associado');
@@ -185,6 +186,10 @@ export class GameMapComponent implements OnInit, OnDestroy {
       next: async (phaseUsers: PhaseUser[]) => {
         this.phaseUsers = phaseUsers;
         this.isLoadingPhases = false;
+
+        // garante que phaseTransitions esteja preenchido antes de construir the available list
+        await this.fetchPhaseTransitions();
+
         await this.buildPhaseUsersAvailable();
         this.initSwiper();
       },
@@ -206,6 +211,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
     this.gameMapService.getPhaseTransitionsByGameMapId(this.gameMapId).subscribe({
       next: (transitions) => {
         this.phaseTransitions = transitions;
+        console.log('Transições carregadas:', this.phaseTransitions);
       },
       error: (error) => console.error('Erro ao carregar transições:', error)
     });
@@ -254,6 +260,26 @@ export class GameMapComponent implements OnInit, OnDestroy {
     this.store.toggle();
   }
 
+  private fetchPhaseTransitions(): Promise<void> {
+  return new Promise((resolve) => {
+    // chama o serviço e resolve a promise quando terminar (success ou error).
+    this.gameMapService.getPhaseTransitionsByGameMapId(this.gameMapId).subscribe({
+      next: (transitions) => {
+        this.phaseTransitions = transitions || [];
+        console.log('Transições carregadas (fetchPhaseTransitions):', this.phaseTransitions);
+        resolve();
+      },
+      error: (error) => {
+        console.error('Erro ao carregar transições (fetchPhaseTransitions):', error);
+        // mantém phaseTransitions vazio para evitar undefined
+        this.phaseTransitions = [];
+        // resolve mesmo em caso de erro: assim a UI pode prosseguir e tratar ausência de transições
+        resolve();
+      }
+    });
+  });
+}
+
   // ✅ Método para carregar dados do usuário (mantido igual)
   private loadUserData(userId: number) {
     this.userService.getUserById(userId).subscribe({
@@ -292,7 +318,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
     }
 
     // montar outgoingMap e incoming counts
-    for (const t of this.phaseTransitions || []) {
+    for (const t of this.phaseTransitions) {
       const fromId = t.fromPhase?.id;
       const toId = t.toPhase?.id;
       if (!fromId || !toId) continue;
@@ -590,6 +616,10 @@ export class GameMapComponent implements OnInit, OnDestroy {
       console.error('isDecisionOptionDisabled error', err);
       return false;
     }
+  }
+
+  trackByPhaseUser(index: number, pu: PhaseUser) {
+    return pu?.id ?? index;
   }
 
   ngOnDestroy() {
