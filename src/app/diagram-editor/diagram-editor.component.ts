@@ -1061,85 +1061,345 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     let bestAccuracy = 0;
 
     for (const correctJSON of this.correctsJSON) {
-      const formattedCorrectJSON = JSON.parse(correctJSON); // Parse para garantir que é um objeto
+      const formattedCorrectJSON = JSON.parse(correctJSON);
       const graphJSONCorrect = new joint.dia.Graph({}, { cellNamespace: joint.shapes });
       graphJSONCorrect.fromJSON(formattedCorrectJSON);
 
-      // Obtenha elementos e links do usuário e do modelo
       const userElements = this.graph.getElements();
       const userLinks = this.graph.getLinks();
       const modelElements = graphJSONCorrect.getElements();
       const modelLinks = graphJSONCorrect.getLinks();
 
-      let totalChecks = 0;
-      let correctChecks = 0;
+      let totalChecks = 0;   // denominador
+      let correctChecks = 0; // numerador
+      let globalPenaltyMultiplier = 1; // aplica 0.8 quando alguma classe nome diverge
 
-      // --- Verificação de elementos ---
+      // helpers simples
+      const normalize = (v: any) => {
+        try {
+          if (v === undefined || v === null) return '';
+          return String(v)
+            .split('\n')
+            .map(s => s.trim())
+            .filter(s => s.length > 0)
+            .join('\n')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+        } catch {
+          return '';
+        }
+      };
+
+      const parseAttr = (line: string) => {
+        const t = String(line || '').trim();
+        const vis = (t.match(/^([+#\-~])\s*/) || [])[1] || '';
+        const rest = vis ? t.replace(/^([+#\-~])\s*/, '').trim() : t;
+        const parts = rest.split(':');
+        return { visibility: vis, name: (parts[0] || '').trim(), type: (parts.slice(1).join(':') || '').trim() };
+      };
+
+      const parseOp = (line: string) => {
+        const t = String(line || '').trim();
+        const vis = (t.match(/^([+#\-~])\s*/) || [])[1] || '';
+        const rest = vis ? t.replace(/^([+#\-~])\s*/, '').trim() : t;
+        const parts = rest.split(':');
+        return { visibility: vis, signature: (parts[0] || '').trim(), returnType: (parts.slice(1).join(':') || '').trim() };
+      };
+
+      // --- elementos (mantemos contagem de elementos como antes) ---
       totalChecks += modelElements.length;
       for (const modelElem of modelElements) {
-        const match = userElements.find(userElem =>
-          userElem.get('type') === modelElem.get('type') &&
-          (userElem.attr(['label', 'text']).toLowerCase() || '') === (modelElem.attr(['label', 'text']).toLowerCase() || '')
-        );
-        if (match) correctChecks++;
-      }
+        const modelType = typeof modelElem?.get === 'function' ? modelElem.get('type') : undefined;
 
-      // Penaliza elementos extras do usuário
+        // label defensivo
+        let modelLabelRaw = '';
+        try { modelLabelRaw = modelElem.attr(['label','text']) || modelElem.attr('label/text') || modelElem.attr('title/text') || modelElem.attr(['title','text']) || ''; } catch {}
+        const modelLabel = normalize(modelLabelRaw);
+
+        // procura candidato do usuário (prefere mesmo tipo+mesmo nome se modelo especificou nome)
+        let candidateUserElem: joint.dia.Element | undefined = userElements.find(ue => {
+          try {
+            const ut = typeof ue?.get === 'function' ? ue.get('type') : undefined;
+            if (ut !== modelType) return false;
+            if (modelLabel) {
+              const ulRaw = ue.attr ? (ue.attr(['label','text']) || ue.attr('label/text') || ue.attr('title/text') || ue.attr(['title','text']) || '') : '';
+              return normalize(ulRaw) === modelLabel;
+            }
+            return true;
+          } catch {
+            return false;
+          }
+        });
+
+        // fallback: primeiro elemento do mesmo tipo (se existir)
+        if (!candidateUserElem) {
+          candidateUserElem = userElements.find(ue => {
+            try { return (typeof ue?.get === 'function' ? ue.get('type') : undefined) === modelType; } catch { return false; }
+          });
+        }
+
+        // pontuação do elemento (nome/tipo): se modelo especificou nome, só soma quando nomes iguais
+        if (candidateUserElem) {
+          let userLabelRaw = '';
+          try { userLabelRaw = candidateUserElem.attr(['label','text']) || candidateUserElem.attr('label/text') || candidateUserElem.attr('title/text') || candidateUserElem.attr(['title','text']) || ''; } catch {}
+          const userLabel = normalize(userLabelRaw);
+          if (!modelLabel || modelLabel === userLabel) {
+            correctChecks += 1; // elemento correto (mesmo comportamento de antes)
+          } else {
+            // nome da classe divergiu -> aplica multiplicador global de 0.8 e NÃO executa attrs/ops/stereotype
+            globalPenaltyMultiplier *= 0.8;
+            // contagem dos membros do modelo será adicionada abaixo (para penalizar ausências)
+          }
+        } // else nenhum elemento do usuário correspondente -> element point = 0
+
+        // --- se for classe, tratar atributos e operações ---
+        if (modelType === 'custom.Class') {
+          // ler membros do modelo
+          let modelAttrsRaw = '';
+          let modelOpsRaw = '';
+          try { modelAttrsRaw = modelElem.attr('attrsText/text') || ''; } catch {}
+          try { modelOpsRaw = modelElem.attr('opsText/text') || ''; } catch {}
+
+          const modelAttrs = String(modelAttrsRaw).split('\n').map(l => l.trim()).filter(l => l.length > 0);
+          const modelOps = String(modelOpsRaw).split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+          // adiciona ao denominador (cada membro conta 1)
+          totalChecks += modelAttrs.length + modelOps.length;
+
+          // Se modelo especificou nome E usuário não bate com modelo, pulamos as verificações de membros
+          if (modelLabel) {
+            // busca label do candidato (novamente) para decidir se pulamos
+            let userLabelForCheck = '';
+            if (candidateUserElem) {
+              try { userLabelForCheck = candidateUserElem.attr(['label','text']) || candidateUserElem.attr('label/text') || candidateUserElem.attr('title/text') || candidateUserElem.attr(['title','text']) || ''; } catch {}
+              userLabelForCheck = normalize(userLabelForCheck);
+            }
+            if (!candidateUserElem || userLabelForCheck !== modelLabel) {
+              // nomes divergem -> membros do modelo já foram adicionados ao totalChecks, mas não avaliamos (são penalizados)
+              continue;
+            }
+          }
+
+          // se chegamos aqui: ou modelo NÃO especificou nome, ou especificou e nomes batem -> realizar scoring parcial por membro
+
+          // preparar linhas do usuário (para comparação)
+          let userAttrsRaw = '';
+          let userOpsRaw = '';
+          try { userAttrsRaw = candidateUserElem ? (candidateUserElem.attr('attrsText/text') || '') : ''; } catch {}
+          try { userOpsRaw = candidateUserElem ? (candidateUserElem.attr('opsText/text') || '') : ''; } catch {}
+
+          const userAttrs = String(userAttrsRaw).split('\n').map(l => l.trim()).filter(l => l.length > 0);
+          const userOps = String(userOpsRaw).split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+          // Atributos: para cada atributo do modelo
+          for (const ma of modelAttrs) {
+            const m = parseAttr(ma);
+            const mNameLower = (m.name || '').toLowerCase();
+            if (!mNameLower) continue; // modelo malformado -> conta no denominador, mas soma 0
+            // procura pelo nome no usuário
+            const userLine = userAttrs.find(ua => (parseAttr(ua).name || '').toLowerCase() === mNameLower);
+            if (!userLine) {
+              // não encontrou pelo nome => 0 ponto para esse membro
+              continue;
+            }
+            // nome encontrado: base = 1
+            let score = 1;
+            const u = parseAttr(userLine);
+
+            // visibilidade incorreta -> -10% do membro
+            if (m.visibility && u.visibility && m.visibility !== u.visibility) {
+              score -= 0.10;
+            }
+
+            // tipo incorreto -> -25% do membro (se modelo especificou tipo)
+            const mType = (m.type || '').toLowerCase();
+            const uType = (u.type || '').toLowerCase();
+            if (mType) {
+              if (!uType || mType !== uType) {
+                score -= 0.25;
+              }
+            }
+
+            // clamp e somar
+            score = Math.max(0, Math.min(1, score));
+            correctChecks += score;
+          }
+
+          // Operações: mesma lógica (signature/name + visibility + returnType)
+          for (const mo of modelOps) {
+            const m = parseOp(mo);
+            const mSigLower = (m.signature || '').toLowerCase();
+            if (!mSigLower) continue;
+            const userLine = userOps.find(uo => (parseOp(uo).signature || '').toLowerCase() === mSigLower);
+            if (!userLine) continue;
+            let score = 1;
+            const u = parseOp(userLine);
+
+            if (m.visibility && u.visibility && m.visibility !== u.visibility) {
+              score -= 0.10;
+            }
+
+            const mRet = (m.returnType || '').toLowerCase();
+            const uRet = (u.returnType || '').toLowerCase();
+            if (mRet) {
+              if (!uRet || mRet !== uRet) {
+                score -= 0.25;
+              }
+            }
+
+            score = Math.max(0, Math.min(1, score));
+            correctChecks += score;
+          }
+
+          // Stereotype: só verificar se nomes de classe batem (se modelo especificou). Não soma pontos separados,
+          // apenas aplica uma penalidade de 20% sobre a contribuição do elemento se estereótipo estiver errado.
+          if (modelLabel && candidateUserElem) {
+            let modelStereo = '';
+            let userStereo = '';
+            try { modelStereo = modelElem.attr('stereotype/text') || ''; } catch {}
+            try { userStereo = candidateUserElem.attr('stereotype/text') || ''; } catch {}
+            modelStereo = normalize(modelStereo);
+            userStereo = normalize(userStereo);
+            if (modelStereo && modelStereo !== userStereo) {
+              // aplicar 20% de desconto sobre a contribuição do element (já contada como +1 acima)
+              // subtrair 0.20 se o elemento já foi contado como correto
+              // note: element ponto foi +1 se nomes bateram; então removemos 0.20
+              correctChecks = Math.max(0, correctChecks - 0.20);
+            }
+          }
+        } // fim custom.Class
+      } // fim modelElements
+
+      // penalizações por elementos extras/ausentes (mantive comportamento anterior)
       if (userElements.length > modelElements.length) {
         totalChecks += userElements.length - modelElements.length;
         correctChecks -= (userElements.length - modelElements.length);
       }
-
-      // Penaliza elementos ausentes do usuário
       if (modelElements.length > userElements.length) {
         totalChecks += modelElements.length - userElements.length;
       }
 
-      // --- Verificação de links ---
+      // --- links (mantive verificação simples e defensiva) ---
       totalChecks += modelLinks.length;
       for (const modelLink of modelLinks) {
-        const modelSource = modelLink.getSourceElement();
-        const modelTarget = modelLink.getTargetElement();
-        const modelLabel = modelLink.label(0)?.attrs?.['text']?.text?.toLowerCase() || '';
+        // leitura defensiva das extremidades do modelo
+        const modelSourceElem = (typeof modelLink.getSourceElement === 'function') ? modelLink.getSourceElement() : null;
+        const modelTargetElem = (typeof modelLink.getTargetElement === 'function') ? modelLink.getTargetElement() : null;
+
+        const modelSourceLabel = normalize(
+          modelSourceElem ? (modelSourceElem.attr(['label', 'text']) || modelSourceElem.attr('title/text') || '') : ''
+        );
+        const modelTargetLabel = normalize(
+          modelTargetElem ? (modelTargetElem.attr(['label', 'text']) || modelTargetElem.attr('title/text') || '') : ''
+        );
+
+        const modelLinkLabel = normalize(
+          (typeof modelLink.label === 'function') ? (modelLink.label(0)?.attrs?.['text']?.text || '') : ''
+        );
+
+        // tipo do link do modelo (ex.: 'custom.Association', 'custom.Aggregation', etc.)
+        const modelLinkType = (typeof modelLink.get === 'function') ? String(modelLink.get('type') || '') : '';
+        const modelLinkTypeNorm = normalize(modelLinkType);
+
+        // multiplicidades declaradas no modelo (pode ser undefined/'' se não declarado)
+        const modelUml = (typeof modelLink.get === 'function') ? (modelLink.get('uml') || {}) : {};
+        const modelSrcMult = String(modelUml?.sourceMultiplicity || '').trim();
+        const modelTgtMult = String(modelUml?.targetMultiplicity || '').trim();
+
+        const isAssociationModel = modelLinkTypeNorm.includes('association') || modelLinkTypeNorm === 'association';
+
         const match = userLinks.find(userLink => {
-          const userSource = userLink.getSourceElement();
-          const userTarget = userLink.getTargetElement();
-          const userLabel = userLink.label(0)?.attrs?.['text']?.text?.toLowerCase() || '';
-          return (
-            userLink.get('type') === modelLink.get('type') &&
-            userSource && modelSource &&
-            userTarget && modelTarget &&
-            //  Aplicar toLowerCase() nas comparações de texto
-            (userSource.attr(['label', 'text']) || '').toLowerCase() === (modelSource.attr(['label', 'text']) || '').toLowerCase() &&
-            (userTarget.attr(['label', 'text']) || '').toLowerCase() === (modelTarget.attr(['label', 'text']) || '').toLowerCase() &&
-            userLabel === modelLabel
-          );
+          try {
+            const userSourceElem = (typeof userLink.getSourceElement === 'function') ? userLink.getSourceElement() : null;
+            const userTargetElem = (typeof userLink.getTargetElement === 'function') ? userLink.getTargetElement() : null;
+            if (!userSourceElem || !userTargetElem) return false;
+
+            const userSourceLabel = normalize(
+              userSourceElem.attr(['label', 'text']) || userSourceElem.attr('title/text') || ''
+            );
+            const userTargetLabel = normalize(
+              userTargetElem.attr(['label', 'text']) || userTargetElem.attr('title/text') || ''
+            );
+            const userLinkLabel = normalize(
+              (typeof userLink.label === 'function') ? (userLink.label(0)?.attrs?.['text']?.text || '') : ''
+            );
+
+            // tipo do link do usuário (defensivo)
+            const userLinkType = (typeof userLink.get === 'function') ? String(userLink.get('type') || '') : '';
+            const userLinkTypeNorm = normalize(userLinkType);
+
+            // multiplicidades do usuário (defensivo)
+            const userUml = (typeof userLink.get === 'function') ? (userLink.get('uml') || {}) : {};
+            let userSrcMult = String(userUml?.sourceMultiplicity || '').trim();
+            let userTgtMult = String(userUml?.targetMultiplicity || '').trim();
+
+            // Verificação de sentido:
+            // - Se o modelo for Association: aceitamos correspondência com direção invertida.
+            // - Caso contrário: exigir que source->target do usuário siga source->target do modelo.
+            let matchedDirection = false;
+            let inverted = false;
+
+            if (isAssociationModel) {
+              // tenta match no sentido direto
+              if ((modelSourceLabel === '' || userSourceLabel === modelSourceLabel) &&
+                  (modelTargetLabel === '' || userTargetLabel === modelTargetLabel)) {
+                matchedDirection = true;
+                inverted = false;
+              }
+              // tenta match invertido (source<->target)
+              if (!matchedDirection &&
+                  (modelSourceLabel === '' || userTargetLabel === modelSourceLabel) &&
+                  (modelTargetLabel === '' || userSourceLabel === modelTargetLabel)) {
+                matchedDirection = true;
+                inverted = true;
+                // quando invertido, vamos trocar as multiplicidades para comparação abaixo
+                const tmp = userSrcMult; userSrcMult = userTgtMult; userTgtMult = tmp;
+              }
+            } else {
+              // exige direção (source->target)
+              if ((modelSourceLabel === '' || userSourceLabel === modelSourceLabel) &&
+                  (modelTargetLabel === '' || userTargetLabel === modelTargetLabel)) {
+                matchedDirection = true;
+                inverted = false;
+              } else {
+                return false;
+              }
+            }
+
+            if (!matchedDirection) return false;
+
+            // se o modelo especificou um rótulo no link, exigir igualdade também
+            if (modelLinkLabel && userLinkLabel !== modelLinkLabel) return false;
+
+            // se o modelo especificou um tipo, exigir correspondência de tipo
+            if (modelLinkTypeNorm && userLinkTypeNorm !== modelLinkTypeNorm) return false;
+
+            // multiplicidades: se o modelo declarou, exigir igualdade na respectiva extremidade
+            if (modelSrcMult && userSrcMult !== modelSrcMult) return false;
+            if (modelTgtMult && userTgtMult !== modelTgtMult) return false;
+
+            return true;
+          } catch (err) {
+            return false;
+          }
         });
+
         if (match) correctChecks++;
       }
-
-      // Penaliza links extras do usuário
       if (userLinks.length > modelLinks.length) {
         totalChecks += userLinks.length - modelLinks.length;
         correctChecks -= (userLinks.length - modelLinks.length);
       }
-
-      // Penaliza links ausentes do usuário
       if (modelLinks.length > userLinks.length) {
         totalChecks += modelLinks.length - userLinks.length;
       }
 
-      // Garante que não fique negativo
       correctChecks = Math.max(0, correctChecks);
-
-      // Calcula a porcentagem
       const accuracy = totalChecks > 0 ? (correctChecks / totalChecks) * 100 : 0;
-      const finalAccuracy = Math.round(accuracy);
+      const finalAccuracy = Math.round(accuracy * globalPenaltyMultiplier);
 
-      // Guarda o melhor resultado
-      if (finalAccuracy > bestAccuracy) {
-        bestAccuracy = finalAccuracy;
-      }
+      if (finalAccuracy > bestAccuracy) bestAccuracy = finalAccuracy;
     }
 
     this.accuracyCalculated.emit(bestAccuracy);
@@ -1154,9 +1414,23 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     const elements = this.graph.getElements();
     const links = this.graph.getLinks();
 
-    // Limpa bordas vermelhas
+    // Helpers
+    const linesOf = (text?: string): string[] =>
+      (text ? String(text) : '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    const getElementLabel = (el: any): string => {
+      return (el?.attr && (
+        el.attr(['label', 'text']) ||
+        el.attr('label/text') ||
+        el.attr('title/text') ||
+        el.attr(['title', 'text'])
+      )) || '';
+    };
+
+    // Reset visual state: elementos e links
     elements.forEach(el => {
-      if (el.get('type') === 'custom.Actor') {
+      const type = el.get('type');
+      if (type === 'custom.Actor') {
         el.attr('body/stroke', 'none');
         el.attr('body/strokeWidth', 0);
       } else {
@@ -1164,56 +1438,214 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         el.attr('body/strokeWidth', 2);
       }
     });
+    links.forEach(link => {
+      try {
+        link.attr('line/stroke', '#000');
+        link.attr('line/strokeWidth', 1);
+      } catch (e) {
+        // ignore
+      }
+    });
 
-    // Verifica inconsistências
+    // Collect class names to detect duplicates
+    const classNameCounts: Record<string, number> = {};
+    const classElements: any[] = [];
+
+    // First pass: class-specific collection and generic element checks
+    for (const el of elements) {
+      const type = el.get('type');
+      // collect class elements for later detailed checks
+      if (type === 'custom.Class') {
+        classElements.push(el);
+        const name = String(el.attr('title/text') || '').trim();
+        const key = name || `__ANON__:${el.id || el.cid}`;
+        classNameCounts[key] = (classNameCounts[key] || 0) + 1;
+      }
+    }
+
+    // Generic element checks (works for actors/use-cases and classes partially)
     elements.forEach(el => {
       let inconsistent = false;
-      const label = el.attr(['label', 'text']);
-      const elType = el.get('type');
-      const elName = label || elType;
+      const type = el.get('type');
+      const label = String(getElementLabel(el) || '').trim();
+      const elName = label || String(type || '');
 
-      // 1. Elemento sem título
-      if (!label || label.trim() === '') {
+      // 1. Elemento sem título (general)
+      if (!label || label === '') {
         inconsistent = true;
-        this.inconsistencies.push(`O elemento "${elType}" está sem título.`);
+        this.inconsistencies.push(`O elemento "${type}" está sem título.`);
       }
 
-      // 2. Elemento sem conexão
-      const isConnected = links.some(link =>
-        link.getSourceElement() === el || link.getTargetElement() === el
+      // 2. Elemento sem conexão (general) - verifica se está ligado em algum link
+      const isConnected = links.some((link: any) =>
+        link.getSourceElement && link.getTargetElement &&
+        (link.getSourceElement() === el || link.getTargetElement() === el)
       );
       if (!isConnected) {
         inconsistent = true;
         this.inconsistencies.push(`O elemento "${elName}" não está conectado a nenhum outro elemento.`);
       }
 
-      // 3. Link sem destino
-      if (el.isLink() && !el.getTargetElement()) {
-        inconsistent = true;
-        this.inconsistencies.push(`O link "${elName}" não tem um destino definido.`);
-      }
-
-      // 4. Link sem origem
-      if (el.isLink() && !el.getSourceElement()) {
-        inconsistent = true;
-        this.inconsistencies.push(`O link "${elName}" não tem uma origem definida.`);
-      }
-
-      // Aplica borda vermelha se inconsistente
+      // Aplica borda vermelha se inconsistente (somente se for elemento com body)
       if (inconsistent) {
-        el.attr('body/stroke', '#FF0000');
-        el.attr('body/strokeWidth', 3);
+        try {
+          el.attr('body/stroke', '#FF0000');
+          el.attr('body/strokeWidth', 3);
+        } catch (e) {
+          // ignore
+        }
       }
     });
 
-    if(this.inconsistencies.length > 0) {
-      return true; // Há inconsistências
-    } else {
-      return false; // Sem inconsistências
+    // Class-specific validations
+    try {
+      const validVisibility = new Set(['+', '-', '#', '~']);
+
+      for (const cls of classElements) {
+        const id = cls.id || cls.cid || '(sem-id)';
+        const name = String(cls.attr('title/text') || '').trim();
+        let classInconsistent = false;
+
+        // 1) classe sem nome
+        if (!name) {
+          classInconsistent = true;
+          this.inconsistencies.push(`Classe sem nome encontrada. Informe um nome para a classe.`);
+        }
+
+        // 2) atributos: extrai linhas de attrsText
+        const attrsText = String(cls.attr('attrsText/text') || '');
+        const attrLines = linesOf(attrsText);
+        const attrNamesCount: Record<string, number> = {};
+
+        attrLines.forEach((line, idx) => {
+          // verifica visibilidade inicial (opcional)
+          const visMatch = line.match(/^([+#\-~])\s*/);
+          if (visMatch && !validVisibility.has(visMatch[1])) {
+            classInconsistent = true;
+            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": símbolo de visibilidade inválido no atributo (linha ${idx + 1}): "${line}". Use +, -, # ou ~.`);
+          }
+
+          const withoutVis = line.replace(/^([+#\-~])\s*/, '');
+          const namePart = withoutVis.split(':')[0].trim();
+          if (!namePart) {
+            classInconsistent = true;
+            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": atributo vazio na linha ${idx + 1}. Conteúdo: "${line}"`);
+          } else {
+            attrNamesCount[namePart] = (attrNamesCount[namePart] || 0) + 1;
+            if (attrNamesCount[namePart] > 1) {
+              classInconsistent = true;
+              this.inconsistencies.push(`Classe "${name || 'sem-nome'}": atributo duplicado "${namePart}" (linha ${idx + 1}).`);
+            }
+          }
+        });
+
+        // 3) operações: extrai linhas e valida
+        const opsText = String(cls.attr('opsText/text') || '');
+        const opLines = linesOf(opsText);
+        const opSignaturesCount: Record<string, number> = {};
+
+        opLines.forEach((line, idx) => {
+          if (!line || line.trim() === '') {
+            classInconsistent = true;
+            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": operação vazia na linha ${idx + 1}.`);
+            return;
+          }
+
+          const visMatch = line.match(/^([+#\-~])\s*/);
+          if (visMatch && !validVisibility.has(visMatch[1])) {
+            classInconsistent = true;
+            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": símbolo de visibilidade inválido na operação (linha ${idx + 1}): "${line}". Use +, -, # ou ~.`);
+          }
+
+          const signature = line;
+          opSignaturesCount[signature] = (opSignaturesCount[signature] || 0) + 1;
+          if (opSignaturesCount[signature] > 1) {
+            classInconsistent = true;
+            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": operação duplicada "${signature}" (linha ${idx + 1}).`);
+          }
+        });
+
+        // Marca a classe visualmente se tiver inconsistências específicas
+        if (classInconsistent) {
+          try {
+            cls.attr('body/stroke', '#FF0000');
+            cls.attr('body/strokeWidth', 3);
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+
+      // Detectar nomes de classe duplicados (exclui anonymous keys)
+      for (const key of Object.keys(classNameCounts)) {
+        if (!key.startsWith('__ANON__') && classNameCounts[key] > 1) {
+          this.inconsistencies.push(`Nome de classe duplicado: "${key}" aparece ${classNameCounts[key]} vezes.`);
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao verificar inconsistências (classes):', err);
+      this.inconsistencies.push('Erro ao verificar inconsistências do diagrama de classes (veja console para detalhes).');
     }
 
-    // Opcional: pode retornar a lista de inconsistências se quiser mostrar em tela
-    // return elements.filter(el => el.attr('body/stroke') === '#FF0000');
+    // Link-specific validations
+    try {
+      for (const link of links) {
+        let linkInconsistent = false;
+        // Safely obtain label: prefer label(0).attrs.text.text if available, otherwise fallback to link.get('type'), else 'link'
+        let label = 'link';
+        try {
+          const labelFromLabel = (typeof (link as any).label === 'function') ? ((link as any).label(0)?.attrs?.text?.text ?? '') : '';
+          const labelFromGet = (typeof (link as any).get === 'function') ? String((link as any).get('type') ?? '') : '';
+          label = labelFromLabel || labelFromGet || 'link';
+        } catch (e) {
+          label = 'link';
+        }
+
+        if (!link.getTargetElement || !link.getSourceElement) {
+          // defensive: if functions missing, skip
+          continue;
+        }
+
+        if (!link.getTargetElement()) {
+          linkInconsistent = true;
+          this.inconsistencies.push(`O link "${label}" não tem um destino definido.`);
+        }
+        if (!link.getSourceElement()) {
+          linkInconsistent = true;
+          this.inconsistencies.push(`O link "${label}" não tem uma origem definida.`);
+        }
+
+        // multiplicities stored in link UML metadata
+        const uml = (link as any).get('uml') || {};
+        const srcMult = uml.sourceMultiplicity;
+        const tgtMult = uml.targetMultiplicity;
+        const allowed = Array.isArray(this.multiplicityOptions) ? this.multiplicityOptions : ['1', '0..1', '0..*', '*', '1..*', 'Unspecified'];
+
+        if (srcMult && !allowed.includes(srcMult)) {
+          linkInconsistent = true;
+          this.inconsistencies.push(`Link "${label}": multiplicidade de origem inválida: "${srcMult}".`);
+        }
+        if (tgtMult && !allowed.includes(tgtMult)) {
+          linkInconsistent = true;
+          this.inconsistencies.push(`Link "${label}": multiplicidade de destino inválida: "${tgtMult}".`);
+        }
+
+        if (linkInconsistent) {
+          try {
+            link.attr('line/stroke', '#FF0000');
+            link.attr('line/strokeWidth', 3);
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao verificar inconsistências (links):', err);
+      this.inconsistencies.push('Erro ao verificar inconsistências dos links (veja console para detalhes).');
+    }
+
+    // Resultado
+    return this.inconsistencies.length > 0;
   }
 
   toggleTips() {
