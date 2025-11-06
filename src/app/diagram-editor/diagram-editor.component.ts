@@ -1283,23 +1283,68 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       // --- links (mantive verificação simples e defensiva) ---
       totalChecks += modelLinks.length;
       for (const modelLink of modelLinks) {
-        const modelSource = modelLink.getSourceElement();
-        const modelTarget = modelLink.getTargetElement();
-        const modelLabel = (modelLink.label(0)?.attrs?.['text']?.text || '').toLowerCase();
+        // source/target do modelo (defensivo)
+        const modelSourceElem = (typeof modelLink.getSourceElement === 'function') ? modelLink.getSourceElement() : null;
+        const modelTargetElem = (typeof modelLink.getTargetElement === 'function') ? modelLink.getTargetElement() : null;
+
+        const modelSourceLabel = normalize(
+          modelSourceElem ? (modelSourceElem.attr(['label', 'text']) || modelSourceElem.attr('title/text') || '') : ''
+        );
+        const modelTargetLabel = normalize(
+          modelTargetElem ? (modelTargetElem.attr(['label', 'text']) || modelTargetElem.attr('title/text') || '') : ''
+        );
+
+        const modelLinkLabel = normalize(
+          (typeof modelLink.label === 'function') ? (modelLink.label(0)?.attrs?.['text']?.text || '') : ''
+        );
+
+        // tipo do link do modelo (ex.: 'custom.Association', 'custom.Aggregation', etc.)
+        const modelLinkType = (typeof modelLink.get === 'function') ? String(modelLink.get('type') || '') : '';
+        const modelLinkTypeNorm = normalize(modelLinkType);
+
         const match = userLinks.find(userLink => {
           try {
-            const userSource = userLink.getSourceElement();
-            const userTarget = userLink.getTargetElement();
-            const userLabel = (userLink.label(0)?.attrs?.['text']?.text || '').toLowerCase();
-            return userLink.get('type') === modelLink.get('type') &&
-              userSource && modelSource && userTarget && modelTarget &&
-              ((userSource.attr(['label','text']) || '') as string).toLowerCase() === ((modelSource.attr(['label','text']) || '') as string).toLowerCase() &&
-              ((userTarget.attr(['label','text']) || '') as string).toLowerCase() === ((modelTarget.attr(['label','text']) || '') as string).toLowerCase() &&
-              userLabel === modelLabel;
-          } catch {
+            const userSourceElem = (typeof userLink.getSourceElement === 'function') ? userLink.getSourceElement() : null;
+            const userTargetElem = (typeof userLink.getTargetElement === 'function') ? userLink.getTargetElement() : null;
+            if (!userSourceElem || !userTargetElem) return false;
+
+            const userSourceLabel = normalize(
+              userSourceElem.attr(['label', 'text']) || userSourceElem.attr('title/text') || ''
+            );
+            const userTargetLabel = normalize(
+              userTargetElem.attr(['label', 'text']) || userTargetElem.attr('title/text') || ''
+            );
+            const userLinkLabel = normalize(
+              (typeof userLink.label === 'function') ? (userLink.label(0)?.attrs?.['text']?.text || '') : ''
+            );
+
+            // tipo do link do usuário (defensivo)
+            const userLinkType = (typeof userLink.get === 'function') ? String(userLink.get('type') || '') : '';
+            const userLinkTypeNorm = normalize(userLinkType);
+
+            // exige que o sentido seja o mesmo: source do usuário corresponde ao source do modelo,
+            // e target do usuário corresponde ao target do modelo (quando o modelo declarar os nomes)
+            if (modelSourceLabel && modelTargetLabel) {
+              if (userSourceLabel !== modelSourceLabel) return false;
+              if (userTargetLabel !== modelTargetLabel) return false;
+            } else {
+              // fallback: verificar apenas as extremidades que o modelo declara, porém ainda respeitando a direção
+              if (modelSourceLabel && userSourceLabel !== modelSourceLabel) return false;
+              if (modelTargetLabel && userTargetLabel !== modelTargetLabel) return false;
+            }
+
+            // se o modelo especificou um rótulo no link, exigir igualdade também
+            if (modelLinkLabel && userLinkLabel !== modelLinkLabel) return false;
+
+            // NOVO: se o modelo especificou um tipo de link, exigir correspondência de tipo
+            if (modelLinkTypeNorm && userLinkTypeNorm !== modelLinkTypeNorm) return false;
+
+            return true;
+          } catch (err) {
             return false;
           }
         });
+
         if (match) correctChecks++;
       }
       if (userLinks.length > modelLinks.length) {
