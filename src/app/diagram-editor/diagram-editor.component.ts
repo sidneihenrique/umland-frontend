@@ -1283,7 +1283,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       // --- links (mantive verificação simples e defensiva) ---
       totalChecks += modelLinks.length;
       for (const modelLink of modelLinks) {
-        // source/target do modelo (defensivo)
+        // leitura defensiva das extremidades do modelo
         const modelSourceElem = (typeof modelLink.getSourceElement === 'function') ? modelLink.getSourceElement() : null;
         const modelTargetElem = (typeof modelLink.getTargetElement === 'function') ? modelLink.getTargetElement() : null;
 
@@ -1301,6 +1301,13 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         // tipo do link do modelo (ex.: 'custom.Association', 'custom.Aggregation', etc.)
         const modelLinkType = (typeof modelLink.get === 'function') ? String(modelLink.get('type') || '') : '';
         const modelLinkTypeNorm = normalize(modelLinkType);
+
+        // multiplicidades declaradas no modelo (pode ser undefined/'' se não declarado)
+        const modelUml = (typeof modelLink.get === 'function') ? (modelLink.get('uml') || {}) : {};
+        const modelSrcMult = String(modelUml?.sourceMultiplicity || '').trim();
+        const modelTgtMult = String(modelUml?.targetMultiplicity || '').trim();
+
+        const isAssociationModel = modelLinkTypeNorm.includes('association') || modelLinkTypeNorm === 'association';
 
         const match = userLinks.find(userLink => {
           try {
@@ -1322,22 +1329,55 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
             const userLinkType = (typeof userLink.get === 'function') ? String(userLink.get('type') || '') : '';
             const userLinkTypeNorm = normalize(userLinkType);
 
-            // exige que o sentido seja o mesmo: source do usuário corresponde ao source do modelo,
-            // e target do usuário corresponde ao target do modelo (quando o modelo declarar os nomes)
-            if (modelSourceLabel && modelTargetLabel) {
-              if (userSourceLabel !== modelSourceLabel) return false;
-              if (userTargetLabel !== modelTargetLabel) return false;
+            // multiplicidades do usuário (defensivo)
+            const userUml = (typeof userLink.get === 'function') ? (userLink.get('uml') || {}) : {};
+            let userSrcMult = String(userUml?.sourceMultiplicity || '').trim();
+            let userTgtMult = String(userUml?.targetMultiplicity || '').trim();
+
+            // Verificação de sentido:
+            // - Se o modelo for Association: aceitamos correspondência com direção invertida.
+            // - Caso contrário: exigir que source->target do usuário siga source->target do modelo.
+            let matchedDirection = false;
+            let inverted = false;
+
+            if (isAssociationModel) {
+              // tenta match no sentido direto
+              if ((modelSourceLabel === '' || userSourceLabel === modelSourceLabel) &&
+                  (modelTargetLabel === '' || userTargetLabel === modelTargetLabel)) {
+                matchedDirection = true;
+                inverted = false;
+              }
+              // tenta match invertido (source<->target)
+              if (!matchedDirection &&
+                  (modelSourceLabel === '' || userTargetLabel === modelSourceLabel) &&
+                  (modelTargetLabel === '' || userSourceLabel === modelTargetLabel)) {
+                matchedDirection = true;
+                inverted = true;
+                // quando invertido, vamos trocar as multiplicidades para comparação abaixo
+                const tmp = userSrcMult; userSrcMult = userTgtMult; userTgtMult = tmp;
+              }
             } else {
-              // fallback: verificar apenas as extremidades que o modelo declara, porém ainda respeitando a direção
-              if (modelSourceLabel && userSourceLabel !== modelSourceLabel) return false;
-              if (modelTargetLabel && userTargetLabel !== modelTargetLabel) return false;
+              // exige direção (source->target)
+              if ((modelSourceLabel === '' || userSourceLabel === modelSourceLabel) &&
+                  (modelTargetLabel === '' || userTargetLabel === modelTargetLabel)) {
+                matchedDirection = true;
+                inverted = false;
+              } else {
+                return false;
+              }
             }
+
+            if (!matchedDirection) return false;
 
             // se o modelo especificou um rótulo no link, exigir igualdade também
             if (modelLinkLabel && userLinkLabel !== modelLinkLabel) return false;
 
-            // NOVO: se o modelo especificou um tipo de link, exigir correspondência de tipo
+            // se o modelo especificou um tipo, exigir correspondência de tipo
             if (modelLinkTypeNorm && userLinkTypeNorm !== modelLinkTypeNorm) return false;
+
+            // multiplicidades: se o modelo declarou, exigir igualdade na respectiva extremidade
+            if (modelSrcMult && userSrcMult !== modelSrcMult) return false;
+            if (modelTgtMult && userTgtMult !== modelTgtMult) return false;
 
             return true;
           } catch (err) {
