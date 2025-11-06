@@ -236,6 +236,11 @@ header .right {
     transition: 0.3s;
 }
 
+.left .btn-icon .lucide-icon {
+    stroke: currentColor;
+    transition: 0.3s;
+}
+
 .left .btn-icon:hover{
     box-shadow: 0 0 8px 4px rgba(132, 132, 132, 0.2);
     border-color: var(--yellow);
@@ -246,5 +251,6 @@ header .right {
 .left .btn-icon:hover .lucide-icon {
     text-shadow: 0 0 6px var(--yellow);
     color: var(--yellow);
+    stroke: var(--yellow);
     transition: 0.3s;
 }
