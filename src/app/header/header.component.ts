@@ -209,12 +209,20 @@ export class HeaderComponent implements OnInit, OnDestroy, OnChanges {
     this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
       if (userData) {
         this.userData = userData;
+        this.checkReputation();
       }
     });
   }
 
+  private checkReputation() {
+    if (this.userData && this.userData.reputation < 0) {
+      this.router.navigate(['/game-over']);
+    }
+  }
+
   public refreshUserData(): void {
     this.loadUserData();
+    this.checkReputation();
   }
 
   private startTimer() {

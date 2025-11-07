@@ -8,6 +8,7 @@ import { RegisterComponent } from './register/register.component';
 import { SelectMapComponent } from './select-map/select-map.component';
 import { CreditsComponent } from './credits/credits.component';
 import { AboutComponent } from './about/about.component';
+import { GameOverComponent } from './game-over/game-over.component';
 
 
 export const routes: Routes = [
@@ -41,5 +42,9 @@ export const routes: Routes = [
     {
       path: 'about',
       component: AboutComponent
+    },
+    {
+      path: 'game-over',
+      component: GameOverComponent
     }
 ];
