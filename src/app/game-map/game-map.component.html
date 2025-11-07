@@ -14,8 +14,12 @@
                     <h1 *ngIf="phaseUser.phase.nodeType == 'DECISION'">Tome sua decisão</h1>
                     <div class="phase-card">
                         <!-- carimbo no canto superior direito quando COMPLETED -->
-                        <div *ngIf="phaseUser.status === 'COMPLETED'" class="stamp-complete" aria-hidden="true">
+                        <div *ngIf="phaseUser.status === 'COMPLETED' && phaseUser.current === false" class="stamp-complete" aria-hidden="true">
                         COMPLETO
+                        </div>
+                        <!-- indicador para a fase atual do jogador (mostra "ATUAL") -->
+                        <div *ngIf="phaseUser.current === true " class="stamp-current" aria-hidden="true">
+                        FASE ATUAL
                         </div>
                         <div class="left">
                             <div class="left-top">
