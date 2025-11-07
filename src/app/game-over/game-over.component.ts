@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-game-over',
@@ -7,5 +8,11 @@ import { Component } from '@angular/core';
   styleUrl: './game-over.component.css'
 })
 export class GameOverComponent {
+
+  constructor(private router: Router) {}
+
+  goToMapSelection() {
+    this.router.navigate(['/select-map']);
+  }
 
 }
