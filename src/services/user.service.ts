@@ -157,4 +157,22 @@ export class UserService {
   getAllAvatars(): Observable<Avatar[]> {
     return this.http.get<Avatar[]>(`${this.apiUrl}/avatars`);
   }
+
+  resetGameData(userId: number): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/users/${userId}/reset-game`, null);
+  }
+
+  /**
+   * Conveniência: reseta o usuário atualmente logado (lê localStorage) e retorna Observable<User>.
+   * Não altera localStorage automaticamente — deixe o chamador decidir quando e como aplicar o merge.
+   */
+  resetCurrentUserGameData(): Observable<User> {
+    const current = this.getCurrentUser();
+    if (!current) {
+      return new Observable(observer => {
+        observer.error(new Error('Nenhum usuário logado encontrado no localStorage'));
+      });
+    }
+    return this.resetGameData(current.id);
+  }
 }
