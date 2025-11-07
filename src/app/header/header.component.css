@@ -111,6 +111,44 @@ header .log-out {
 header .game-time {
     font-size: 18px;
     font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+header .game-time.time-warning {
+    color: var(--yellow);
+    animation: pulse-warning 2s ease-in-out infinite;
+}
+
+header .game-time.time-critical {
+    color: var(--red);
+    animation: pulse-critical 0.5s ease-in-out infinite;
+    font-weight: 700;
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+@keyframes pulse-critical {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+header .game-timers {
+    display: flex;
+    gap: 16px;
+    align-items: center;
 }
 
 header #exit {
