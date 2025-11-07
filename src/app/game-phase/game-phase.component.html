@@ -3,8 +3,10 @@
     <app-header 
         (storeToggleEvent)="onStoreStateChanged($event)"
         (exitEvent)="exitGame()"
+        (timeExpiredEvent)="onTimeExpired()"
         [parentType]="'game-phase'"
-        [currentPhaseId]="phaseId">
+        [currentPhaseId]="phaseId"
+        [maxTime]="phase?.maxTime">
     </app-header>
     
     <h3 class="title-phase">Título: {{phase?.title}}</h3>

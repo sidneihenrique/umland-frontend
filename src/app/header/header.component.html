@@ -35,7 +35,11 @@
         </button>
     </div>
     <div class="game-timers" *ngIf="parentType === 'game-phase'">
-        <span class="game-time">{{currentTime}}</span>
+        <span class="game-time" 
+              [class.time-warning]="remainingTimeInSeconds <= 60 && remainingTimeInSeconds > 10"
+              [class.time-critical]="remainingTimeInSeconds <= 10">
+            {{currentTime}}
+        </span>
         <span class="watch-time" [class.active]="watchTime" [style.color]="'#00D819'">{{watchTime}}</span>
     </div>
     <div class="right">

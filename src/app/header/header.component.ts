@@ -1,4 +1,4 @@
-import { Component, OnInit, EventEmitter, Input, Output, ViewChild, ViewContainerRef, OnDestroy, Inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { Component, OnInit, EventEmitter, Input, Output, ViewChild, ViewContainerRef, OnDestroy, Inject, PLATFORM_ID, HostListener, OnChanges, SimpleChanges } from '@angular/core';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { StorageService } from '../../services/storage.service';
 import { StoreComponent } from "../store/store.component";
@@ -30,14 +30,16 @@ import { FileUrlBuilder } from '../../config/files.config';
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
-export class HeaderComponent implements OnInit, OnDestroy{
+export class HeaderComponent implements OnInit, OnDestroy, OnChanges {
 
   @Output() exitEvent = new EventEmitter<void>();
   @Output() storeToggleEvent = new EventEmitter<boolean>();
+  @Output() timeExpiredEvent = new EventEmitter<void>();
 
   @Input() parentType!: 'game-phase' | 'game-map' | 'game-map-select';
   @Input() currentPhaseId?: number;
   @Input() gameMapId?: number;
+  @Input() maxTime?: number;
 
   userData?: User;
 
@@ -62,6 +64,7 @@ export class HeaderComponent implements OnInit, OnDestroy{
   private watchDuration: number = 59 * 1000;
   private startTime: number = 0;
   private userDataSubscription?: Subscription;
+  remainingTimeInSeconds: number = 0;
 
   constructor(
     private dataService: DataService,
@@ -74,9 +77,6 @@ export class HeaderComponent implements OnInit, OnDestroy{
   ngOnInit(): void {
     this.loadUserData();
     this.subscribeToUserData();
-    if (this.parentType === 'game-phase') {
-      this.startTimer();
-    }
 
     this.checkIfInMapRoute();
     
@@ -85,6 +85,16 @@ export class HeaderComponent implements OnInit, OnDestroy{
     ).subscribe(() => {
       this.checkIfInMapRoute();
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['maxTime'] && changes['maxTime'].currentValue && this.parentType === 'game-phase') {
+      this.remainingTimeInSeconds = changes['maxTime'].currentValue;
+      
+      if (!this.timerInterval) {
+        this.startTimer();
+      }
+    }
   }
 
   ngOnDestroy(): void {
@@ -208,15 +218,19 @@ export class HeaderComponent implements OnInit, OnDestroy{
   }
 
   private startTimer() {
-    this.startTime = Date.now();
     this.timerInterval = setInterval(() => {
-      if (!this.timerPaused) {
-        const elapsedTime = Date.now() - this.startTime;
-        const hours = Math.floor(elapsedTime / (1000 * 60 * 60));
-        const minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+      if (!this.timerPaused && this.remainingTimeInSeconds > 0) {
+        this.remainingTimeInSeconds--;
+        
+        const hours = Math.floor(this.remainingTimeInSeconds / 3600);
+        const minutes = Math.floor((this.remainingTimeInSeconds % 3600) / 60);
+        const seconds = this.remainingTimeInSeconds % 60;
 
         this.currentTime = `${this.padNumber(hours)}:${this.padNumber(minutes)}:${this.padNumber(seconds)}`;
+        
+        if (this.remainingTimeInSeconds === 0) {
+          this.handleTimeExpired();
+        }
       }
     }, 1000);
   }
@@ -224,27 +238,36 @@ export class HeaderComponent implements OnInit, OnDestroy{
   activateWatch() {
     if (!this.watchTimerInterval) {
       this.timerPaused = true;
-      this.pausedTime = Date.now();
 
       this.watchStartTime = Date.now();
+      let watchSecondsRemaining = 59;
+      
       this.watchTimerInterval = setInterval(() => {
-        const remainingTime = this.watchDuration - (Date.now() - this.watchStartTime);
+        watchSecondsRemaining--;
 
-        if (remainingTime <= 0) {
+        if (watchSecondsRemaining <= 0) {
           clearInterval(this.watchTimerInterval);
           this.watchTimerInterval = null;
           this.watchTime = '';
-
           this.timerPaused = false;
-          const pauseDuration = Date.now() - this.pausedTime;
-          this.startTime += pauseDuration;
         } else {
-          const minutes = Math.floor(remainingTime / (1000 * 60));
-          const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+          const minutes = Math.floor(watchSecondsRemaining / 60);
+          const seconds = watchSecondsRemaining % 60;
           this.watchTime = `+${this.padNumber(minutes)}:${this.padNumber(seconds)}`;
         }
       }, 1000);
     }
+  }
+
+  private handleTimeExpired(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+    if (this.watchTimerInterval) {
+      clearInterval(this.watchTimerInterval);
+    }
+    
+    this.timeExpiredEvent.emit();
   }
 
   private padNumber(num: number): string {

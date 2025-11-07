@@ -477,6 +477,24 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     this.confirmDialogVisible = false;
   }
 
+  onTimeExpired() {
+    console.log('Tempo da fase expirado! Enviando fase automaticamente...');
+    
+    this.notificationService.showNotification(
+      'error', 
+      'O tempo acabou! A fase será enviada automaticamente.'
+    );
+
+    if (this.diagramEditorComponentRef) {
+      this.accuracy = this.diagramEditorComponentRef.calculateGraphAccuracy();
+      if (this.phaseUser) {
+        this.phaseUser.userDiagram = this.diagramEditorComponentRef.getCurrentDiagramJSON();
+      }
+    }
+
+    this.finishedGamePhaseVisible = true;
+  }
+
   onSaveClick() {
     this.openConfirmDialog(
       'Tem certeza que deseja salvar?',

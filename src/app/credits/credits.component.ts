@@ -166,6 +166,6 @@ export class CreditsComponent implements AfterViewInit {
   }
 
   returnToMap(): void {
-    this.router.navigate(['/map/1']);
+    this.router.navigate(['/select-map']);
   }
 }
