@@ -23,8 +23,18 @@
         <div 
           *ngFor="let gameMap of gameMaps; let i = index" 
           class="gamemap-card"
+          [class.main-story-card]="gameMap.id === 2"
           (click)="selectMap(gameMap)">
           
+          <!-- Card especial para História Principal (ID: 2) -->
+          <div class="main-story-preview" *ngIf="gameMap.id === 2">
+            <img src="assets/images/faculdade.png" alt="História Principal Preview" class="story-preview-image">
+            <div class="main-story-badge">
+              <lucide-icon name="star" class="lucide-icon" [size]="16"></lucide-icon>
+              <span>HISTÓRIA PRINCIPAL</span>
+            </div>
+          </div>
+
           <div class="gamemap-header">
             <div class="gamemap-icon">
               <lucide-icon name="map-pin" class="lucide-icon" [size]="24"></lucide-icon>
@@ -50,14 +60,16 @@
           </div>
 
           <div class="gamemap-details">
-            <div class="detail-item" *ngIf="gameMap.createdAt">
+            <!-- Não exibir data para História Principal (ID: 2) -->
+            <div class="detail-item" *ngIf="gameMap.createdAt && gameMap.id !== 2">
               <lucide-icon name="calendar" class="lucide-icon" [size]="14"></lucide-icon>
               <span class="detail-text">{{ formatDate(gameMap.createdAt) }}</span>
             </div>
             
             <div class="detail-item" *ngIf="gameMap.createdByUser">
               <lucide-icon name="user" class="lucide-icon" [size]="14"></lucide-icon>
-              <span class="detail-text">{{ gameMap.createdByUser.name }}</span>
+              <!-- Estilo especial para o autor da História Principal -->
+              <span class="detail-text" [class.main-story-author]="gameMap.id === 2">{{ gameMap.createdByUser.name }}</span>
             </div>
           </div>
 

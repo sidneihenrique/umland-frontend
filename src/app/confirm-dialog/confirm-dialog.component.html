@@ -1,8 +1,8 @@
-<div class="overlay" [class.visible]="visible" (click)="hide()">
-    <div class="dialog" (click)="$event.stopPropagation()">
+<div class="overlay" [class.visible]="visible" (click)="onOverlayClick($event)">
+    <div class="dialog">
 
         <div class="header">
-            <button class="btn-icon close-button" (click)="hide()">
+            <button class="btn-icon close-button" (click)="hide(); $event.stopPropagation()">
                 <lucide-icon name="x" class="lucide-icon"></lucide-icon>
             </button>
         </div>
@@ -18,8 +18,8 @@
         </div>
 
         <div class="actions">
-            <button class="btn btn-secondary" (click)="hide()">Cancelar</button>
-            <button class="btn btn-primary" (click)="confirmAction()">Confirmar</button>
+            <button class="btn btn-secondary" (click)="hide(); $event.stopPropagation()">Cancelar</button>
+            <button class="btn btn-primary" (click)="confirmAction(); $event.stopPropagation()">Confirmar</button>
         </div>
 
     </div>

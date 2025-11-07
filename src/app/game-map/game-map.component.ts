@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, Inject, PLATFORM_ID, OnDestroy, ElementRef, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, OnInit, Inject, PLATFORM_ID, OnDestroy, ElementRef, NgZone, ChangeDetectorRef, HostListener } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { Subscription } from 'rxjs';
@@ -66,6 +66,18 @@ export class GameMapComponent implements OnInit, OnDestroy {
   @ViewChild('swiperContainer', { static: false }) swiperContainer!: ElementRef;
 
   private swiper!: Swiper;
+
+  @HostListener('mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (isPlatformBrowser(this.platformId)) {
+      const container = document.getElementById('container');
+      if (container) {
+        const moveX = (event.clientX / window.innerWidth - 0.5) * 20;
+        const moveY = (event.clientY / window.innerHeight - 0.5) * 20;
+        container.style.backgroundPosition = `calc(50% + ${moveX}px) calc(50% + ${moveY}px)`;
+      }
+    }
+  }
 
   constructor(
     private authService: AuthService,
