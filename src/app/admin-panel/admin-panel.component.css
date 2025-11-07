@@ -125,7 +125,7 @@
 .image-preview img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .btn-primary {
@@ -181,7 +181,7 @@
 .item-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .item-info h4 {

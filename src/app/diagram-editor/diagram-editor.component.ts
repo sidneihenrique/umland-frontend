@@ -1079,8 +1079,12 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         try {
           if (v === undefined || v === null) return '';
           return String(v)
+            // separa caracteres base + diacríticos, remove diacríticos (acentos)
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            // normaliza linhas; para cada linha remove espaços e pontuação no começo/fim (p.ex. '.' no final)
             .split('\n')
-            .map(s => s.trim())
+            .map(s => s.trim().replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, ''))
             .filter(s => s.length > 0)
             .join('\n')
             .replace(/\s+/g, ' ')
@@ -1518,23 +1522,36 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         const attrNamesCount: Record<string, number> = {};
 
         attrLines.forEach((line, idx) => {
+          const lineNo = idx + 1;
           // verifica visibilidade inicial (opcional)
           const visMatch = line.match(/^([+#\-~])\s*/);
           if (visMatch && !validVisibility.has(visMatch[1])) {
             classInconsistent = true;
-            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": símbolo de visibilidade inválido no atributo (linha ${idx + 1}): "${line}". Use +, -, # ou ~.`);
+            this.inconsistencies.push(`Visibilidade inválida no atributo (linha ${lineNo}) da classe "${name || id}": "${visMatch[1]}"`);
           }
 
-          const withoutVis = line.replace(/^([+#\-~])\s*/, '');
-          const namePart = withoutVis.split(':')[0].trim();
+          const withoutVis = line.replace(/^([+#\-~])\s*/, '').trim();
+          const parts = withoutVis.split(':');
+          const namePart = (parts[0] || '').trim();
+          const typePart = (parts.slice(1).join(':') || '').trim();
+
           if (!namePart) {
             classInconsistent = true;
-            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": atributo vazio na linha ${idx + 1}. Conteúdo: "${line}"`);
-          } else {
+            this.inconsistencies.push(`Atributo sem nome na classe "${name || id}" (linha ${lineNo}).`);
+          }
+
+          if (!typePart) {
+            classInconsistent = true;
+            // usa namePart se houver, senão mostra a linha bruta
+            const shown = namePart || withoutVis || '(linha vazia)';
+            this.inconsistencies.push(`Atributo sem tipo na classe "${name || id}" - "${shown}" (linha ${lineNo}).`);
+          }
+
+          if (namePart) {
             attrNamesCount[namePart] = (attrNamesCount[namePart] || 0) + 1;
             if (attrNamesCount[namePart] > 1) {
               classInconsistent = true;
-              this.inconsistencies.push(`Classe "${name || 'sem-nome'}": atributo duplicado "${namePart}" (linha ${idx + 1}).`);
+              this.inconsistencies.push(`Atributo duplicado "${namePart}" na classe "${name || id}".`);
             }
           }
         });
@@ -1545,23 +1562,41 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         const opSignaturesCount: Record<string, number> = {};
 
         opLines.forEach((line, idx) => {
+          const lineNo = idx + 1;
           if (!line || line.trim() === '') {
             classInconsistent = true;
-            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": operação vazia na linha ${idx + 1}.`);
+            this.inconsistencies.push(`Operação vazia na classe "${name || id}" (linha ${lineNo}).`);
             return;
           }
 
           const visMatch = line.match(/^([+#\-~])\s*/);
           if (visMatch && !validVisibility.has(visMatch[1])) {
             classInconsistent = true;
-            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": símbolo de visibilidade inválido na operação (linha ${idx + 1}): "${line}". Use +, -, # ou ~.`);
+            this.inconsistencies.push(`Visibilidade inválida na operação (linha ${lineNo}) da classe "${name || id}": "${visMatch[1]}"`);
           }
 
-          const signature = line;
-          opSignaturesCount[signature] = (opSignaturesCount[signature] || 0) + 1;
-          if (opSignaturesCount[signature] > 1) {
+          const withoutVis = line.replace(/^([+#\-~])\s*/, '').trim();
+          const parts = withoutVis.split(':');
+          const signature = (parts[0] || '').trim();
+          const returnType = (parts.slice(1).join(':') || '').trim();
+
+          if (!signature) {
             classInconsistent = true;
-            this.inconsistencies.push(`Classe "${name || 'sem-nome'}": operação duplicada "${signature}" (linha ${idx + 1}).`);
+            this.inconsistencies.push(`Operação sem assinatura na classe "${name || id}" (linha ${lineNo}).`);
+          }
+
+          if (!returnType) {
+            classInconsistent = true;
+            const shownSig = signature || withoutVis || '(linha sem assinatura)';
+            this.inconsistencies.push(`Operação sem tipo de retorno na classe "${name || id}" - "${shownSig}" (linha ${lineNo}).`);
+          }
+
+          if (signature) {
+            opSignaturesCount[signature] = (opSignaturesCount[signature] || 0) + 1;
+            if (opSignaturesCount[signature] > 1) {
+              classInconsistent = true;
+              this.inconsistencies.push(`Operação duplicada "${signature}" na classe "${name || id}".`);
+            }
           }
         });
 

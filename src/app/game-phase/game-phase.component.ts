@@ -157,7 +157,11 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
         // Carrega os dados iniciais
         this.loadUserData(userId);
         this.tipService.getAllTips().subscribe((tips) => {
-          this.tips = tips.map(tip => tip.tip); // assuming Tip has a 'text' property
+          // map para extrair o campo de texto (ajuste 'tip.tip' se o campo for diferente)
+          const allTips = Array.isArray(tips) ? tips.map((t: any) => t.tip || '') : [];
+
+          // embaralha e retorna até 10 aleatórias
+          this.tips = this.pickRandomTips(allTips, 10);
         });
       } else {
         // this.router.navigate(['/login']);
@@ -239,6 +243,21 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     if (this.inventorySubscription) {
       this.inventorySubscription.unsubscribe();
     }
+  }
+
+  private pickRandomTips(arr: string[], limit: number = 10): string[] {
+    if (!Array.isArray(arr) || arr.length === 0) return [];
+    // copia para não alterar o original
+    const a = arr.slice();
+    // Fisher–Yates shuffle
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = a[i];
+      a[i] = a[j];
+      a[j] = tmp;
+    }
+    // pega os primeiros `limit` elementos
+    return a.slice(0, Math.max(0, Math.min(limit, a.length)));
   }
 
   // ✅ Iniciar salvamento automático a cada 30 segundos
