@@ -1079,8 +1079,12 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         try {
           if (v === undefined || v === null) return '';
           return String(v)
+            // separa caracteres base + diacríticos, remove diacríticos (acentos)
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            // normaliza linhas; para cada linha remove espaços e pontuação no começo/fim (p.ex. '.' no final)
             .split('\n')
-            .map(s => s.trim())
+            .map(s => s.trim().replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, ''))
             .filter(s => s.length > 0)
             .join('\n')
             .replace(/\s+/g, ' ')
