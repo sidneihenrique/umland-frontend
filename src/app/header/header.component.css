@@ -4,6 +4,7 @@ header {
     align-items: center;
 
     padding: 16px;
+    background: var(--white);
 }
 
 header .left {

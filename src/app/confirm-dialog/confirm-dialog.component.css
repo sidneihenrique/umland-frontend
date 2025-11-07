@@ -51,18 +51,19 @@
     border: none;
     cursor: pointer;
     padding: 0;
-
-}
-
-.header button:hover .lucide-icon {
-    color: var(--black);
+    transition: all 0.3s;
 }
 
 .header .lucide-icon {
     width: 32px;
     height: 32px;
     cursor: pointer;
+    color: var(--black);
+    transition: color 0.3s;
+}
 
+.header button:hover .lucide-icon {
+    color: var(--red) !important;
 }
 
 
@@ -100,48 +101,35 @@
 
 .actions .btn {
     padding: 8px 24px;
-
     border-radius: 6px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     font-size: 18px;
-
     cursor: pointer;
-
 }
 
-.btn-secondary {
+.actions .btn.btn-secondary {
     background: var(--gray);
     color: var(--black);
-
     border: 1px solid var(--black);
-
     font-weight: 400;
-
     transition: background 0.3s;
 }
 
-.btn-secondary:hover {
+.actions .btn.btn-secondary:hover {
     background: var(--white);
-
 }
 
-.btn-primary {
-    background: var(--green);
-    color: var(--white);
-
-    border: 1px solid var(--green);
-
+.dialog .actions .btn.btn-primary {
+    background: var(--green) !important;
+    color: var(--white) !important;
+    border: 1px solid var(--green) !important;
     font-weight: 800;
-
-    transition: border 0.3s, color 0.3s;
+    transition: all 0.3s;
 }
 
-.btn-primary:hover {
-    border: 1px solid var(--black);
-
-    color: var(--black);
+.dialog .actions .btn.btn-primary:hover {
+    background: var(--red) !important;
+    border: 1px solid var(--red) !important;
 }
