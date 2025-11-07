@@ -1,0 +1,241 @@
+.game-over-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.game-over-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 30%, rgba(235, 178, 53, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 70%, rgba(235, 178, 53, 0.05) 0%, transparent 50%);
+  animation: backgroundPulse 8s ease-in-out infinite;
+}
+
+@keyframes backgroundPulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  animation: contentFadeIn 1.5s ease-out;
+}
+
+.message-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+@keyframes contentFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.sad-face {
+  font-size: 280px;
+  font-weight: bold;
+  color: var(--yellow);
+  text-shadow: 
+    2px 2px 0px #c99a2d,
+    4px 4px 0px #a78225,
+    6px 6px 0px #856a1d,
+    8px 8px 0px #635215,
+    10px 10px 20px rgba(0, 0, 0, 0.7);
+  animation: sadFaceFloat 4s ease-in-out infinite;
+  line-height: 0.8;
+  font-family: 'Roboto', sans-serif;
+  letter-spacing: 15px;
+  filter: drop-shadow(0 0 30px rgba(235, 178, 53, 0.3));
+}
+
+@keyframes sadFaceFloat {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.03);
+  }
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: var(--black);
+  padding: 40px 50px;
+  border-radius: 8px;
+  border: 2px solid var(--yellow);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(235, 178, 53, 0.2);
+  animation: messageFloat 3s ease-in-out infinite;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+
+.message:hover {
+  border-color: var(--white);
+}
+
+@keyframes messageFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.message p {
+  margin: 0;
+  font-size: 42px;
+  font-weight: 600;
+  color: var(--white);
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.5);
+  animation: messageSlideIn 1s ease-out backwards;
+  line-height: 1.4;
+}
+
+.message p:first-child {
+  animation-delay: 0.3s;
+  font-weight: 700;
+  color: var(--yellow);
+  font-size: 48px;
+}
+
+.message p:last-child {
+  animation-delay: 0.5s;
+}
+
+.retry-button {
+  padding: 12px 32px;
+  background-color: var(--yellow);
+  color: var(--black);
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  opacity: 0;
+  animation: buttonFadeIn 0.5s ease-out 2s forwards;
+  align-self: center;
+}
+
+.retry-button:hover {
+  background-color: var(--white);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(235, 178, 53, 0.5);
+}
+
+.retry-button:active {
+  transform: scale(0.98);
+}
+
+@keyframes buttonFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes messageSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .sad-face {
+    font-size: 180px;
+    letter-spacing: 10px;
+  }
+
+  .message {
+    padding: 30px 40px;
+  }
+
+  .message p {
+    font-size: 28px;
+  }
+
+  .message p:first-child {
+    font-size: 32px;
+  }
+
+  .retry-button {
+    font-size: 16px;
+    padding: 10px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sad-face {
+    font-size: 120px;
+    letter-spacing: 8px;
+  }
+
+  .message {
+    padding: 20px 30px;
+  }
+
+  .message p {
+    font-size: 20px;
+  }
+
+  .message p:first-child {
+    font-size: 24px;
+  }
+
+  .retry-button {
+    font-size: 14px;
+    padding: 8px 20px;
+  }
+
+  .content {
+    gap: 30px;
+  }
+}
+
