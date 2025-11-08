@@ -34,14 +34,29 @@
             <lucide-icon class="lucide-icon" name="map-pinned"></lucide-icon>
         </button>
     </div>
+
     <div class="game-timers" *ngIf="parentType === 'game-phase'">
         <span class="game-time" 
               [class.time-warning]="remainingTimeInSeconds <= 60 && remainingTimeInSeconds > 10"
-              [class.time-critical]="remainingTimeInSeconds <= 10">
+              [class.time-critical]="remainingTimeInSeconds <= 10"
+              [class.time-frozen]="iceActive">
             {{currentTime}}
         </span>
+
+        <!-- badge temporário ao lado do tempo (+60, x2 etc) -->
+        <span *ngIf="timeBadge" class="time-badge" [ngClass]="timeBadge.class">
+          {{ timeBadge.label }}
+        </span>
+
+        <!-- indicador de reputação em dobro MOVIDO para lado do tempo -->
+        <span *ngIf="doubleReputationActive" class="time-double-repu" title="Reputação em dobro ativa para esta fase">
+          <span class="time-badge badge-yellow">x2</span>
+          <lucide-icon name="sparkles" class="time-repu-icon" [size]="14" color="#FFD600"></lucide-icon>
+        </span>
+
         <span class="watch-time" [class.active]="watchTime" [style.color]="'#00D819'">{{watchTime}}</span>
     </div>
+
     <div class="right">
         <div class="money">
             <lucide-icon name="circle-dollar-sign" class="lucide-icon" [size]="32"></lucide-icon>

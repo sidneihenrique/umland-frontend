@@ -14,11 +14,12 @@
     <div class="backpack-content">
 
       <ng-container *ngFor="let item of backpackData?.items; let i = index">
-        <!-- Item slot -->
+        <!-- Item slot: clique usa o item -->
         <div 
           class="inventory-slot filled"
           (mouseenter)="onItemHover(item)"
-          (mouseleave)="onItemLeave()">
+          (mouseleave)="onItemLeave()"
+          (click)="onUseItem(item)">
           <img [src]="item.imageUrl" [alt]="item.name">
           <span class="quantity-badge" *ngIf="item.quantity > 1">{{ item.quantity }}</span>
           

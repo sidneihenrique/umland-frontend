@@ -66,6 +66,17 @@ export class HeaderComponent implements OnInit, OnDestroy, OnChanges {
   private userDataSubscription?: Subscription;
   remainingTimeInSeconds: number = 0;
 
+  // ---------- NOVOS CAMPOS PÚBLICOS PARA ITENS ----------
+  // indica que o tempo está "congelado" pela mochila (ice)
+  public iceActive: boolean = false;
+
+  // badge temporário exibido ao lado do tempo (ex: "+60", "x2")
+  public timeBadge: { label: string; class?: string } | null = null;
+  private _timeBadgeTimeout: any = null;
+
+  // indica que a reputação está em dobro para a fase atual
+  public doubleReputationActive: boolean = false;
+
   constructor(
     private dataService: DataService,
     private userService: UserService,
@@ -291,5 +302,41 @@ export class HeaderComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   onAvatarImageError(event: Event): void {
+  }
+
+  /**
+   * Exibe um badge ao lado do tempo (p.ex. "+60", "x2") por `durationMs` milissegundos.
+   * className recomendado: 'badge-green' | 'badge-yellow' | 'badge-frozen'
+   */
+  public showTimeBadge(label: string, className: string = 'badge-green', durationMs: number = 600000): void {
+    // limpa timeout anterior
+    if (this._timeBadgeTimeout) {
+      clearTimeout(this._timeBadgeTimeout);
+      this._timeBadgeTimeout = null;
+    }
+
+    this.timeBadge = { label, class: className };
+
+    if (durationMs > 0) {
+      this._timeBadgeTimeout = setTimeout(() => {
+        this.timeBadge = null;
+        this._timeBadgeTimeout = null;
+      }, durationMs);
+    }
+  }
+
+  /**
+   * Marca/desmarca o estado de congelamento do tempo.
+   * Quando `active = true`, o timer do header deverá estar pausado externamente.
+   */
+  public setIceActive(active: boolean): void {
+    this.iceActive = !!active;
+  }
+
+  /**
+   * Marca/desmarca o estado de reputação em dobro.
+   */
+  public setDoubleReputationActive(active: boolean): void {
+    this.doubleReputationActive = !!active;
   }
 }
