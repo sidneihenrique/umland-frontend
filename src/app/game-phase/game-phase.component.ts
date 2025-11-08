@@ -113,6 +113,21 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   checkDiagramLeft: number = 0; // Número de verificações restantes
 
   swiperCharacter?: Swiper;
+
+  // --- NOVOS CAMPOS PARA ITENS ---
+  // Se true, a reputação desta fase será multiplicada por 2 ao finalizar
+  doubleReputationActive: boolean = false;
+
+  // Temporizadores/flags para "ice" (congelamento)
+  private iceTimeout: any = null;
+  private readonly ICE_FREEZE_SECONDS = 30; // duração do congelamento (pode ajustar)
+
+  // Referências para listeners (para remover depois)
+  private _onUseWatch = (e: Event) => this.handleItemUseWatch((e as CustomEvent).detail);
+  private _onUseIce = (e: Event) => this.handleItemUseIce((e as CustomEvent).detail);
+  private _onUse2xTime = (e: Event) => this.handleItemUse2xTime((e as CustomEvent).detail);
+  private _onUse2xRepu = (e: Event) => this.handleItemUse2xRepu((e as CustomEvent).detail);
+
   constructor(
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -153,6 +168,9 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
             this.userData = userData;
           }
         });
+
+        // registra listeners dos itens (apenas em browser)
+        this.registerBackpackEventListeners();
 
         // Carrega os dados iniciais
         this.loadUserData(userId);
@@ -242,6 +260,33 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     }
     if (this.inventorySubscription) {
       this.inventorySubscription.unsubscribe();
+    }
+  }
+
+    // --------------------------
+  // Registro / remoção listeners
+  // --------------------------
+  private registerBackpackEventListeners() {
+    try {
+      window.addEventListener('item.use.watch', this._onUseWatch as EventListener);
+      window.addEventListener('item.use.ice', this._onUseIce as EventListener);
+      window.addEventListener('item.use.2xtime', this._onUse2xTime as EventListener);
+      window.addEventListener('item.use.2xrepu', this._onUse2xRepu as EventListener);
+      console.log('Backpack item listeners registered');
+    } catch (e) {
+      console.warn('Não foi possível registrar listeners dos itens:', e);
+    }
+  }
+
+  private unregisterBackpackEventListeners() {
+    try {
+      window.removeEventListener('item.use.watch', this._onUseWatch as EventListener);
+      window.removeEventListener('item.use.ice', this._onUseIce as EventListener);
+      window.removeEventListener('item.use.2xtime', this._onUse2xTime as EventListener);
+      window.removeEventListener('item.use.2xrepu', this._onUse2xRepu as EventListener);
+      console.log('Backpack item listeners removed');
+    } catch (e) {
+      console.warn('Erro ao remover listeners dos itens:', e);
     }
   }
 
@@ -630,5 +675,111 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
 
   getPhaseVideoSrc(): string {
     return `/assets/videos/${this.phase?.type || 'default'}.mp4`;
+  }
+
+    // --------------------------
+  // Handlers para cada item
+  // --------------------------
+  private handleItemUseWatch(detail: any) {
+    // +60 segundos ao tempo restante do header e exibe badge verde
+    try {
+      if (this.headerComponent) {
+        const header = this.headerComponent as any;
+
+        header.remainingTimeInSeconds = (Number(header.remainingTimeInSeconds) || 0) + 60;
+
+        // mostra badge "+60" por 3s (usa API pública quando disponível)
+        if (typeof header.showTimeBadge === 'function') {
+          header.showTimeBadge('+60', 'badge-green', 3000);
+        }
+
+        this.notificationService.showNotification('success', '+60s adicionados à fase!');
+        console.debug('item.use.watch aplicado:', detail);
+      }
+    } catch (e) {
+      console.warn('Erro ao aplicar item.watch:', e);
+    }
+  }
+
+  private handleItemUseIce(detail: any) {
+    // Congela o tempo pelo resto da fase e aplica aparência congelada (azul)
+    try {
+      if (this.headerComponent) {
+        const header = this.headerComponent as any;
+
+        // Pause o timer (header usa timerPaused)
+        (header as any).timerPaused = true;
+
+        // marca o estado de "ice" publicamente
+        if (typeof header.setIceActive === 'function') {
+          header.setIceActive(true);
+        } else {
+          header.iceActive = true;
+        }
+
+        // opcional: exibe um pequeno badge de "❄" enquanto congelado
+        if (typeof header.showTimeBadge === 'function') {
+          header.showTimeBadge('❄', 'badge-frozen', 0); // duração 0 = persistente até desativado
+        } else {
+          header.timeBadge = { label: '❄', class: 'badge-frozen' };
+        }
+
+        // Não reativa o timer automaticamente — fica congelado até fim da fase
+        this.notificationService.showNotification('success', `Tempo congelado pelo resto da fase!`);
+        console.debug('item.use.ice aplicado (congelado até o fim da fase):', detail);
+
+        // armazena flag local também, se necessário
+        (this as any).iceActive = true;
+      }
+    } catch (e) {
+      console.warn('Erro ao aplicar item.ice:', e);
+    }
+  }
+
+  private handleItemUse2xTime(detail: any) {
+    // Duplica o tempo restante
+    try {
+      if (this.headerComponent) {
+        const header = this.headerComponent as any;
+        const current = Number(header.remainingTimeInSeconds) || 0;
+        const doubled = current * 2;
+        header.remainingTimeInSeconds = doubled;
+
+        if (typeof header.showTimeBadge === 'function') {
+          header.showTimeBadge('x2', 'badge-yellow', 3000);
+        } else {
+          header.timeBadge = { label: 'x2', class: 'badge-yellow' };
+          setTimeout(() => header.timeBadge = null, 3000);
+        }
+
+        this.notificationService.showNotification('success', 'Tempo duplicado para esta fase!');
+        console.debug('item.use.2xtime aplicado:', detail, { before: current, after: doubled });
+      }
+    } catch (e) {
+      console.warn('Erro ao aplicar item.2xtime:', e);
+    }
+  }
+
+  private handleItemUse2xRepu(detail: any) {
+    // Ativa flag para duplicar reputação ao finalizar a fase
+    try {
+      this.doubleReputationActive = true;
+      // marca também no phaseUser para que outras rotinas que usam phaseUser possam verificar
+      if (this.phaseUser) {
+        (this.phaseUser as any).doubleReputationActive = true;
+      }
+      if (this.headerComponent) {
+        const header = this.headerComponent as any;
+        if (typeof header.setDoubleReputationActive === 'function') {
+          header.setDoubleReputationActive(true);
+        } else {
+          header.doubleReputationActive = true;
+        }
+      }
+      this.notificationService.showNotification('success', 'Reputação em dobro ativa para esta fase!');
+      console.debug('item.use.2xrepu aplicado:', detail);
+    } catch (e) {
+      console.warn('Erro ao aplicar item.2xrepu:', e);
+    }
   }
 }

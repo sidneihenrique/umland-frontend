@@ -16,6 +16,7 @@ import { PhaseUser } from '../../../services/game-map.service';
 export class DialogFinishedGamephaseComponent implements OnInit {
   visible: boolean = false;
   @Input() accuracy: number = 0;
+  @Input() doubleReputationActive: boolean = false;
   @Input() phaseUser: PhaseUser | null | undefined = null; 
   
   reputationSum: number = 0;
@@ -45,6 +46,11 @@ export class DialogFinishedGamephaseComponent implements OnInit {
   private updateSums() {
     this.reputationSum = this.calculateReputationSum(this.accuracy);
     this.coinsSum = this.calculateCoinsSum(this.accuracy);
+
+    if(this.doubleReputationActive) {
+      this.reputationSum *= 2;
+      this.coinsSum *= 2;
+    }
     
     // dados no backend
     this.updateBackendData();
