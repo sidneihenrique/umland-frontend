@@ -140,6 +140,7 @@
   background-color: var(--bg-card);
   opacity: 1;
   position: relative;
+  cursor: pointer;
 }
 
 .inventory-slot:hover {

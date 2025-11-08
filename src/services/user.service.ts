@@ -36,6 +36,18 @@ export interface UpdateUserRequest {
   idAvatar?: number;
 }
 
+export interface InventoryItem {
+  id?: number;
+  itemName: string;
+  quantity: number;
+}
+
+export interface Inventory {
+  id?: number;
+  userId?: number;
+  items: InventoryItem[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -175,4 +187,31 @@ export class UserService {
     }
     return this.resetGameData(current.id);
   }
+
+    /**
+   * Adiciona um item ao inventário do usuário no backend.
+   * POST /inventories/user/{userId}/items?itemName={itemName}
+   */
+  addItemToInventory(userId: number, itemName: string) {
+    const params = new HttpParams().set('itemName', itemName);
+    return this.http.post<any>(`${this.apiUrl}/inventories/user/${userId}/items`, null, { params });
+  }
+
+  /**
+   * Usa (remove) um item do inventário do usuário no backend.
+   * POST /inventories/user/{userId}/items/{itemName}/use
+   */
+  useItemFromInventory(userId: number, itemName: string) {
+    const safeName = encodeURIComponent(itemName);
+    return this.http.post<any>(`${this.apiUrl}/inventories/user/${userId}/items/${safeName}/use`, null);
+  }
+
+  // ...inside UserService class, perto dos outros métodos...
+  /**
+   * Busca os itens do inventário do usuário (GET /inventories/user/{userId}/items)
+   */
+  getInventoryByUser(userId: number) {
+    return this.http.get<InventoryItem[]>(`${this.apiUrl}/inventories/user/${userId}/items`);
+  }
+  
 }

@@ -177,7 +177,6 @@ export class StoreComponent implements OnInit, OnDestroy {
   onBuy(item: StoreItem) {
     if (!this.userData || this.userMoney < item.price) {
       this.notificationService.showError('Moedas insuficientes para comprar este item!');
-      console.warn('Moedas insuficientes para comprar o item');
       return;
     }
 
@@ -198,16 +197,45 @@ export class StoreComponent implements OnInit, OnDestroy {
         // Atualiza os dados locais
         this.userData = updatedUser;
         this.userMoney = updatedUser.coins;
-        
-        // Atualiza o inventário
-        this.updateInventory(item.key);
-        
-        // Notifica outros componentes sobre a mudança
         this.dataService.updateUserData(updatedUser);
         
-        // Notificação de sucesso
-        this.notificationService.showSuccess(`${item.title} comprado com sucesso!`);
-        console.log(`Item ${item.title} comprado com sucesso!`);
+        // Agora solicita ao backend que adicione o item ao inventário do usuário
+        this.userService.addItemToInventory(this.userData.id, item.key).subscribe({
+          next: (inventoryResponse) => {
+            // inventoryResponse esperado: Inventory com .items: [{ itemName, quantity }, ...]
+            const invMap: Record<string, number> = {};
+
+            if (inventoryResponse && Array.isArray(inventoryResponse.items)) {
+              for (const it of inventoryResponse.items) {
+                // normalize keys conforme backend
+                if (it && it.itemName) {
+                  invMap[it.itemName] = Number(it.quantity || 0);
+                }
+              }
+            } else if (inventoryResponse && inventoryResponse.itemsMap) {
+              // caso seu backend retorne outro shape
+              Object.assign(invMap, inventoryResponse.itemsMap);
+            } else {
+              // fallback: incrementar localmente (se backend não retornar lista)
+              invMap[item.key] = (this.userInventory[item.key] || 0) + 1;
+            }
+
+            // atualiza localStorage / StorageService
+            this.userInventory = invMap;
+            localStorage.setItem('inventory', JSON.stringify(invMap));
+            this.storageService.updateInventory(invMap);
+
+            // Notificação de sucesso
+            this.notificationService.showSuccess(`${item.title} comprado com sucesso!`);
+            console.log(`Item ${item.title} comprado e adicionado ao inventário com sucesso!`);
+          },
+          error: (err) => {
+            console.error('Erro ao adicionar item no inventário (backend):', err);
+            // fallback: atualiza inventário localmente (não ideal mas evita perda UX)
+            this.updateInventory(item.key);
+            this.notificationService.showError('Compra feita, mas falha ao atualizar inventário no servidor.');
+          }
+        });
       },
       error: (error) => {
         console.error('Erro ao atualizar moedas no backend:', error);
