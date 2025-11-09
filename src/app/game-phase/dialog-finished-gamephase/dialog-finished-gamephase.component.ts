@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges, Inject, PLATFORM_ID, Output, EventEmitter } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import { LucideIconsModule } from '../../lucide-icons.module';
 import { DataService } from '../../../services/data.service';
 import { PhaseUserService } from '../../../services/phase-user.service';
@@ -22,13 +23,17 @@ export class DialogFinishedGamephaseComponent implements OnInit {
   reputationSum: number = 0;
   coinsSum: number = 0;
 
+  // ✅ IDs das fases que redirecionam para créditos (finais do jogo)
+  private readonly FINAL_PHASE_IDS = [26, 22, 19, 16];
+
   @Output() backToMenuEvent = new EventEmitter<void>();
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private dataService: DataService,
     private phaseUserService: PhaseUserService,
-    private userService: UserService 
+    private userService: UserService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -52,21 +57,21 @@ export class DialogFinishedGamephaseComponent implements OnInit {
       this.coinsSum *= 2;
     }
     
-    // dados no backend
     this.updateBackendData();
   }
 
-  // Método para atualizar dados no backend
   private updateBackendData() {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // utiliza getCurrentUser() ao invés de localStorage diretamente
     const userData = this.userService.getCurrentUser();
     
     if (!userData || !this.phaseUser) {
       console.warn('⚠️ Dados do usuário ou phaseUser não disponíveis');
       return;
     }
+
+    console.log('💰 Moedas ANTES de finalizar fase:', userData.coins);
+    console.log('💰 Moedas que vão ser ADICIONADAS:', this.coinsSum);
 
     try {
       // ✅ 1. Atualizar PhaseUser com status de conclusão
@@ -81,13 +86,15 @@ export class DialogFinishedGamephaseComponent implements OnInit {
         userDiagram: JSON.stringify(this.phaseUser.userDiagram) // Garantir que o diagrama do usuário seja salvo
       };
 
-      // ✅ 2. Atualizar usuário com recompensas
+      // ✅ 2. Atualizar usuário com recompensas INCREMENTAIS
       const updatedUser: User = {
         ...userData,
         coins: (userData.coins || 0) + this.coinsSum,
         reputation: (userData.reputation || 0) + this.reputationSum,
         progressing: this.reputationSum >= 0
       };
+
+      console.log('💰 Moedas DEPOIS do cálculo:', updatedUser.coins);
 
       // ✅ 3. Salvar PhaseUser no backend
       this.phaseUserService.updatePhaseUser(this.phaseUser.id, updatedPhaseUser).subscribe({
@@ -104,14 +111,16 @@ export class DialogFinishedGamephaseComponent implements OnInit {
             });
           }
           
-          // ✅ 4. Salvar usuário no backend usando getCurrentUser
+          // ✅ 4. Salvar usuário no backend
           this.userService.updateUser(userData.id, updatedUser).subscribe({
             next: (savedUser) => {
+              console.log('✅ Usuário atualizado no backend:', savedUser);
+              console.log('💰 Moedas salvas no backend:', savedUser.coins);
               
-              // ✅ 5. Atualizar localStorage
+              // ✅ 5. Atualizar localStorage IMEDIATAMENTE
               localStorage.setItem('currentUser', JSON.stringify(savedUser));
               
-              // ✅ 6. Atualizar DataService
+              // ✅ 6. Atualizar DataService (notifica todos os componentes)
               this.dataService.updateUserData(savedUser);
               
             },
@@ -163,7 +172,20 @@ export class DialogFinishedGamephaseComponent implements OnInit {
     return Math.max(0, Math.floor(accuracy));
   }
 
+  // ✅ Verifica se a fase atual é uma fase final (método público para uso no template)
+  isFinalPhase(): boolean {
+    if (!this.phaseUser?.phase?.id) return false;
+    return this.FINAL_PHASE_IDS.includes(this.phaseUser.phase.id);
+  }
+
   backToMenu() {
-    this.backToMenuEvent.emit();
+    // ✅ Se for uma fase final, redirecionar para créditos
+    if (this.isFinalPhase()) {
+      console.log('🎬 Fase final concluída! Redirecionando para créditos...');
+      this.router.navigate(['/credits']);
+    } else {
+      // ✅ Caso contrário, emitir evento normal para voltar ao mapa
+      this.backToMenuEvent.emit();
+    }
   }
 }

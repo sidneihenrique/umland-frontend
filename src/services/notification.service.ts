@@ -20,6 +20,7 @@ export class NotificationService {
   public notifications$ = this.notificationsSubject.asObservable();
 
   private idCounter = 0;
+  private maxNotifications = 5;
 
   constructor() { }
 
@@ -67,9 +68,15 @@ export class NotificationService {
 
   addNotification(notification: Omit<NotificationData, 'id'>): string {
     const currentNotifications = this.notificationsSubject.value;
+    
+    const timestamp = Date.now();
+    const recentThreshold = 500;
+    
     const existingNotification = currentNotifications.find(n =>
       n.type === notification.type &&
-      n.message === notification.message
+      n.message === notification.message &&
+      n.timestamp &&
+      (timestamp - n.timestamp) < recentThreshold
     );
 
     if (existingNotification) {
@@ -81,10 +88,17 @@ export class NotificationService {
       id,
       duration: 4000,
       autoDismiss: true,
+      timestamp,
       ...notification
     };
 
-    this.notificationsSubject.next([...currentNotifications, newNotification]);
+    let updatedNotifications = [...currentNotifications, newNotification];
+    
+    if (updatedNotifications.length > this.maxNotifications) {
+      updatedNotifications = updatedNotifications.slice(-this.maxNotifications);
+    }
+
+    this.notificationsSubject.next(updatedNotifications);
 
     return id;
   }

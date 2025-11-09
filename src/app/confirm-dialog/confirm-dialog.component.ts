@@ -21,12 +21,6 @@ export class ConfirmDialogComponent implements OnInit {
 
   }
 
-  onOverlayClick(event: MouseEvent) {
-    if (event.target === event.currentTarget) {
-      this.hide();
-    }
-  }
-
   hide() {
     this.cancel.emit();
   }

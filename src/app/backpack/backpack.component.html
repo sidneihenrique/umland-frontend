@@ -14,24 +14,15 @@
     <div class="backpack-content">
 
       <ng-container *ngFor="let item of backpackData?.items; let i = index">
-        <!-- Item slot: clique usa o item -->
         <div 
+          #itemSlot
           class="inventory-slot filled"
-          (mouseenter)="onItemHover(item)"
+          [class.selected]="selectedItem === item"
+          (mouseenter)="onItemHover(item, $event)"
           (mouseleave)="onItemLeave()"
-          (click)="onUseItem(item)">
+          (click)="onItemClick(item)">
           <img [src]="item.imageUrl" [alt]="item.name">
           <span class="quantity-badge" *ngIf="item.quantity > 1">{{ item.quantity }}</span>
-          
-          <!-- Slot expandível para descrição - filho do item -->
-          <div 
-            class="description-slot" 
-            [class.expanded]="hoveredItem === item">
-            <div class="description-content">
-              <h4>{{ item.name }}</h4>
-              <p>{{ item.description }}</p>
-            </div>
-          </div>
         </div>
       </ng-container>
 
@@ -39,6 +30,28 @@
         *ngFor="let slot of emptySlots" 
         class="inventory-slot empty">
       </div>
+    </div>
+    
+    <div class="backpack-footer">
+      <button 
+        class="use-item-button" 
+        [disabled]="!canUseItems || !selectedItem"
+        (click)="onUseItem()">
+        <lucide-icon name="zap" [size]="18"></lucide-icon>
+        <span>{{ selectedItem ? 'USAR ' + selectedItem.name.toUpperCase() : 'SELECIONE UM ITEM' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tooltip flutuante fora do contexto do modal -->
+  <div 
+    class="description-slot" 
+    [class.expanded]="hoveredItem !== null"
+    [style.top.px]="tooltipTop"
+    [style.left.px]="tooltipLeft">
+    <div class="description-content" *ngIf="hoveredItem">
+      <h4>{{ hoveredItem.name }}</h4>
+      <p>{{ hoveredItem.description }}</p>
     </div>
   </div>
 </div>

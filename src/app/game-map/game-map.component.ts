@@ -15,13 +15,11 @@ import Swiper from 'swiper';
 import { Navigation, Pagination } from 'swiper/modules';
 import { EffectCoverflow } from 'swiper/modules'; 
 
-
-
-// ✅ Imports atualizados
 import { GameMapService, PhaseUser } from '../../services/game-map.service';
-import { PhaseUserService } from '../../services/phase-user.service'; // para atualizar status
+import { PhaseUserService } from '../../services/phase-user.service';
 import { FileUrlBuilder } from '../../config/files.config';
 import { NotificationService } from '../../services/notification.service';
+import { AppContextService } from '../../services/app-context.service';
 
 @Component({
   selector: 'game-map',
@@ -90,36 +88,34 @@ export class GameMapComponent implements OnInit, OnDestroy {
     private phaseUserService: PhaseUserService,
     private notificationService: NotificationService,
     private ngZone: NgZone,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private appContextService: AppContextService
   ) {}
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      // ✅ Obter gameMapId da URL
       this.gameMapId = Number(this.route.snapshot.paramMap.get('id'));
 
-      // ✅ Verificar se gameMapId é válido
       if (!this.gameMapId || this.gameMapId <= 0) {
         console.error('❌ GameMapId inválido:', this.gameMapId);
         this.router.navigate(['/select-map']);
         return;
       }
 
-      // ✅ Usar getCurrentUser()
+      this.appContextService.setContext('game-map', undefined, this.gameMapId);
+
       const currentUser = this.userService.getCurrentUser();
       
       if (currentUser && currentUser.id) {
         this.userId = currentUser.id;
         this.userData = currentUser;
         
-        // Inscreve-se nas atualizações de dados do usuário
         this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
           if (userData) {
             this.userData = userData;
           }
         });
 
-        // ✅ NOVO: Primeiro associar usuário ao GameMap, depois carregar fases
         this.associateUserToGameMap();
         
       } else {
@@ -635,11 +631,13 @@ export class GameMapComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.appContextService.setContext('other');
+    
     if (this.userDataSubscription) {
       this.userDataSubscription.unsubscribe();
     }
     if (this.swiper) {
-      try { this.swiper.destroy(true, true); } catch (e) { /* ignore */ }
+      try { this.swiper.destroy(true, true); } catch (e) { }
     }
   }
 }

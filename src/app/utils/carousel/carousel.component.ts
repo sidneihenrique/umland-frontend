@@ -28,7 +28,15 @@ export class CarouselComponent implements AfterViewInit, OnDestroy {
         nextEl: this.swiperContainer.nativeElement.querySelector('.swiper-button-next'),
         prevEl: this.swiperContainer.nativeElement.querySelector('.swiper-button-prev')
       },
-      loop: false
+      pagination: {
+        el: this.swiperContainer.nativeElement.querySelector('.swiper-pagination'),
+        clickable: true
+      },
+      loop: false,
+      allowTouchMove: false, // Desabilita arrastar/swipe
+      simulateTouch: false, // Desabilita simulação de touch
+      noSwiping: true, // Desabilita swipe
+      noSwipingClass: 'swiper-slide' // Classe para desabilitar swipe
     });
   }
 

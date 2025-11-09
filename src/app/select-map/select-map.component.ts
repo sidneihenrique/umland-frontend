@@ -1,11 +1,12 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { HeaderComponent } from '../header/header.component';
 import { AdminPanelService } from '../../services/admin-panel.service';
 import { GameMapService } from '../../services/game-map.service';
 import { GameMap } from '../../services/game-map.service';
-import { Router, RouterModule } from '@angular/router'; // ✅ ADICIONAR: Router
+import { Router, RouterModule } from '@angular/router';
+import { AppContextService } from '../../services/app-context.service';
 
 @Component({
   selector: 'app-select-map',
@@ -14,7 +15,7 @@ import { Router, RouterModule } from '@angular/router'; // ✅ ADICIONAR: Router
   templateUrl: './select-map.component.html',
   styleUrl: './select-map.component.css'
 })
-export class SelectMapComponent implements OnInit {
+export class SelectMapComponent implements OnInit, OnDestroy {
   isOpen: boolean = true;
   gameMaps: GameMap[] = [];
   loading: boolean = false;
@@ -24,11 +25,17 @@ export class SelectMapComponent implements OnInit {
 
   constructor(
     private gameMapService: GameMapService,
-    private router: Router // ✅ ADICIONAR: Router
+    private router: Router,
+    private appContextService: AppContextService
   ) {}
 
   ngOnInit() {
+    this.appContextService.setContext('select-map');
     this.loadGameMaps();
+  }
+
+  ngOnDestroy() {
+    this.appContextService.setContext('other');
   }
 
   show() {

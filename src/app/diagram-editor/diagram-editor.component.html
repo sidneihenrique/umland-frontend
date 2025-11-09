@@ -6,58 +6,82 @@
         </button>
     </div> -->
 
+    <!-- Dicas movidas para fora do wrapper-board -->
+    <div class="clues-overlay" *ngIf="tipsVisible">
+        <div class="clues-content" #clues>
+            <span class="clues-title">
+                <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
+                Dicas Rápidas – Diagramas UML
+            </span>
+            <app-tips-carousel [items]="tips || []"></app-tips-carousel>
+        </div>
+    </div>
+
     <div class="drag-and-drop-buttons">
         <!-- Botões para DIAGRAMA DE CASOS DE USO (padrão) -->
         <ng-container *ngIf="diagramType === 'USE_CASE'">
-            <button class="btn-icon filled" [class.active]="isButtonActive('link-association')" (click)="addLink('association')" type="button">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-association')"
+                (click)="addLink('association')" type="button">
                 <img src="assets/icons/association.svg" alt="">
             </button>
 
-            <button class="btn-icon filled" [class.active]="isButtonActive('actor')" draggable="true" (dragstart)="onDragStart($event, 'actor')" (click)="addElement('actor')" type="button">
+            <button class="btn-icon filled" [class.active]="isButtonActive('actor')" draggable="true"
+                (dragstart)="onDragStart($event, 'actor')" (click)="addElement('actor')" type="button">
                 <img src="assets/icons/actor.svg" alt="">
             </button>
 
-            <button class="btn-icon filled" [class.active]="isButtonActive('usecase')" draggable="true" (dragstart)="onDragStart($event, 'usecase')" (click)="addElement('usecase')" type="button">
+            <button class="btn-icon filled" [class.active]="isButtonActive('usecase')" draggable="true"
+                (dragstart)="onDragStart($event, 'usecase')" (click)="addElement('usecase')" type="button">
                 <img src="assets/icons/use_case.svg" alt="">
             </button>
 
-            <button class="btn-icon filled" [class.active]="isButtonActive('link-extend')" (click)="addLink('extend')" type="button">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-extend')" (click)="addLink('extend')"
+                type="button">
                 <img src="assets/icons/extend.svg" alt="">
             </button>
 
-            <button class="btn-icon filled" [class.active]="isButtonActive('link-include')" (click)="addLink('include')" type="button">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-include')" (click)="addLink('include')"
+                type="button">
                 <img src="assets/icons/include.svg" alt="">
             </button>
 
-            <button class="btn-icon filled" [class.active]="isButtonActive('link-dependency')" (click)="addLink('dependency')" type="button">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-dependency')"
+                (click)="addLink('dependency')" type="button">
                 <img src="assets/icons/dependency.svg" alt="">
             </button>
         </ng-container>
 
         <!-- Botões para DIAGRAMA DE CLASSES -->
         <ng-container *ngIf="diagramType === 'CLASS'">
-            <button class="btn-icon filled" [class.active]="isButtonActive('uml-class')" draggable="true" (dragstart)="onDragStart($event, 'class')" (click)="addElement('class')" type="button" title="Inserir Classe">
+            <button class="btn-icon filled" [class.active]="isButtonActive('uml-class')" draggable="true"
+                (dragstart)="onDragStart($event, 'class')" (click)="addElement('class')" type="button"
+                title="Inserir Classe">
                 <img src="assets/icons/class.svg" alt="Classe">
             </button>
 
-            <button class="btn-icon filled" [class.active]="isButtonActive('link-association')" (click)="addLink('association')" type="button" title="Inserir Associação">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-association')"
+                (click)="addLink('association')" type="button" title="Inserir Associação">
                 <img src="assets/icons/association.svg" alt="Associação">
             </button>
 
             <!-- Novos botões UML -->
-            <button class="btn-icon filled" [class.active]="isButtonActive('link-aggregation')" (click)="addLink('aggregation')" type="button" title="Agregação (losango aberto)">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-aggregation')"
+                (click)="addLink('aggregation')" type="button" title="Agregação (losango aberto)">
                 <img src="assets/icons/aggregation.svg" alt="Agregação">
             </button>
 
-            <button class="btn-icon filled" [class.active]="isButtonActive('link-composition')" (click)="addLink('composition')" type="button" title="Composição (losango preenchido)">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-composition')"
+                (click)="addLink('composition')" type="button" title="Composição (losango preenchido)">
                 <img src="assets/icons/composition.svg" alt="Composição">
             </button>
 
-            <button class="btn-icon filled" [class.active]="isButtonActive('link-inheritance')" (click)="addLink('inheritance')" type="button" title="Herança (generalização)">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-inheritance')"
+                (click)="addLink('inheritance')" type="button" title="Herança (generalização)">
                 <img src="assets/icons/generalization.svg" alt="Herança">
             </button>
 
-            <button class="btn-icon filled" [class.active]="isButtonActive('link-realization')" (click)="addLink('realization')" type="button" title="Realização (interface)">
+            <button class="btn-icon filled" [class.active]="isButtonActive('link-realization')"
+                (click)="addLink('realization')" type="button" title="Realização (interface)">
                 <img src="assets/icons/realization.svg" alt="Realização">
             </button>
         </ng-container>
@@ -72,117 +96,102 @@
             </div>
         </div>
 
-        <div class="clues-content" *ngIf="tipsVisible" #clues>
-            <!-- Título -->
-            <span class="clues-title">
-                <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
-                Dicas Rápidas – Diagramas UML
-            </span>
-
-            <!-- Swiper Container -->
-            <app-carousel [items]="tips || []"></app-carousel>
-            
-        </div>
-
         <div class="inspector" *ngIf="inspectorVisible" #inspector>
-            <div class="inspector-header">
+            <div class="inspector-header" title="Arraste para mover">
                 <span class="inspector-title">Class Inspector</span>
                 <button class="inspector-close" (click)="closeInspector()" type="button">×</button>
             </div>
 
             <div class="inspector-tabs">
-                <button [class.active]="inspectorTab === 'general'" (click)="inspectorTab = 'general'" type="button">General</button>
-                <button [class.active]="inspectorTab === 'attributes'" (click)="inspectorTab = 'attributes'" type="button">Attributes</button>
-                <button [class.active]="inspectorTab === 'operations'" (click)="inspectorTab = 'operations'" type="button">Operations</button>
+                <button [class.active]="inspectorTab === 'general'" (click)="inspectorTab = 'general'"
+                    type="button">General</button>
+                <button [class.active]="inspectorTab === 'attributes'" (click)="inspectorTab = 'attributes'"
+                    type="button">Attributes</button>
+                <button [class.active]="inspectorTab === 'operations'" (click)="inspectorTab = 'operations'"
+                    type="button">Operations</button>
             </div>
 
             <div class="inspector-body">
                 <!-- General -->
                 <div *ngIf="inspectorTab === 'general'">
-                <label>Class name</label>
-                <input [(ngModel)]="inspectorData.name" (ngModelChange)="applyGeneral()" />
+                    <label>Class name</label>
+                    <input [(ngModel)]="inspectorData.name" (ngModelChange)="applyGeneral()" />
 
-                <label>Stereotype</label>
-                <input [(ngModel)]="inspectorData.stereotype" (ngModelChange)="applyGeneral()" />
+                    <label>Stereotype</label>
+                    <input [(ngModel)]="inspectorData.stereotype" (ngModelChange)="applyGeneral()" />
                 </div>
 
                 <!-- Attributes -->
                 <div *ngIf="inspectorTab === 'attributes'">
-                <div class="inspector-actions">
-                    <button (click)="addAttribute()" type="button">Add Attribute</button>
-                </div>
-
-                <div *ngFor="let a of inspectorData.attributes; let i = index" class="inspector-card">
-                    <div class="card-row">
-                    <label>Visibility</label>
-                    <select [(ngModel)]="a.visibility" (ngModelChange)="applyAttributes()">
-                        <option value="public">Public (+)</option>
-                        <option value="private">Private (-)</option>
-                        <option value="protected">Protected (#)</option>
-                        <option value="package">Package (~)</option>
-                    </select>
+                    <div class="inspector-actions">
+                        <button (click)="addAttribute()" type="button">Add Attribute</button>
                     </div>
 
-                    <div class="card-row">
-                    <label>Attribute</label>
-                    <input [(ngModel)]="a.name" (ngModelChange)="applyAttributes()" />
-                    </div>
+                    <div *ngFor="let a of inspectorData.attributes; let i = index" class="inspector-card">
+                        <div class="card-row">
+                            <label>Visibility</label>
+                            <select [(ngModel)]="a.visibility" (ngModelChange)="applyAttributes()">
+                                <option value="public">Public (+)</option>
+                                <option value="private">Private (-)</option>
+                                <option value="protected">Protected (#)</option>
+                                <option value="package">Package (~)</option>
+                            </select>
+                        </div>
 
-                    <div class="card-row">
-                    <label>Type</label>
-                    <input [(ngModel)]="a.type" (ngModelChange)="applyAttributes()" />
-                    </div>
+                        <div class="card-row">
+                            <label>Attribute</label>
+                            <input [(ngModel)]="a.name" (ngModelChange)="applyAttributes()" />
+                        </div>
 
-                    <div class="card-row card-actions">
-                    <button (click)="removeAttribute(i)" type="button">Remove</button>
+                        <div class="card-row">
+                            <label>Type</label>
+                            <input [(ngModel)]="a.type" (ngModelChange)="applyAttributes()" />
+                        </div>
+
+                        <div class="card-row card-actions">
+                            <button (click)="removeAttribute(i)" type="button">Remove</button>
+                        </div>
                     </div>
-                </div>
                 </div>
 
                 <!-- Operations -->
                 <div *ngIf="inspectorTab === 'operations'">
-                <div class="inspector-actions">
-                    <button (click)="addOperation()" type="button">Add Operation</button>
-                </div>
-
-                <div *ngFor="let op of inspectorData.operations; let j = index" class="inspector-card">
-                    <div class="card-row">
-                    <label>Visibility</label>
-                    <select [(ngModel)]="op.visibility" (ngModelChange)="applyOperations()">
-                        <option value="public">Public (+)</option>
-                        <option value="private">Private (-)</option>
-                        <option value="protected">Protected (#)</option>
-                        <option value="package">Package (~)</option>
-                    </select>
+                    <div class="inspector-actions">
+                        <button (click)="addOperation()" type="button">Add Operation</button>
                     </div>
 
-                    <div class="card-row">
-                    <label>Signature</label>
-                    <input [(ngModel)]="op.signature" (ngModelChange)="applyOperations()" />
-                    </div>
+                    <div *ngFor="let op of inspectorData.operations; let j = index" class="inspector-card">
+                        <div class="card-row">
+                            <label>Visibility</label>
+                            <select [(ngModel)]="op.visibility" (ngModelChange)="applyOperations()">
+                                <option value="public">Public (+)</option>
+                                <option value="private">Private (-)</option>
+                                <option value="protected">Protected (#)</option>
+                                <option value="package">Package (~)</option>
+                            </select>
+                        </div>
 
-                    <div class="card-row">
-                    <label>Return Type</label>
-                    <input [(ngModel)]="op.returnType" (ngModelChange)="applyOperations()" />
-                    </div>
+                        <div class="card-row">
+                            <label>Signature</label>
+                            <input [(ngModel)]="op.signature" (ngModelChange)="applyOperations()" />
+                        </div>
 
-                    <div class="card-row card-actions">
-                    <button (click)="removeOperation(j)" type="button">Remove</button>
+                        <div class="card-row">
+                            <label>Return Type</label>
+                            <input [(ngModel)]="op.returnType" (ngModelChange)="applyOperations()" />
+                        </div>
+
+                        <div class="card-row card-actions">
+                            <button (click)="removeOperation(j)" type="button">Remove</button>
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
         </div>
-         
-        <div 
-            class="board" 
-            #paperContainer
-            (dragover)="onDragOver($event)"
-            (drop)="onDrop($event)">
+
+        <div class="board" #paperContainer (dragover)="onDragOver($event)" (drop)="onDrop($event)">
         </div>
 
-        
-    </div>    
+
+    </div>
 </div>
-
-

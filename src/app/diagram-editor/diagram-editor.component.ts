@@ -4,7 +4,7 @@ import * as joint from '@joint/core';
 import { UMLElementUtil } from '../utils/uml-element.util';
 import { LucideIconsModule } from '../lucide-icons.module';
 import { DataService } from '../../services/data.service';
-import { CarouselComponent } from '../utils/carousel/carousel.component';
+import { TipsCarouselComponent } from '../utils/tips-carousel/tips-carousel.component';
 import { Phase } from '../../services/phase.service';
 import { PhaseUser } from '../../services/game-map.service';
 
@@ -15,7 +15,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   standalone: true,
   selector: 'diagram-editor',
-  imports: [CommonModule, LucideIconsModule, CarouselComponent, FormsModule],
+  imports: [CommonModule, LucideIconsModule, TipsCarouselComponent, FormsModule],
   templateUrl: './diagram-editor.component.html',
   styleUrl: './diagram-editor.component.css'
 })
@@ -27,7 +27,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   @Input() diagramType!: 'USE_CASE' | 'CLASS';
 
   tipsVisible: boolean = false;
-  
+
   private paper: joint.dia.Paper | null = null;
   public graph: joint.dia.Graph | null = null;
   private zoomLevel: number = 1;
@@ -37,9 +37,9 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
 
   private initialJSON: any;
-  
+
   private correctsJSON: any[] = [];
-  
+
 
   // Botão de remover elemento
   private removeBtn: HTMLButtonElement | null = null;
@@ -81,6 +81,12 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   public inconsistencies: string[] = [];
 
+  // Inspector drag properties
+  private isDraggingInspector: boolean = false;
+  private inspectorDragOffset = { x: 0, y: 0 };
+  private inspectorPosition = { x: 0, y: 0 };
+  private inspectorManuallyMoved: boolean = false;
+
   //  Propriedade para armazenar o handler ativo
   private activeClickHandler: ((evt: MouseEvent) => void) | null = null;
 
@@ -94,21 +100,21 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     attributes: Array<{ name: string; visibility: string; type: string }>;
     operations: Array<{ signature: string; visibility: string; returnType: string }>;
   } = {
-    name: '',
-    stereotype: '',
-    attributes: [],
-    operations: []
-  };
+      name: '',
+      stereotype: '',
+      attributes: [],
+      operations: []
+    };
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private dataService: DataService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-   
+
   }
-  
+
   ngAfterViewInit(): void {
     // register scroll/resize listeners so the inspector stays aligned to the visible
     // area of the wrapper-board whenever the user scrolls or resizes the window
@@ -126,7 +132,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   public initializeJointJS(phase?: Phase, phaseUser?: PhaseUser): void {
     // ✅ Verificar se os dados estão disponíveis antes de inicializar
-    if(phase) {
+    if (phase) {
       console.log('🔧 Inicializando JointJS com Phase fornecido:', phase);
       // Configurando dados do diagrama com PhaseUser fornecido
       this.setupDiagramData(phase);
@@ -169,7 +175,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
     this.paper.initialize();
 
-    
+
     this.wrapperBoard.nativeElement.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
 
     this.wrapperBoard.nativeElement.addEventListener('scroll', () => {
@@ -291,7 +297,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   onDrop(event: DragEvent) {
     event.preventDefault();
     const type = event.dataTransfer?.getData('uml-type');
-    if(this.graph && this.paper) {
+    if (this.graph && this.paper) {
       // Verifica se o tipo é válido
       if (!type || (type !== 'actor' && type !== 'usecase' && type !== 'class')) {
         console.error('Invalid UML element type:', type);
@@ -315,7 +321,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       const container = this.paperContainer.nativeElement as HTMLElement;
 
       // Se não recebeu o evento, adiciona um listener de click para capturar o próximo clique
-      if(!event) {
+      if (!event) {
         // ✅ Ativar botão e aguardar clique
         this.setActiveButton(type || '');
         this.isWaitingForClick = true;
@@ -330,22 +336,22 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
           // Remove o listener após o clique
           container.removeEventListener('click', this.activeClickHandler!);
           this.activeClickHandler = null;
-          
+
           // ✅ Desativar botão após uso
           this.clearActiveButton();
           this.isWaitingForClick = false;
-          
+
           // Chama addElement novamente, agora com o evento
           this.addElement(type, evt);
         };
 
         // ✅ Adicionar o novo handler
         container.addEventListener('click', this.activeClickHandler);
-        
+
         // Muda o cursor para indicar que está aguardando o clique
         this.setCursor('crosshair');
         return;
-        
+
       } else if (event && type) {
         const rect = container.getBoundingClientRect();
 
@@ -457,14 +463,14 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       this.clearActiveButton();
       this.isWaitingForClick = false;
       this.setCursor('default');
-      
+
       //  Remover handler ativo de elemento
       if (this.activeClickHandler) {
         const container = this.paperContainer.nativeElement as HTMLElement;
         container.removeEventListener('click', this.activeClickHandler);
         this.activeClickHandler = null;
       }
-      
+
       // Limpar operações de link se estiver ativas
       if (this.linkingType) {
         this.paper?.off('element:pointerclick');
@@ -475,7 +481,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   private showInlineEditor(cellView: joint.dia.ElementView | null | joint.dia.LinkView, evt?: joint.dia.Event): void {
-    if(!cellView || !this.paper) {
+    if (!cellView || !this.paper) {
       // Remove editores anteriores, se houver
       const existingEditor = document.querySelector('.inline-editor');
       if (existingEditor) {
@@ -485,7 +491,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     };
 
     this.currentCellView = cellView;
-    
+
     const element = cellView.model;
     const paper = cellView.paper;
 
@@ -556,7 +562,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         const paddingX = 32;
         const paddingY = 16;
 
-        if(element.get('type') === 'custom.UseCase') {
+        if (element.get('type') === 'custom.UseCase') {
           element.resize(editorRect.width + paddingX, editorRect.height + paddingY);
           this.updateFloatingElementsPosition();
         }
@@ -614,7 +620,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         this.showMultiplicityButtons(link);
       }
     }
-    
+
     this.updateFloatingElementsPosition();
   }
 
@@ -634,7 +640,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     btn.onclick = () => {
       this.linkingSource = cellView.model;
       btn.classList.add('active');
-      
+
       // Aguarda o próximo clique em outro elemento
       this.paper!.once('element:pointerclick', (targetView: joint.dia.ElementView) => {
         if (targetView.model.id !== this.linkingSource!.id) {
@@ -741,10 +747,10 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
-    /**
-   * Cria pequeno popup com opções de multiplicidade e o posiciona perto do botão passado.
-   * side = 'source' | 'target'
-   */
+  /**
+ * Cria pequeno popup com opções de multiplicidade e o posiciona perto do botão passado.
+ * side = 'source' | 'target'
+ */
   private createMultiplicityPopup(link: joint.dia.Link, side: 'source' | 'target', anchorBtn: HTMLButtonElement) {
     // limpa popup antigo
     if (this.currentMultiplicityPopup && this.currentMultiplicityPopup.parentNode) {
@@ -804,10 +810,10 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     setTimeout(() => document.addEventListener('click', closeFn), 0);
   }
 
-    /**
-   * Set/link multiplicity metadata and update the label shown on the link.
-   * side: 'source' or 'target'
-   */
+  /**
+ * Set/link multiplicity metadata and update the label shown on the link.
+ * side: 'source' or 'target'
+ */
   private setLinkMultiplicity(link: joint.dia.Link, side: 'source' | 'target', value: string) {
     // store metadata
     const uml = (link as any).get('uml') || {};
@@ -848,9 +854,9 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
-    /**
-   * Convenience: read multiplicity value stored on link ('' if unspecified)
-   */
+  /**
+ * Convenience: read multiplicity value stored on link ('' if unspecified)
+ */
   private getLinkMultiplicity(link: joint.dia.Link, side: 'source' | 'target'): string {
     const uml = (link as any).get('uml') || {};
     return side === 'source' ? (uml.sourceMultiplicity || '') : (uml.targetMultiplicity || '');
@@ -866,7 +872,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   private updateFloatingElementsPosition() {
     // Atualiza posição do botão de remover
     if (this.removeBtn && this.currentCellView) {
-      if(this.currentCellView.model.isLink()) {
+      if (this.currentCellView.model.isLink()) {
         // Se for um link, posiciona o botão no meio do link
         const bbox = this.currentCellView.getBBox();
         const point = this.paper!.localToClientPoint({ x: bbox.x + bbox.width / 2, y: (bbox.y + 8) + bbox.height / 2 });
@@ -945,7 +951,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
           // converte para client coords
           const startClient = this.paper!.localToClientPoint(adjSrcLocal);
-          const endClient   = this.paper!.localToClientPoint(adjTgtLocal);
+          const endClient = this.paper!.localToClientPoint(adjTgtLocal);
 
           const btnSrc = this.multiplicityBtns[0];
           const btnTgt = this.multiplicityBtns[1];
@@ -955,13 +961,13 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
             const halfW = (btnSrc.offsetWidth || 24) / 2;
             const halfH = (btnSrc.offsetHeight || 24) / 2;
             btnSrc.style.left = `${startClient.x + window.scrollX - halfW}px`;
-            btnSrc.style.top  = `${startClient.y + window.scrollY - halfH + 24}px`;
+            btnSrc.style.top = `${startClient.y + window.scrollY - halfH + 24}px`;
           }
           if (btnTgt) {
             const halfW = (btnTgt.offsetWidth || 24) / 2;
             const halfH = (btnTgt.offsetHeight || 24) / 2;
             btnTgt.style.left = `${endClient.x + window.scrollX - halfW}px`;
-            btnTgt.style.top  = `${endClient.y + window.scrollY - halfH + 24}px`;
+            btnTgt.style.top = `${endClient.y + window.scrollY - halfH + 24}px`;
           }
 
           // manter removeBtn no meio do link (comportamento anterior)
@@ -985,7 +991,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         if (anchor && typeof anchor.getBoundingClientRect === 'function') {
           const rect = anchor.getBoundingClientRect();
           popup.style.left = `${rect.left + window.scrollX + 20}px`;
-          popup.style.top  = `${rect.top + window.scrollY - 8}px`;
+          popup.style.top = `${rect.top + window.scrollY - 8}px`;
         }
       } catch (err) {
         console.warn('Failed to reposition multiplicity popup', err);
@@ -996,11 +1002,18 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   /**
    * Position the inspector element so it stays fixed to the visible corner of the wrapper-board.
    */
+  /**
+   * Position the inspector element so it stays fixed to the visible corner of the wrapper-board.
+   * Skip repositioning if the user has manually moved it.
+   */
   private updateInspectorPosition() {
     try {
       if (!this.inspectorRef || !this.inspectorRef.nativeElement) return;
       if (!this.wrapperBoard || !this.wrapperBoard.nativeElement) return;
       if (!this.inspectorVisible) return;
+      
+      // Skip auto-repositioning if user has manually moved the inspector
+      if (this.inspectorManuallyMoved) return;
 
       const wrapperRect = this.wrapperBoard.nativeElement.getBoundingClientRect();
       const inspectorEl = this.inspectorRef.nativeElement as HTMLElement;
@@ -1118,7 +1131,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
         // label defensivo
         let modelLabelRaw = '';
-        try { modelLabelRaw = modelElem.attr(['label','text']) || modelElem.attr('label/text') || modelElem.attr('title/text') || modelElem.attr(['title','text']) || ''; } catch {}
+        try { modelLabelRaw = modelElem.attr(['label', 'text']) || modelElem.attr('label/text') || modelElem.attr('title/text') || modelElem.attr(['title', 'text']) || ''; } catch { }
         const modelLabel = normalize(modelLabelRaw);
 
         // procura candidato do usuário (prefere mesmo tipo+mesmo nome se modelo especificou nome)
@@ -1127,7 +1140,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
             const ut = typeof ue?.get === 'function' ? ue.get('type') : undefined;
             if (ut !== modelType) return false;
             if (modelLabel) {
-              const ulRaw = ue.attr ? (ue.attr(['label','text']) || ue.attr('label/text') || ue.attr('title/text') || ue.attr(['title','text']) || '') : '';
+              const ulRaw = ue.attr ? (ue.attr(['label', 'text']) || ue.attr('label/text') || ue.attr('title/text') || ue.attr(['title', 'text']) || '') : '';
               return normalize(ulRaw) === modelLabel;
             }
             return true;
@@ -1146,7 +1159,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         // pontuação do elemento (nome/tipo): se modelo especificou nome, só soma quando nomes iguais
         if (candidateUserElem) {
           let userLabelRaw = '';
-          try { userLabelRaw = candidateUserElem.attr(['label','text']) || candidateUserElem.attr('label/text') || candidateUserElem.attr('title/text') || candidateUserElem.attr(['title','text']) || ''; } catch {}
+          try { userLabelRaw = candidateUserElem.attr(['label', 'text']) || candidateUserElem.attr('label/text') || candidateUserElem.attr('title/text') || candidateUserElem.attr(['title', 'text']) || ''; } catch { }
           const userLabel = normalize(userLabelRaw);
           if (!modelLabel || modelLabel === userLabel) {
             correctChecks += 1; // elemento correto (mesmo comportamento de antes)
@@ -1162,8 +1175,8 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
           // ler membros do modelo
           let modelAttrsRaw = '';
           let modelOpsRaw = '';
-          try { modelAttrsRaw = modelElem.attr('attrsText/text') || ''; } catch {}
-          try { modelOpsRaw = modelElem.attr('opsText/text') || ''; } catch {}
+          try { modelAttrsRaw = modelElem.attr('attrsText/text') || ''; } catch { }
+          try { modelOpsRaw = modelElem.attr('opsText/text') || ''; } catch { }
 
           const modelAttrs = String(modelAttrsRaw).split('\n').map(l => l.trim()).filter(l => l.length > 0);
           const modelOps = String(modelOpsRaw).split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -1176,7 +1189,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
             // busca label do candidato (novamente) para decidir se pulamos
             let userLabelForCheck = '';
             if (candidateUserElem) {
-              try { userLabelForCheck = candidateUserElem.attr(['label','text']) || candidateUserElem.attr('label/text') || candidateUserElem.attr('title/text') || candidateUserElem.attr(['title','text']) || ''; } catch {}
+              try { userLabelForCheck = candidateUserElem.attr(['label', 'text']) || candidateUserElem.attr('label/text') || candidateUserElem.attr('title/text') || candidateUserElem.attr(['title', 'text']) || ''; } catch { }
               userLabelForCheck = normalize(userLabelForCheck);
             }
             if (!candidateUserElem || userLabelForCheck !== modelLabel) {
@@ -1190,8 +1203,8 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
           // preparar linhas do usuário (para comparação)
           let userAttrsRaw = '';
           let userOpsRaw = '';
-          try { userAttrsRaw = candidateUserElem ? (candidateUserElem.attr('attrsText/text') || '') : ''; } catch {}
-          try { userOpsRaw = candidateUserElem ? (candidateUserElem.attr('opsText/text') || '') : ''; } catch {}
+          try { userAttrsRaw = candidateUserElem ? (candidateUserElem.attr('attrsText/text') || '') : ''; } catch { }
+          try { userOpsRaw = candidateUserElem ? (candidateUserElem.attr('opsText/text') || '') : ''; } catch { }
 
           const userAttrs = String(userAttrsRaw).split('\n').map(l => l.trim()).filter(l => l.length > 0);
           const userOps = String(userOpsRaw).split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -1261,8 +1274,8 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
           if (modelLabel && candidateUserElem) {
             let modelStereo = '';
             let userStereo = '';
-            try { modelStereo = modelElem.attr('stereotype/text') || ''; } catch {}
-            try { userStereo = candidateUserElem.attr('stereotype/text') || ''; } catch {}
+            try { modelStereo = modelElem.attr('stereotype/text') || ''; } catch { }
+            try { userStereo = candidateUserElem.attr('stereotype/text') || ''; } catch { }
             modelStereo = normalize(modelStereo);
             userStereo = normalize(userStereo);
             if (modelStereo && modelStereo !== userStereo) {
@@ -1347,14 +1360,14 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
             if (isAssociationModel) {
               // tenta match no sentido direto
               if ((modelSourceLabel === '' || userSourceLabel === modelSourceLabel) &&
-                  (modelTargetLabel === '' || userTargetLabel === modelTargetLabel)) {
+                (modelTargetLabel === '' || userTargetLabel === modelTargetLabel)) {
                 matchedDirection = true;
                 inverted = false;
               }
               // tenta match invertido (source<->target)
               if (!matchedDirection &&
-                  (modelSourceLabel === '' || userTargetLabel === modelSourceLabel) &&
-                  (modelTargetLabel === '' || userSourceLabel === modelTargetLabel)) {
+                (modelSourceLabel === '' || userTargetLabel === modelSourceLabel) &&
+                (modelTargetLabel === '' || userSourceLabel === modelTargetLabel)) {
                 matchedDirection = true;
                 inverted = true;
                 // quando invertido, vamos trocar as multiplicidades para comparação abaixo
@@ -1363,7 +1376,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
             } else {
               // exige direção (source->target)
               if ((modelSourceLabel === '' || userSourceLabel === modelSourceLabel) &&
-                  (modelTargetLabel === '' || userTargetLabel === modelTargetLabel)) {
+                (modelTargetLabel === '' || userTargetLabel === modelTargetLabel)) {
                 matchedDirection = true;
                 inverted = false;
               } else {
@@ -1690,6 +1703,19 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.tipsVisible) return;
+
+    const target = event.target as HTMLElement;
+    const cluesElement = this.clues?.nativeElement;
+
+    // Se o clique foi fora do elemento de dicas, fecha
+    if (cluesElement && !cluesElement.contains(target)) {
+      this.tipsVisible = false;
+    }
+  }
+
   // método para alternar
   public toggleDiagramType(): void {
     this.diagramType = this.diagramType === 'USE_CASE' ? 'CLASS' : 'USE_CASE';
@@ -1714,9 +1740,12 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       // ignore
     }
 
+    // Cleanup inspector drag listeners
+    this.cleanupInspectorDrag();
+
     // ✅ Cancelar operações ativas antes de destruir
     this.cancelActiveOperation();
-    
+
     if (this.paper) {
       this.paper.remove();
       this.paper = null;
@@ -1739,7 +1768,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     if (!this.graph) {
       return null;
     }
-    
+
     try {
       return this.graph.toJSON();
     } catch (error) {
@@ -1750,8 +1779,8 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   // ✅ Método privado para configurar dados do diagrama
   private setupDiagramData(phase?: Phase, phaseUser?: PhaseUser): void {
-    
-    if(phase?.diagramInitial) {
+
+    if (phase?.diagramInitial) {
       console.log('🔍 Configurando dados do diagrama com Phase:', phase);
       this.initialJSON = JSON.parse(phase.diagramInitial);
     } else if (phaseUser) {
@@ -1774,7 +1803,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     }
 
 
-    if(phaseUser) {
+    if (phaseUser) {
       this.correctsJSON = phaseUser.phase?.correctDiagrams || [];
     } else {
       this.correctsJSON = [];
@@ -1788,7 +1817,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
 
   // ✅ Método público para reinicializar se necessário
   public reinitialize(phase?: Phase): void {
-    if(phase) {
+    if (phase) {
       this.initializeJointJS(phase); // Inicializa novamente
     } else {
       this.initializeJointJS(); // Inicializa novamente
@@ -1812,7 +1841,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     const attributes = attrsRaw.split('\n').filter(l => l.trim().length).map(line => {
       const trimmed = line.trim();
       // detect visibility symbol
-      const visSymbol = ['+','-','#','~'].includes(trimmed[0]) ? trimmed[0] : '';
+      const visSymbol = ['+', '-', '#', '~'].includes(trimmed[0]) ? trimmed[0] : '';
       let rest = visSymbol ? trimmed.substring(1).trim() : trimmed;
       const parts = rest.split(':');
       const namePart = (parts[0] || '').trim();
@@ -1827,7 +1856,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     // parse operations: linhas "± signature: return"
     const operations = opsRaw.split('\n').filter(l => l.trim().length).map(line => {
       const trimmed = line.trim();
-      const visSymbol = ['+','-','#','~'].includes(trimmed[0]) ? trimmed[0] : '';
+      const visSymbol = ['+', '-', '#', '~'].includes(trimmed[0]) ? trimmed[0] : '';
       let rest = visSymbol ? trimmed.substring(1).trim() : trimmed;
       // if has ": return" split, else everything is signature
       const parts = rest.split(':');
@@ -1848,13 +1877,19 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     };
 
     // position inspector after it becomes visible and DOM updates
-    setTimeout(() => this.updateInspectorPosition(), 0);
+    setTimeout(() => {
+      this.updateInspectorPosition();
+      this.setupInspectorDrag();
+    }, 0);
   }
 
   // Fecha o inspector
   public closeInspector() {
     this.inspectorVisible = false;
     this.selectedClassElement = null;
+    this.cleanupInspectorDrag();
+    // Reset manual move flag when closing
+    this.inspectorManuallyMoved = false;
   }
 
   // helpers de visibilidade
@@ -1895,7 +1930,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     this.selectedClassElement.attr('attrsText/text', lines.join('\n'));
     // opcional: redimensiona áreas com base no conteúdo (se implementado)
     if ((this as any).adjustClassAreasToContent) {
-      try { (this as any).adjustClassAreasToContent(this.selectedClassElement); } catch(e) {}
+      try { (this as any).adjustClassAreasToContent(this.selectedClassElement); } catch (e) { }
     }
   }
 
@@ -1909,7 +1944,7 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
     });
     this.selectedClassElement.attr('opsText/text', lines.join('\n'));
     if ((this as any).adjustClassAreasToContent) {
-      try { (this as any).adjustClassAreasToContent(this.selectedClassElement); } catch(e) {}
+      try { (this as any).adjustClassAreasToContent(this.selectedClassElement); } catch (e) { }
     }
   }
 
@@ -2036,5 +2071,83 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
         console.warn('Failed to adjust class height on removeOperation', err);
       }
     }
+  }
+
+  // Setup inspector dragging functionality
+  private setupInspectorDrag() {
+    if (!this.inspectorRef || !this.inspectorRef.nativeElement) return;
+
+    const inspectorEl = this.inspectorRef.nativeElement as HTMLElement;
+    const headerEl = inspectorEl.querySelector('.inspector-header') as HTMLElement;
+    
+    if (!headerEl) return;
+
+    // Make header indicate it's draggable
+    headerEl.style.cursor = 'move';
+
+    const onMouseDown = (e: MouseEvent) => {
+      // Only start drag if clicking on the header (not the close button)
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('inspector-close')) return;
+
+      this.isDraggingInspector = true;
+      
+      const rect = inspectorEl.getBoundingClientRect();
+      this.inspectorDragOffset = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+
+      // Prevent text selection while dragging
+      e.preventDefault();
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!this.isDraggingInspector) return;
+
+      // Mark that user has manually moved the inspector
+      this.inspectorManuallyMoved = true;
+
+      // Calculate new position
+      this.inspectorPosition = {
+        x: e.clientX - this.inspectorDragOffset.x,
+        y: e.clientY - this.inspectorDragOffset.y
+      };
+
+      // Apply position
+      inspectorEl.style.left = `${this.inspectorPosition.x}px`;
+      inspectorEl.style.top = `${this.inspectorPosition.y}px`;
+      inspectorEl.style.right = 'auto'; // Remove auto positioning
+    };
+
+    const onMouseUp = () => {
+      this.isDraggingInspector = false;
+    };
+
+    // Attach event listeners
+    headerEl.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+
+    // Store cleanup function
+    (inspectorEl as any)._dragCleanup = () => {
+      headerEl.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }
+
+  // Cleanup inspector drag event listeners
+  private cleanupInspectorDrag() {
+    if (!this.inspectorRef || !this.inspectorRef.nativeElement) return;
+    
+    const inspectorEl = this.inspectorRef.nativeElement as HTMLElement;
+    if ((inspectorEl as any)._dragCleanup) {
+      (inspectorEl as any)._dragCleanup();
+      delete (inspectorEl as any)._dragCleanup;
+    }
+
+    // Reset drag state
+    this.isDraggingInspector = false;
   }
 }

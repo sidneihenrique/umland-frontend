@@ -31,14 +31,12 @@
         </button>
         
         <div class="character-container">
-            <!-- Balão de fala -->
             @if (isSpeaking) {
-            <div class="speech-bubble">
+            <div class="speech-bubble" #speechBubble>
                 <app-carousel [items]="phase?.characterDialogues || []"></app-carousel>
             </div>
             }
 
-            <!-- ✅ Personagem usando URL correta -->
             <img [src]="getCharacterImageUrl()"
                 [alt]="phase?.character?.name"
                 class="character"
@@ -51,27 +49,27 @@
         <button class="btn-icon filled" (click)="onSaveClick()" [ngClass]="{ 'btn-disabled': saveDisabled }" [disabled]="saveDisabled">
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
-    </div>
-    
-    <!-- ✅ Indicador de salvamento automático -->
-    <div class="auto-save-indicator" 
-         [class.saving]="isSaving"
-         [class.enabled]="autoSaveEnabled">
-        <div class="save-status">
-            <lucide-icon [name]="isSaving ? 'loader-2' : 'cloud-upload'" 
-                         class="save-icon" 
-                         [class.spinning]="isSaving"
-                         [size]="16">
-            </lucide-icon>
-            <span class="save-text">{{ getLastSaveText() }}</span>
+        
+        <!-- ✅ Indicador de salvamento automático -->
+        <div class="auto-save-indicator" 
+             [class.saving]="isSaving"
+             [class.enabled]="autoSaveEnabled">
+            <div class="save-status">
+                <lucide-icon [name]="isSaving ? 'loader-2' : 'cloud-upload'" 
+                             class="save-icon" 
+                             [class.spinning]="isSaving"
+                             [size]="16">
+                </lucide-icon>
+                <span class="save-text">{{ getLastSaveText() }}</span>
+            </div>
+            <button class="toggle-autosave" 
+                    (click)="toggleAutoSave()" 
+                    [title]="autoSaveEnabled ? 'Desativar salvamento automático' : 'Ativar salvamento automático'">
+                <lucide-icon [name]="autoSaveEnabled ? 'toggle-right' : 'toggle-left'" 
+                             [size]="14">
+                </lucide-icon>
+            </button>
         </div>
-        <button class="toggle-autosave" 
-                (click)="toggleAutoSave()" 
-                [title]="autoSaveEnabled ? 'Desativar salvamento automático' : 'Ativar salvamento automático'">
-            <lucide-icon [name]="autoSaveEnabled ? 'toggle-right' : 'toggle-left'" 
-                         [size]="14">
-            </lucide-icon>
-        </button>
     </div>
 
     <diagram-editor #diagramEditor [phaseUser]="phaseUser" [tips]="tips" [diagramType]="phase?.diagramType || 'USE_CASE'"></diagram-editor>
@@ -91,7 +89,7 @@
     </app-dialog-finished-gamephase>
 
     <app-advise-modal 
-        [visible]="true" 
+        [(visible)]="visibleAdviseTypePhase" 
         [title]="getPhaseTitle()" 
         [description]="getPhaseDescription()" 
         [videoSrc]="getPhaseVideoSrc()">
