@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -6,6 +6,7 @@ import { DataService } from '../../services/data.service';
 import { AuthService } from '../auth/auth.service';
 import { FooterComponent } from '../footer/footer.component';
 import { NotificationService } from '../../services/notification.service';
+import { AppContextService } from '../../services/app-context.service';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +15,7 @@ import { NotificationService } from '../../services/notification.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit, OnDestroy {
   email: string = '';
   password: string = '';
   isLoading: boolean = false;
@@ -23,8 +24,17 @@ export class LoginComponent {
     private router: Router,
     private dataService: DataService,
     private authService: AuthService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private appContextService: AppContextService
   ) { }
+
+  ngOnInit() {
+    this.appContextService.setContext('login');
+  }
+
+  ngOnDestroy() {
+    this.appContextService.setContext('other');
+  }
 
   onSubmit() {
     if (!this.email || !this.password) {

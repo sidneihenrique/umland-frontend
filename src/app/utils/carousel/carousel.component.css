@@ -16,6 +16,14 @@
 
     height: fit-content;
 
+    /* Permitir seleção de texto */
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+
+    /* Desabilitar cursor de arrasto */
+    cursor: text;
 }
 
 p {
@@ -25,6 +33,13 @@ p {
     margin: 0;
 
     padding: 0 40px;
+
+    /* Garantir que o texto seja selecionável */
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    cursor: text;
 }
 
 .swiper-button-prev,

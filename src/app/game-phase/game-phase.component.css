@@ -2,101 +2,13 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-
-    padding: 16px;
-
-}
-
-.game-timers {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-header .game-time {
-    font-size: 18px;
-    font-weight: 600;
-}
-
-header #exit {
-    background: var(--red);
-}
-
-header #exit .lucide-icon {
-    color: var(--white);
-}
-
-header .right {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
-.money {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.money .lucide-icon {
-    color: var(--yellow);
-
-}
-
-.amount {
-    font-size: 22px;
-    font-weight: 800;
-}
-
-.reputation {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.user-icon-wrapper {
-    width: 64px;
-    height: 64px;
-
-    border: 3px solid var(--black);
-    border-radius: 50%;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-
-    overflow: hidden;
-}
-
-.user-icon-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.user-icon-wrapper {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
-
-.user-name {
-    color: var(--black);
-    text-align: center;
-    font-weight: 700;
 }
 
 .action-buttons {
     width: 80%;
+    margin: 0 auto;
+    padding-bottom: 0.3rem;
+    margin-top: -20px;
 
     display: flex;
     align-items: center;
@@ -110,8 +22,9 @@ header .right {
 }
 
 diagram-editor {
-    width: 80%;
-    height: 79vh;
+    width: 95%;
+    /* height: 79vh; */
+    margin: 0 auto;
 }
 
 .clues-container {
@@ -164,6 +77,13 @@ diagram-editor {
     display: flex;
     justify-content: center;
     align-items: center;
+    
+    /* Permitir seleção de texto */
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    cursor: text;
 }
 
 .clues-navegation {
@@ -249,36 +169,190 @@ diagram-editor {
   line-height: 1.4;
 }
 
-/* Balão de fala */
 .speech-bubble {
   position: absolute;
-  bottom: 100%;
-  right: 180px;
-  width: 362px;
-  height: fit-content;
-  background: var(--gray);
-  border-radius: 20px;
-  padding: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  bottom: 260px;
+  right: 260px;
+  width: 420px;
+  height: 200px;
+  background: #ffffff;
+  border: 3px solid #2c3e50;
+  border-radius: 24px;
+  padding: 20px 24px 20px 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 2;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeInBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  overflow: visible;
+  cursor: default;
 }
 
-/* Triângulo do balão */
-.speech-bubble:after {
+.speech-bubble app-carousel {
+  width: 100%;
+  height: 100%;
+  cursor: default;
+  position: relative;
+}
+
+.speech-bubble .swiper {
+  cursor: default;
+  height: 100%;
+  position: relative;
+}
+
+.speech-bubble .swiper-wrapper {
+  height: 100%;
+}
+
+.speech-bubble .swiper-slide {
+  cursor: text;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 30px);
+  padding: 0;
+  
+  /* Permitir seleção de texto */
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.speech-bubble app-carousel p {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #2c3e50;
+  padding: 0 36px;
+  margin: 0;
+  text-align: center;
+  cursor: text;
+  overflow-y: auto;
+  max-height: 100%;
+  width: 100%;
+  
+  /* Garantir seleção de texto */
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.speech-bubble .swiper-button-prev,
+.speech-bubble .swiper-button-next {
+  width: 32px;
+  height: 32px;
+  background: #f8f9fa;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.speech-bubble .swiper-button-prev:hover,
+.speech-bubble .swiper-button-next:hover {
+  background: #e9ecef;
+  transform: scale(1.1);
+  cursor: pointer;
+}
+
+.speech-bubble .swiper-button-prev::after,
+.speech-bubble .swiper-button-next::after {
+  font-size: 16px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.speech-bubble .swiper-pagination-bullet {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+  background: #cbd5e0;
+  opacity: 0.5;
+  margin: 0 4px;
+}
+
+.speech-bubble .swiper-pagination-bullet-active {
+  background: #2c3e50;
+  opacity: 1;
+  width: 28px;
+}
+
+.speech-bubble .swiper-pagination {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  height: auto;
+}
+
+/* Scoped spacing fix for the dialogues carousel without changing modal aesthetics */
+.speech-bubble app-carousel ::ng-deep .swiper {
+  /* Fill the bubble height and reserve space for pagination */
+  height: 100%;
+  padding-bottom: 28px;
+}
+
+.speech-bubble app-carousel ::ng-deep .swiper-wrapper {
+  min-height: 100%;
+  align-items: center; /* vertical centering of slides */
+}
+
+.speech-bubble app-carousel ::ng-deep .swiper-slide {
+  height: calc(100% - 28px); /* keep clear of pagination area */
+  padding: 0; /* avoid pushing content up */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.speech-bubble app-carousel ::ng-deep .swiper-pagination {
+  bottom: 8px; /* small breathing room from bottom */
+}
+
+.speech-bubble::before {
   content: '';
   position: absolute;
-  bottom: -10px;
-  right: 30px;
-  border-width: 10px 10px 0;
-  border-style: solid;
-  border-color: var(--gray) transparent;
+  top: 50%;
+  right: -18px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-left: 18px solid #2c3e50;
+  z-index: -1;
 }
 
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -13px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-left: 13px solid #ffffff;
+  z-index: 0;
+}
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fadeInBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .btn-icon .filled .watch-icon, #watch {
@@ -365,22 +439,16 @@ header .watch-time.active {
     color: var(--white);
 }
 
-/* ✅ Estilos para indicador de salvamento automático */
 .auto-save-indicator {
-    width: fit-content;
-    margin-left: calc(32px + 48px);
-
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid #e1e5e9;
     border-radius: 8px;
-    padding: 6px 12px;
-    margin-bottom: 8px;
+    padding: 6px 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
+    gap: 6px;
+    font-size: 11px;
     color: #666;
-    z-index: 5;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
 }
@@ -431,14 +499,14 @@ header .watch-time.active {
   color: #333;
 }
 
-.title-phase  {
+.title-phase {
     width: 80%;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 16px;
+    font-weight: 600;
     color: var(--black);
-    text-align: left;
-    margin-left: 80px;
-    opacity: 0.6;
+    text-align: center;
+    margin: -30px auto 20px auto;
+    padding: 4px 16px;
 }
 
 @keyframes spin {

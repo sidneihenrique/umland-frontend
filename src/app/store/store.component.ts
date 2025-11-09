@@ -81,7 +81,8 @@ export class StoreComponent implements OnInit, OnDestroy {
   }
 
   private loadUserDataFromStorage() {
-    const userJson = localStorage.getItem('user');
+    // ✅ CORRIGIDO: Usar 'currentUser' para consistência
+    const userJson = localStorage.getItem('currentUser');
     const inventoryJson = localStorage.getItem('inventory');
     if (userJson && inventoryJson) {
       const userData = JSON.parse(userJson);
@@ -182,6 +183,11 @@ export class StoreComponent implements OnInit, OnDestroy {
 
     const newCoinsAmount = this.userMoney - item.price;
     
+    console.log('🛒 Comprando item:', item.title);
+    console.log('💰 Moedas ANTES da compra:', this.userMoney);
+    console.log('💰 Preço do item:', item.price);
+    console.log('💰 Moedas DEPOIS da compra:', newCoinsAmount);
+    
     // Monta o objeto completo do usuário com as moedas atualizadas
     const updatedUserData: any = {
       name: this.userData.name,
@@ -194,9 +200,15 @@ export class StoreComponent implements OnInit, OnDestroy {
     
     this.userService.updateUser(this.userData.id, updatedUserData).subscribe({
       next: (updatedUser: User) => {
-        // Atualiza os dados locais
+        console.log('✅ Usuário atualizado no backend:', updatedUser);
+        console.log('💰 Moedas salvas no backend:', updatedUser.coins);
+        
+        // ✅ Atualiza os dados locais IMEDIATAMENTE
         this.userData = updatedUser;
         this.userMoney = updatedUser.coins;
+        
+        // ✅ Atualiza localStorage E DataService
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
         this.dataService.updateUserData(updatedUser);
         
         // Agora solicita ao backend que adicione o item ao inventário do usuário
@@ -227,10 +239,10 @@ export class StoreComponent implements OnInit, OnDestroy {
 
             // Notificação de sucesso
             this.notificationService.showSuccess(`${item.title} comprado com sucesso!`);
-            console.log(`Item ${item.title} comprado e adicionado ao inventário com sucesso!`);
+            console.log(`✅ Item ${item.title} comprado e adicionado ao inventário!`);
           },
           error: (err) => {
-            console.error('Erro ao adicionar item no inventário (backend):', err);
+            console.error('❌ Erro ao adicionar item no inventário (backend):', err);
             // fallback: atualiza inventário localmente (não ideal mas evita perda UX)
             this.updateInventory(item.key);
             this.notificationService.showError('Compra feita, mas falha ao atualizar inventário no servidor.');
@@ -238,7 +250,7 @@ export class StoreComponent implements OnInit, OnDestroy {
         });
       },
       error: (error) => {
-        console.error('Erro ao atualizar moedas no backend:', error);
+        console.error('❌ Erro ao atualizar moedas no backend:', error);
         this.notificationService.showError('Erro ao processar a compra. Tente novamente.');
         // Em caso de erro, ainda atualiza localmente como fallback
         this.updateLocalUserData(item);
@@ -265,8 +277,8 @@ export class StoreComponent implements OnInit, OnDestroy {
       this.userData.coins -= item.price;
       this.userMoney = this.userData.coins;
       
-      // Salva no localStorage
-      localStorage.setItem('user', JSON.stringify(this.userData));
+      // ✅ CORRIGIDO: Usar 'currentUser' para consistência
+      localStorage.setItem('currentUser', JSON.stringify(this.userData));
       
       // Atualiza inventário
       this.updateInventory(item.key);

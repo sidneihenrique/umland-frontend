@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -13,8 +13,10 @@ export class AdviseModalComponent {
   @Input() title?: string = '';
   @Input() description?: string = '';
   @Input() videoSrc?: string = '';
+  @Output() visibleChange = new EventEmitter<boolean>();
 
   hide() {
     this.visible = false;
+    this.visibleChange.emit(false);
   }
 }

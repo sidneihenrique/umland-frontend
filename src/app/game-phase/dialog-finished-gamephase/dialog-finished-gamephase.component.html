@@ -3,7 +3,8 @@
 
         <div class="header">
             <h2>Parabéns!</h2>
-            <p>Fase concluída com sucesso</p>
+            <p *ngIf="!isFinalPhase()">Fase concluída com sucesso</p>
+            <p *ngIf="isFinalPhase()">🎉 Você finalizou o jogo! 🎉</p>
         </div>
 
         <div class="content">
@@ -36,7 +37,11 @@
 
         </div>
 
-        <button class="back-to-map" (click)="backToMenu()">VOLTAR PARA O MAPA <lucide-icon name="rotate-ccw" class="lucide-icon"></lucide-icon></button>
+        <button class="back-to-map" (click)="backToMenu()">
+            <span *ngIf="!isFinalPhase()">VOLTAR PARA O MAPA</span>
+            <span *ngIf="isFinalPhase()">VER CRÉDITOS</span>
+            <lucide-icon [name]="isFinalPhase() ? 'film' : 'rotate-ccw'" class="lucide-icon"></lucide-icon>
+        </button>
     </div>
     
 </div>

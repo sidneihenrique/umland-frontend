@@ -75,14 +75,16 @@ export class DataService {
 
     updateUserData(userData: User) {
         if (isPlatformBrowser(this.platformId)) {
-            localStorage.setItem('user', JSON.stringify(userData));
+            // ✅ CORRIGIDO: Usar 'currentUser' para consistência
+            localStorage.setItem('currentUser', JSON.stringify(userData));
             this.userDataSubject.next(userData);
         }
     }
 
     loadUserData(): User | null {
         if (isPlatformBrowser(this.platformId)) {
-            const userJson = localStorage.getItem('user');
+            // ✅ CORRIGIDO: Usar 'currentUser' para consistência
+            const userJson = localStorage.getItem('currentUser');
             if (userJson) {
                 const userData = JSON.parse(userJson);
                 this.userDataSubject.next(userData);

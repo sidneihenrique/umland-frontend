@@ -30,8 +30,10 @@
   min-width: 40vw;
   max-width: 50vw;
   max-height: 70vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
+  overflow: visible;
 }
 
 .backpack-dialog img {
@@ -108,6 +110,9 @@
   width: 100%;
   padding: 1rem;
   grid-auto-flow: row;
+  overflow-y: auto;
+  overflow-x: clip;
+  max-height: 50vh;
 }
 
 .header-left {
@@ -141,6 +146,26 @@
   opacity: 1;
   position: relative;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  transition: all 0.3s ease;
+  z-index: 1;
+  overflow: visible;
+}
+
+.inventory-slot.filled.selected {
+  border-color: var(--yellow);
+  background-color: rgba(255, 214, 0, 0.1);
+  box-shadow: 0 0 15px rgba(255, 214, 0, 0.3);
+  z-index: 100;
+}
+
+.inventory-slot.filled:hover {
+  border-color: var(--yellow);
+  transform: translateY(-2px);
+  z-index: 1001;
+  overflow: visible;
 }
 
 .inventory-slot:hover {
@@ -172,26 +197,29 @@
 }
 
 .description-slot {
-  position: absolute;
-  top: 0;
-  left: calc(100% + 8px);
+  position: fixed;
   background-color: var(--gray);
   border-radius: 8px;
   margin: 0;
   width: 0;
-  height: 110px;
+  min-height: 110px;
+  max-height: 200px;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
   display: flex;
   align-items: center;
-  z-index: 10;
+  z-index: 10000;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .description-slot.expanded {
-  width: calc(300% + 27px);
+  width: 350px;
   opacity: 1;
-  padding: 0 12px;
+  padding: 12px;
+  pointer-events: auto;
+  overflow-y: auto;
 }
 
 .description-content {
@@ -212,4 +240,47 @@
 
 .hidden {
   display: none;
+}
+
+.backpack-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 1rem 0.5rem 1rem;
+  border-top: 2px solid var(--yellow);
+  padding-top: 1rem;
+}
+
+.use-item-button {
+  background-color: var(--green);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  min-width: 250px;
+  justify-content: center;
+  height: 45px;
+}
+
+.use-item-button:hover:not(:disabled) {
+  background-color: var(--yellow);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 214, 0, 0.4);
+}
+
+.use-item-button:disabled {
+  background-color: var(--gray);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.use-item-button:active:not(:disabled) {
+  transform: scale(0.98);
 }

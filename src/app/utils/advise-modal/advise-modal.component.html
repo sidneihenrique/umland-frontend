@@ -1,4 +1,4 @@
-<div class="overlay" [class.visible]="visible" (click)="hide()">
+<div *ngIf="visible" class="overlay" [class.visible]="visible" (click)="$event.stopPropagation()">
     <div class="dialog" (click)="$event.stopPropagation()">
 
         <div class="content">

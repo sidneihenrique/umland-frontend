@@ -7,6 +7,7 @@ import { AuthService } from '../auth/auth.service';
 import { UserService } from '../../services/user.service';
 import { Avatar } from '../../services/phase.service';
 import { FileUrlBuilder } from '../../config/files.config';
+import { AppContextService } from '../../services/app-context.service';
 
 @Component({
   selector: 'app-register',
@@ -39,7 +40,8 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private userService: UserService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private appContextService: AppContextService
   ) {
     this.registerForm = this.fb.group({
       nome: ['', Validators.required],
@@ -52,6 +54,7 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.appContextService.setContext('register');
     this.loadAvatars();
     
     const letterString = 'ABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZ';
@@ -128,6 +131,8 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.appContextService.setContext('other');
+    
     if (!this.isBrowser) return;
     
     if (this.animationInterval) {

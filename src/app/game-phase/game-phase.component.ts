@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit, OnDestroy, Inject, PLATFORM_ID, Input } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewContainerRef, ComponentRef, OnInit, OnDestroy, Inject, PLATFORM_ID, Input, ElementRef, HostListener } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -19,6 +19,7 @@ import { HeaderComponent } from '../header/header.component';
 import { PhaseService, Phase, PHASE_TYPES, PhaseType } from '../../services/phase.service';
 import { AdviseModalComponent } from '../utils/advise-modal/advise-modal.component';
 import { TipService } from '../../services/tip.service';
+import { AppContextService } from '../../services/app-context.service';
 // ✅ Import do PhaseUserService
 import { PhaseUserService } from '../../services/phase-user.service';
 import { PhaseUser } from '../../services/game-map.service';
@@ -60,7 +61,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   private storeSubscription?: Subscription;
   private inventorySubscription?: Subscription;
   private startTime: number = 0;
-  private visibleAdviseTypePhase: boolean = true;
+  visibleAdviseTypePhase: boolean = true;
 
   @Input() phaseId!: number;
   phaseUser?: PhaseUser;
@@ -80,6 +81,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   
   @ViewChild(StoreComponent) store!: StoreComponent;
   private userDataSubscription?: Subscription;
+
+  @ViewChild('speechBubble', { read: ElementRef }) speechBubble?: ElementRef;
 
   @ViewChild('dialogContainer', { read: ViewContainerRef, static: true })
   dialogContainer!: ViewContainerRef;
@@ -138,7 +141,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     private tipService: TipService,
     private userService: UserService,
     private phaseUserService: PhaseUserService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private appContextService: AppContextService
   ) {
   }
 
@@ -155,40 +159,35 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
       const userId = localStorage.getItem('userId');
       if (userId) {
         this.startTimer();
-        this.loadWatchCount();        // Subscribe to inventory changes
+        this.loadWatchCount();        
         this.inventorySubscription = this.storageService.getInventoryUpdates().subscribe(inventory => {
           if (inventory) {
             this.watchCount = inventory['watch'] || 0;
             console.log('Watch count updated from storage service:', this.watchCount);
           }
         });
-        // Inscreve-se nas atualizações de dados do usuário
         this.userDataSubscription = this.dataService.userData$.subscribe(userData => {
           if (userData) {
             this.userData = userData;
           }
         });
 
-        // registra listeners dos itens (apenas em browser)
         this.registerBackpackEventListeners();
 
-        // Carrega os dados iniciais
         this.loadUserData(userId);
         this.tipService.getAllTips().subscribe((tips) => {
-          // map para extrair o campo de texto (ajuste 'tip.tip' se o campo for diferente)
           const allTips = Array.isArray(tips) ? tips.map((t: any) => t.tip || '') : [];
 
-          // embaralha e retorna até 10 aleatórias
           this.tips = this.pickRandomTips(allTips, 10);
         });
       } else {
-        // this.router.navigate(['/login']);
       }
     }
 
     this.phaseId = Number(this.route.snapshot.paramMap.get('id'));
+    
+    this.appContextService.setContext('game-phase', this.phaseId);
 
-    // Carregue os dados da fase do service
     this.phaseService.getPhaseById(this.phaseId).subscribe(phase => {
       if (phase) {
         this.phase = phase;
@@ -245,10 +244,11 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.appContextService.setContext('other');
+    
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
-    // ✅ Limpar timer de salvamento automático
     if (this.autoSaveInterval) {
       clearInterval(this.autoSaveInterval);
     }
@@ -261,6 +261,8 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     if (this.inventorySubscription) {
       this.inventorySubscription.unsubscribe();
     }
+    
+    this.unregisterBackpackEventListeners();
   }
 
     // --------------------------
@@ -437,6 +439,20 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.isSpeaking) return;
+
+    const target = event.target as HTMLElement;
+    const speechElement = this.speechBubble?.nativeElement;
+    const characterElement = document.querySelector('.character');
+
+    if (speechElement && !speechElement.contains(target) && !characterElement?.contains(target)) {
+      this.isSpeaking = false;
+      this.characterState = 'hidden';
+    }
+  }
+
   private loadUserData(userId: string) {
     this.userService.getUserById(Number(userId)).subscribe({
       next: (response: User) => {
@@ -464,6 +480,12 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
         nextEl: '.swiper-button-next',
         prevEl: '.swiper-button-prev',
       },
+
+      // Desabilitar arrastar/swipe para permitir seleção de texto
+      allowTouchMove: false,
+      simulateTouch: false,
+      noSwiping: true,
+      noSwipingClass: 'swiper-slide'
 
     });
   }

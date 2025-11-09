@@ -11,7 +11,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 9998;
     transition: all 0.2s ease-out;
 }
 
@@ -59,7 +59,6 @@
     font-size: 24px;
     font-weight: 800;
     color: var(--yellow)
-    
 }
 
 .content p {
@@ -67,7 +66,7 @@
     font-weight: 400;
 }
 
-.actions { 
+.actions {
     width: 100%;
     display: flex;
     align-items: center;
@@ -76,51 +75,62 @@
 }
 
 .actions .btn {
-    padding: 8px 24px;
+    padding: 10px 28px;
 
-    border-radius: 6px;
+    border-radius: 8px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    font-size: 18px;
+    font-size: 16px;
+    font-weight: 700;
 
     cursor: pointer;
 
+    outline: none;
+    min-width: 100px;
 }
 
 .btn-secondary {
     background: var(--gray);
     color: var(--black);
 
-    border: 1px solid var(--black);
+    border: 2px solid var(--gray);
 
     font-weight: 400;
 
-    transition: background 0.3s;
+    transition: all 0.3s ease;
 }
 
 .btn-secondary:hover {
     background: var(--white);
+    border: 2px solid #999;
 
+    color: var(--black);
+
+    transform: translateY(-1px);
 }
 
 .btn-primary {
     background: var(--green);
     color: var(--white);
 
-    border: 1px solid var(--green);
+    border: 2px solid var(--green);
 
     font-weight: 800;
 
-    transition: border 0.3s, color 0.3s;
+    transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
-    border: 1px solid var(--black);
+    background: #00b814;
+    border: 2px solid #00b814;
 
-    color: var(--black);
+    color: var(--white);
+
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 216, 25, 0.3);
 }
 
 video {

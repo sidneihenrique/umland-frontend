@@ -1,0 +1,142 @@
+/* Estilos específicos para tips-carousel para não afetar outros carousels */
+app-tips-carousel .swiper {
+  width: 100%;
+  height: fit-content;
+  padding-bottom: 50px;
+  min-height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+app-tips-carousel .swiper-wrapper {
+    display: flex;
+    height: fit-content;
+    min-height: 140px;
+    position: relative;
+}
+
+app-tips-carousel .swiper-slide {
+    text-align: left;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: fit-content;
+    min-height: 140px;
+    padding: 20px 0;
+    
+    /* Impedir que slides duplicados interfiram no clique */
+    pointer-events: none;
+}
+
+app-tips-carousel .swiper-slide-active {
+    pointer-events: auto;
+}
+
+app-tips-carousel p {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.8;
+    padding: 0 64px;
+    color: rgba(255, 255, 255, 0.98);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    margin: 0;
+    pointer-events: none;
+    letter-spacing: 0.3px;
+}
+
+app-tips-carousel .swiper-button-prev,
+app-tips-carousel .swiper-button-next {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: all;
+    
+    width: 42px;
+    height: 42px;
+
+    background: linear-gradient(145deg, #2d2d2d, #1c1c1c);
+    border: 3px solid var(--yellow);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), 
+                0 0 12px rgba(235, 178, 53, 0.2);
+
+    z-index: 10;
+    cursor: pointer;
+}
+
+app-tips-carousel .swiper-button-prev:hover,
+app-tips-carousel .swiper-button-next:hover {
+    background: var(--yellow);
+    transform: scale(1.15);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6),
+                0 0 24px rgba(235, 178, 53, 0.8);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+app-tips-carousel .swiper-button-prev.swiper-button-disabled,
+app-tips-carousel .swiper-button-next.swiper-button-disabled {
+    opacity: 0;
+    cursor: default;
+    pointer-events: none;
+}
+
+app-tips-carousel .swiper-button-prev::after,
+app-tips-carousel .swiper-button-next::after { 
+    color: var(--yellow);
+    font-size: 18px;
+    font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+app-tips-carousel .swiper-button-prev:hover::after,
+app-tips-carousel .swiper-button-next:hover::after {
+    color: #1a1a1a;
+    text-shadow: none;
+}
+
+app-tips-carousel .swiper-horizontal > .swiper-pagination-bullets, 
+app-tips-carousel .swiper-pagination-bullets.swiper-pagination-horizontal, 
+app-tips-carousel .swiper-pagination-custom, 
+app-tips-carousel .swiper-pagination-fraction {
+    bottom: 14px !important;
+}
+
+app-tips-carousel .swiper-button-next, 
+app-tips-carousel .swiper-rtl .swiper-button-prev {
+    right: 8px;
+    left: auto;
+}
+
+app-tips-carousel .swiper-button-prev, 
+app-tips-carousel .swiper-rtl .swiper-button-next {
+    left: 8px;
+    right: auto;
+}
+
+app-tips-carousel .swiper-pagination-bullet {
+    width: 11px !important;
+    height: 11px !important;
+    background: rgba(255, 255, 255, 0.4) !important;
+    opacity: 1 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    margin: 0 6px !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+app-tips-carousel .swiper-pagination-bullet:hover {
+    background: rgba(255, 255, 255, 0.6) !important;
+    transform: scale(1.1) !important;
+}
+
+app-tips-carousel .swiper-pagination-bullet-active {
+    background: var(--yellow) !important;
+    transform: scale(1.4) !important;
+    box-shadow: 0 0 16px rgba(235, 178, 53, 1),
+                0 0 8px rgba(235, 178, 53, 0.6),
+                0 2px 8px rgba(0, 0, 0, 0.4) !important;
+    border-color: var(--yellow) !important;
+}

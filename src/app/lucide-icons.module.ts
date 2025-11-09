@@ -35,7 +35,8 @@ import {
   MousePointerClick,
   MapPinOff,
   Linkedin,
-  Instagram
+  Instagram,
+  Zap
 } from 'lucide-angular';
 
 @NgModule({
@@ -73,7 +74,8 @@ import {
     MousePointerClick,
     MapPinOff,
     Linkedin,
-    Instagram
+    Instagram,
+    Zap
   })],
   exports: [LucideAngularModule],
 })
