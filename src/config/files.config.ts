@@ -1,7 +1,10 @@
 import { API_CONFIG } from "./api.config";
 
 export const FILES_CONFIG = {
-  BASE_URL: `${API_CONFIG.BASE_URL}/uploads/`,
+  // Usar assets locais em produção, backend em dev
+  BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? `${API_CONFIG.BASE_URL}/uploads/`
+    : 'assets/',
   PATHS: {
     AVATARS: 'avatars/',
     CHARACTERS: 'characters/',
