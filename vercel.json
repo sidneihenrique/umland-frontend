@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*\\.(js|css|png|jpg|svg|woff2?|eot|ttf))",
+      "headers": [
+        { "key": "Cache-Control", "value": "max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}
