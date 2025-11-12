@@ -31,11 +31,11 @@
         </button>
         
         <div class="character-container">
-            @if (isSpeaking) {
-            <div class="speech-bubble" #speechBubble>
+           
+            <div class="speech-bubble" #speechBubble [hidden]="!isSpeaking" [attr.aria-hidden]="!isSpeaking">
                 <app-carousel [items]="phase?.characterDialogues || []"></app-carousel>
             </div>
-            }
+            
 
             <img [src]="getCharacterImageUrl()"
                 [alt]="phase?.character?.name"
