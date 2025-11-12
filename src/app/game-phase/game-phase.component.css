@@ -445,27 +445,26 @@ header .watch-time.active {
 }
 
 .auto-save-indicator {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid #e1e5e9;
+    background: transparent;
+    border: 3px solid var(--black);
     border-radius: 8px;
     padding: 6px 10px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: #666;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    gap: 8px;
+    font-size: 12px;
+    color: var(--black);
     transition: all 0.3s ease;
 }
 
 .auto-save-indicator.saving {
   background: rgba(255, 248, 220, 0.95);
-  border-color: #ffc107;
-  color: #856404;
+  border-color: var(--yellow);
+  color: var(--yellow);
 }
 
 .auto-save-indicator.enabled {
-  border-color: #28a745;
+  border-color: var(--blue);
 }
 
 .save-status {
@@ -475,13 +474,16 @@ header .watch-time.active {
 }
 
 .save-icon {
-  color: #28a745;
+  color: var(--black);
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
   transition: color 0.3s ease;
 }
 
 .save-icon.spinning {
   animation: spin 1s linear infinite;
-  color: #ffc107;
+  color: var(--yellow);
 }
 
 .save-text {
@@ -495,7 +497,7 @@ header .watch-time.active {
   cursor: pointer;
   padding: 2px;
   border-radius: 4px;
-  color: #666;
+  color: var(--black);
   transition: all 0.2s ease;
 }
 

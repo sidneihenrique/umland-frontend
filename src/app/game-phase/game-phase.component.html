@@ -58,7 +58,7 @@
                 <lucide-icon [name]="isSaving ? 'loader-2' : 'cloud-upload'" 
                              class="save-icon" 
                              [class.spinning]="isSaving"
-                             [size]="16">
+                             >
                 </lucide-icon>
                 <span class="save-text">{{ getLastSaveText() }}</span>
             </div>
@@ -66,7 +66,7 @@
                     (click)="toggleAutoSave()" 
                     [title]="autoSaveEnabled ? 'Desativar salvamento automático' : 'Ativar salvamento automático'">
                 <lucide-icon [name]="autoSaveEnabled ? 'toggle-right' : 'toggle-left'" 
-                             [size]="14">
+                             [size]="24">
                 </lucide-icon>
             </button>
         </div>

@@ -381,7 +381,7 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   // ✅ Método para obter status do último salvamento
   getLastSaveText(): string {
     if (this.isSaving) {
-      return 'Salvando...';
+      return 'Salvando automaticamente...';
     }
     
     if (this.lastSaveTime) {
@@ -389,10 +389,10 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
       const diffInSeconds = Math.floor((now.getTime() - this.lastSaveTime.getTime()) / 1000);
       
       if (diffInSeconds < 60) {
-        return `Salvo há ${diffInSeconds}s`;
+        return `Salvo automaticamente há ${diffInSeconds}s`;
       } else {
         const minutes = Math.floor(diffInSeconds / 60);
-        return `Salvo há ${minutes}min`;
+        return `Salvo automaticamente há ${minutes}min`;
       }
     }
     
