@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.API_URL,
+  BASE_URL: "https://divergent-techily-shawnta.ngrok-free.dev/",
   ENDPOINTS: {
     USERS: '/users',
     AVATARS: '/avatars',
