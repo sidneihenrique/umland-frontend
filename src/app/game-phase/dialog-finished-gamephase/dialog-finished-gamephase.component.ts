@@ -100,7 +100,7 @@ export class DialogFinishedGamephaseComponent implements OnInit {
       this.phaseUserService.updatePhaseUser(this.phaseUser.id, updatedPhaseUser).subscribe({
         next: (savedPhaseUser) => {
 
-          if (updatedPhaseUser.accuracy && updatedPhaseUser.accuracy >= 70) {
+          if (updatedPhaseUser.accuracy && updatedPhaseUser.accuracy >= 40) {
             this.phaseUserService.unlockNextPhaseForUser(savedPhaseUser.phase.id!, savedPhaseUser.user.id!).subscribe({
               next: () => {
                 console.log('✅ Próxima fase desbloqueada com sucesso!');
