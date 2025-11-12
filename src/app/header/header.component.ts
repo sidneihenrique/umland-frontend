@@ -15,6 +15,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
+import { TutorialModalComponent } from '../utils/tutorial-modal/tutorial-modal.component';
 import { FileUrlBuilder } from '../../config/files.config';
 
 @Component({
@@ -25,7 +26,8 @@ import { FileUrlBuilder } from '../../config/files.config';
     BackpackComponent,
     MapComponent,
     CommonModule,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    TutorialModalComponent
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
@@ -77,6 +79,11 @@ export class HeaderComponent implements OnInit, OnDestroy, OnChanges {
   // indica que a reputação está em dobro para a fase atual
   public doubleReputationActive: boolean = false;
 
+  // novo: controla exibição do tutorial
+  public showTutorialModal: boolean = false;
+  // coloque aqui a URL/ID do vídeo do YouTube que deseja exibir
+  public tutorialVideoUrl: string = 'https://www.youtube.com/watch?v=377KHulJJoY';
+
   constructor(
     private dataService: DataService,
     private userService: UserService,
@@ -89,6 +96,13 @@ export class HeaderComponent implements OnInit, OnDestroy, OnChanges {
     this.loadUserData();
     this.subscribeToUserData();
 
+    // Verifica flag no localStorage; se ausente, mostra modal
+    const dontShow = localStorage.getItem('dontShowTutorialAnymore');
+    if (!dontShow) {
+      // Mostra modal (pode esperar pequeno timeout para garantir render)
+      setTimeout(() => this.showTutorialModal = true, 150);
+    }
+
     this.checkIfInMapRoute();
     
     this.router.events.pipe(
@@ -96,6 +110,23 @@ export class HeaderComponent implements OnInit, OnDestroy, OnChanges {
     ).subscribe(() => {
       this.checkIfInMapRoute();
     });
+  }
+
+  // handler chamado quando tutorial modal fecha (two-way binding cuidará de visibleChange)
+  onTutorialVisibleChange(visible: boolean) {
+    // se o usuário fechou (visible === false) gravamos flag para não mostrar novamente
+    if (!visible) {
+      try {
+        localStorage.setItem('dontShowTutorialAnymore', '1');
+      } catch (e) {
+        // ignore storage errors
+      }
+    }
+    this.showTutorialModal = visible;
+  }
+
+  tutorialModal() {
+    this.showTutorialModal = true;
   }
 
   ngOnChanges(changes: SimpleChanges): void {

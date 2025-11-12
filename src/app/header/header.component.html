@@ -17,6 +17,10 @@
                     <lucide-icon class="lucide-icon" name="map" [size]="20"></lucide-icon>
                     <span>Seleção de Mapas</span>
                 </button>
+                <button class="accordion-option" (click)="tutorialModal()">
+                    <lucide-icon class="lucide-icon" name="youtube" [size]="20"></lucide-icon>
+                    <span>Tutorial</span>
+                </button>
                 <button class="accordion-option logout-option" (click)="logout()">
                     <lucide-icon class="lucide-icon" name="log-out" [size]="20"></lucide-icon>
                     <span>Logout</span>
@@ -95,3 +99,9 @@
     (confirm)="confirmLogout()" 
     (cancel)="onCancel()">
 </app-confirm-dialog>
+
+<app-tutorial-modal
+  [(visible)]="showTutorialModal"
+  [videoSrc]="tutorialVideoUrl"
+  (visibleChange)="onTutorialVisibleChange($event)">
+</app-tutorial-modal>
