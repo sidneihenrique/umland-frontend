@@ -39,7 +39,8 @@ import {
   Zap,
   Play, 
   Volume2,
-  VolumeOff
+  VolumeOff,
+  MessageCircleMore
 } from 'lucide-angular';
 
 @NgModule({
@@ -81,7 +82,8 @@ import {
     Zap,
     Play,
     Volume2,
-    VolumeOff
+    VolumeOff,
+    MessageCircleMore
   })],
   exports: [LucideAngularModule],
 })

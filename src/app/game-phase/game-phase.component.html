@@ -37,11 +37,11 @@
             </div>
         </div>
 
-        <button (click)="toggleTips()" class="btn-icon filled" [class.open-clues]="isOpen">
+        <button (click)="toggleTips()" class="btn-icon filled" [class.open-clues]="isOpen" title="Dicas rápidas">
             <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
         </button>
 
-        <button class="btn-icon filled" (click)="checkDiagram()">
+        <button class="btn-icon filled" (click)="checkDiagram()" title="Verificar inconsistências diagrama">
             <lucide-icon name="book-check" class="lucide-icon"></lucide-icon>
             <div class="count">
                 <lucide-icon *ngIf="phase?.mode == 'BASIC'" name="infinity" class="lucide-icon" color="white"></lucide-icon>
@@ -62,10 +62,10 @@
                 [class.speaking]="isSpeaking"
                 (click)="toggleSpeech()" />
         </div>
-        <button class="btn-icon filled" (click)="toggleSpeech()">
-            <lucide-icon name="message-circle-question" class="lucide-icon"></lucide-icon>
+        <button class="btn-icon filled" (click)="toggleSpeech()" title="Falas do personagem">
+            <lucide-icon name="message-circle-more" class="lucide-icon"></lucide-icon>
         </button>
-        <button class="btn-icon filled" (click)="onSaveClick()" [ngClass]="{ 'btn-disabled': saveDisabled }" [disabled]="saveDisabled">
+        <button class="btn-icon filled" (click)="onSaveClick()" [ngClass]="{ 'btn-disabled': saveDisabled }" [disabled]="saveDisabled" title="Salvar e validar fase">
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
         
