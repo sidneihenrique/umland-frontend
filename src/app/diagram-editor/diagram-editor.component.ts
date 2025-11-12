@@ -578,6 +578,10 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       }
     });
 
+    inputDiv.addEventListener('blur', (e) => {
+      finishEditing();
+      this.currentCellView = null;
+    });
 
   }
 
@@ -1726,7 +1730,14 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   ngOnDestroy(): void {
-    // Cancel listeners we registered in ngAfterViewInit
+    // 1) cancelar operações ativas (remove handlers pendentes)
+    try {
+      this.cancelActiveOperation();
+    } catch (e) {
+      // ignore
+    }
+
+    // 2) remover listeners registrados em ngAfterViewInit
     try {
       this.wrapperBoard?.nativeElement?.removeEventListener('scroll', this.boundUpdateInspectorPosition);
       this.wrapperBoard?.nativeElement?.removeEventListener('scroll', this.boundUpdateCluesPosition);
@@ -1740,20 +1751,69 @@ export class DiagramEditorComponent implements OnInit, OnDestroy, AfterViewInit 
       // ignore
     }
 
-    // Cleanup inspector drag listeners
-    this.cleanupInspectorDrag();
+    // 3) limpar e remover botões/elementos flutuantes criados dinamicamente
+    try {
+      // hideRemoveButton/hideLinkButton já removem a maioria dos elementos e limpam referências internas
+      try { this.hideRemoveButton(); } catch(e) { /* ignore */ }
+      try { this.hideLinkButton(); } catch(e) { /* ignore */ }
 
-    // ✅ Cancelar operações ativas antes de destruir
-    this.cancelActiveOperation();
+      // multiplicity buttons (defensivo: se algo restou)
+      if (Array.isArray(this.multiplicityBtns) && this.multiplicityBtns.length) {
+        for (const mb of this.multiplicityBtns) {
+          try {
+            if (mb.parentNode) mb.parentNode.removeChild(mb);
+          } catch (e) { /* ignore */ }
+        }
+        this.multiplicityBtns = [];
+      }
 
-    if (this.paper) {
-      this.paper.remove();
-      this.paper = null;
+      // multiplicity popup
+      if (this.currentMultiplicityPopup && this.currentMultiplicityPopup.parentNode) {
+        try { this.currentMultiplicityPopup.parentNode.removeChild(this.currentMultiplicityPopup); } catch (e) { /* ignore */ }
+      }
+      this.currentMultiplicityPopup = null;
+      this.currentMultiplicityPopupAnchor = null;
+
+      // inline editor
+      if (this.currentInlineEditor && this.currentInlineEditor.parentNode) {
+        try { this.currentInlineEditor.parentNode.removeChild(this.currentInlineEditor); } catch (e) { /* ignore */ }
+      }
+      this.currentInlineEditor = null;
+      this.currentEditingCellView = null;
+
+      // remove any lingering remove/link buttons (defensive)
+      if (this.removeBtn && this.removeBtn.parentNode) {
+        try { this.removeBtn.parentNode.removeChild(this.removeBtn); } catch (e) { /* ignore */ }
+      }
+      this.removeBtn = null;
+
+      if (this.linkBtn && this.linkBtn.parentNode) {
+        try { this.linkBtn.parentNode.removeChild(this.linkBtn); } catch (e) { /* ignore */ }
+      }
+      this.linkBtn = null;
+      this.currentCellView = null;
+
+    } catch (e) {
+      // ignore removal errors
     }
-    if (this.graph) {
-      this.graph.clear();
-      this.graph = null;
-    }
+
+    // 4) cleanup inspector drag listeners (if any)
+    try { this.cleanupInspectorDrag(); } catch (e) { /* ignore */ }
+
+    // 5) cancelar e limpar JointJS
+    try {
+      if (this.paper) {
+        try { this.paper.remove(); } catch(e) { /* ignore */ }
+        this.paper = null;
+      }
+    } catch (e) { /* ignore */ }
+
+    try {
+      if (this.graph) {
+        try { this.graph.clear(); } catch(e) { /* ignore */ }
+        this.graph = null;
+      }
+    } catch (e) { /* ignore */ }
   }
 
   public clearDiagram() {

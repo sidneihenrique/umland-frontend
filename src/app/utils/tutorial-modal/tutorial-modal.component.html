@@ -1,0 +1,38 @@
+<div *ngIf="visible" class="overlay" [class.visible]="visible" (click)="$event.stopPropagation()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+
+        <img src="assets/images/umland.svg" alt="Logo UMLand" class="logo">
+        <h4 style="text-align: center;">Tutorial</h4>
+
+        <div class="content">
+            <!-- iframe YouTube embed seguro -->
+            <div *ngIf="safeVideoUrl" class="video-wrapper">
+                <iframe
+                  [src]="safeVideoUrl"
+                  width="100%"
+                  height="360"
+                  frameborder="0"
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  allowfullscreen>
+                </iframe>
+            </div>
+
+            <p class="description" *ngIf="!safeVideoUrl">Vídeo não disponível</p>
+        </div>
+
+        <div class="actions" style="flex-direction:column; gap:12px; align-items:center;">
+            <label class="dont-show">
+                <input type="checkbox" [(ngModel)]="dontShowAgain" />
+                <span>Não mostrar novamente</span>
+            </label>
+            <button
+              class="btn btn-primary"
+              [disabled]="isButtonDisabled"
+              [class.disabled]="isButtonDisabled"
+              (click)="hide()">
+                Entendido
+            </button>
+        </div>
+
+    </div>
+</div>

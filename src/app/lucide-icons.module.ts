@@ -40,7 +40,8 @@ import {
   Play, 
   Volume2,
   VolumeOff,
-  MessageCircleMore
+  MessageCircleMore,
+  Youtube
 } from 'lucide-angular';
 
 @NgModule({
@@ -83,7 +84,8 @@ import {
     Play,
     Volume2,
     VolumeOff,
-    MessageCircleMore
+    MessageCircleMore,
+    Youtube
   })],
   exports: [LucideAngularModule],
 })
