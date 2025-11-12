@@ -288,6 +288,7 @@
   padding:6px 8px;
   margin-bottom:8px;
   box-sizing:border-box;
+  border-radius: 4px;
 }
 
 .inspector-actions {
@@ -302,6 +303,16 @@
   border-radius:6px;
   margin-bottom:8px;
   background:#fafafa;
+}
+
+.inspector .inspector-actions button,
+.inspector .card-actions button{
+  cursor:pointer;
+  background:transparent;
+  border:2px solid #333;
+  padding:6px 8px;
+  border-radius:6px;
+  font-weight:700;
 }
 
 .card-row { margin-bottom:8px; }

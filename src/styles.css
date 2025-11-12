@@ -48,6 +48,7 @@ body {
 }
 
 .btn-icon.filled:hover {
+  filter: brightness(1.2);
   background-color: var(--yellow);
   transition: 0.5s;
 }
