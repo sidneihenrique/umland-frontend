@@ -459,6 +459,30 @@ export class GameMapComponent implements OnInit, OnDestroy {
         pu.status = 'AVAILABLE';
       }
 
+      // ----------------------------
+    // NOVO: desmarcar a fase de DECISION como current = false
+    // ----------------------------
+    try {
+      // atualizar objeto local
+      const localCurrent = this.phaseUsers.find(p => p.id === currentPu.id);
+      if (localCurrent) {
+        localCurrent.current = false;
+      }
+
+      // preparar payload para backend: apenas marcar current = false (mantendo outros campos)
+      const updatedCurrent = { ...currentPu, current: false } as any;
+
+      // persistir no backend
+      await this.phaseUserService.updatePhaseUser(currentPu.id, updatedCurrent).toPromise();
+    } catch (errUpdateCurrent) {
+      console.error('Erro ao desmarcar current da decisão:', errUpdateCurrent);
+      // notificar, mas não bloquear o fluxo
+      this.notificationService.showNotification('error', 'Não foi possível atualizar o estado da fase atual no servidor, mas localmente ela será tratada como não atual.');
+      // garantir que localmente já esteja marcado como falso
+      const localCurrentFallback = this.phaseUsers.find(p => p.id === currentPu.id);
+      if (localCurrentFallback) localCurrentFallback.current = false;
+    }
+
       // depois de liberar, recalcule a lista disponível
       this.buildPhaseUsersAvailable();
 
