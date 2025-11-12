@@ -52,7 +52,7 @@
         <div class="character-container">
            
             <div class="speech-bubble" #speechBubble [hidden]="!isSpeaking" [attr.aria-hidden]="!isSpeaking">
-                <app-carousel [items]="phase?.characterDialogues || []"></app-carousel>
+                <app-carousel [items]="phase?.characterDialogues || []" [enableReadAloud]="true"></app-carousel>
             </div>
             
 
