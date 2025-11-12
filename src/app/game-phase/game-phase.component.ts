@@ -432,10 +432,15 @@ export class GamePhaseComponent implements OnInit, OnDestroy {
   }
 
   toggleSpeech() {
-    this.isSpeaking = !this.isSpeaking;
-    this.characterState = this.isSpeaking ? 'visible' : 'hidden';
-    if (this.isSpeaking) {
-      this.activeSlideIndex = 0;
+    event?.stopPropagation();
+    if(this.isSpeaking) {
+      this.isSpeaking = false;
+      this.characterState = 'hidden';
+      return;
+    } else {
+      this.isSpeaking = true;
+      this.characterState = 'visible';
+      return;
     }
   }
 
