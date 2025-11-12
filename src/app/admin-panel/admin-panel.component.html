@@ -107,7 +107,13 @@
       <h2>🎮 Cadastro de Fase</h2>
     </div>
     <div class="card-content">
-      <form (ngSubmit)="onSubmitPhase()" #phaseForm="ngForm" class="form">
+      <!-- Create button: shows the form when clicked -->
+      <div class="phase-actions-top">
+        <button *ngIf="!isCreatingPhase && !isEditingPhase" class="btn-primary" (click)="startCreatePhase()">➕ Cadastrar fase</button>
+        <button *ngIf="isCreatingPhase || isEditingPhase" class="btn-secondary" (click)="resetPhaseForm()">❌ Cancelar</button>
+      </div>
+
+      <form *ngIf="isCreatingPhase || isEditingPhase" (ngSubmit)="onSubmitPhase()" #phaseForm="ngForm" class="form">
         
         <div class="form-group">
           <label>Nó do Fluxo:</label>
@@ -393,7 +399,8 @@
       </form>
       
       
-      <div class="phases-list">
+      <!-- List of phases: hidden while creating or editing -->
+      <div class="phases-list" *ngIf="!isCreatingPhase && !isEditingPhase">
         <div *ngFor="let phase of phases; let i = index" class="phase-card expanded">
           <div class="phase-header">
             <div class="phase-badges">

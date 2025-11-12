@@ -118,6 +118,10 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
   editingCorrectDiagramIndex: number = -1; // -1 = não está editando
   correctDiagramPreview: string = ''; // Preview do JSON para mostrar na lista
 
+  // ✅ NEW: Flags to control phase create/edit UI
+  isCreatingPhase: boolean = false;
+  isEditingPhase: boolean = false;
+
   // ✅ ADICIONAR: Propriedades para GameMap
   gameMap: GameMap = {
     title: '',
@@ -428,7 +432,9 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
             this.selectedGameMapId = phase.gameMap?.id || this.selectedGameMapId;
             this.loadOutgoingTransitions(phase.id); // << apenas saídas
           }
+          // finalize edit flow and close form
           this.resetPhaseForm();
+          this.isEditingPhase = false;
         },
         error: (error) => console.error('Erro ao atualizar phase:', error)
       });
@@ -441,7 +447,9 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
             this.selectedGameMapId = phase.gameMap?.id || this.selectedGameMapId;
             this.loadIncomingTransitions(phase.id); // << apenas entradas
             this.notificationService.showNotification('success', 'Fase criada. Configure as transições (entradas) desta fase.')
+            // finalize create flow and close form
             this.resetPhaseForm();
+            this.isCreatingPhase = false;
 
           }
         },
@@ -503,9 +511,14 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
 
     this.outgoingTransitions = [];
     this.activityNextPhaseId = 0;
+
+    // hide create/edit UI when form is reset
+    this.isCreatingPhase = false;
+    this.isEditingPhase = false;
   }
   
   editPhase(index?: number, phase?: Phase) {
+    this.resetPhaseForm();
     let p;
     if(phase) {
       p = phase;
@@ -549,6 +562,17 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
     if (p.id) {
       this.loadOutgoingTransitions(p.id); 
     }
+
+    // Show the edit form and hide the phases list
+    this.isEditingPhase = true;
+    this.isCreatingPhase = false;
+
+    // ensure editors are initialized when the form appears
+    setTimeout(() => {
+      if (this.diagramEditors && this.diagramEditors.length > 0) {
+        this.diagramEditors.forEach(e => { if (!e.isInitialized()) e.initializeJointJS(); });
+      }
+    }, 0);
 
     // Carregar diagrama inicial no primeiro editor
     const initialEditor = this.getInitialDiagramEditor();
@@ -961,6 +985,19 @@ export class AdminPanelComponent implements OnInit, AfterViewInit {
       createdByUser: gm.createdByUser
     };
     this.editGameMapId = gm.id;
+  }
+
+  // Start creating a new phase: show form and clear existing model
+  startCreatePhase() {
+    this.resetPhaseForm();
+    this.isCreatingPhase = true;
+    this.isEditingPhase = false;
+    // ensure editors are initialized when the form appears
+    setTimeout(() => {
+      if (this.diagramEditors && this.diagramEditors.length > 0) {
+        this.diagramEditors.forEach(e => { if (!e.isInitialized()) e.initializeJointJS(); });
+      }
+    }, 0);
   }
 
   deleteGameMap(index: number) {
