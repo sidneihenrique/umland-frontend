@@ -516,6 +516,60 @@ header .watch-time.active {
     padding: 4px 16px;
 }
 
+.action-buttons .left {
+    margin-right: auto;
+}
+
+/* Phase meta (tipo + dificuldade) */
+.phase-meta {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-right: 12px;
+}
+
+/* Tipo da fase (caixa neutra) */
+.phase-type {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--black);
+  background: rgba(255,255,255,0.03);
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Dificuldade com cores distintas */
+.phase-mode {
+  font-weight: 800;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  text-transform: none;
+}
+
+/* Verde = Fácil (BASIC) */
+.mode-easy {
+  color: var(--green);
+  background: rgba(0, 214, 25, 0.08);
+  border: 1px solid rgba(0,214,25,0.12);
+}
+
+/* Amarelo = Intermediário (INTERMEDIATE) */
+.mode-intermediate {
+  color: var(--yellow);
+  background: rgba(255, 204, 0, 0.08);
+  border: 1px solid rgba(255,204,0,0.12);
+}
+
+/* Vermelho = Avançado (ADVANCED) */
+.mode-advanced {
+  color: var(--red);
+  background: rgba(255, 0, 0, 0.06);
+  border: 1px solid rgba(255,0,0,0.10);
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

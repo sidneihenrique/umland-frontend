@@ -18,6 +18,25 @@
             <div class="watch-counter" [style.display]="watchCount > 0 ? 'flex' : 'none'">{{watchCount}}</div>
         </button> -->
 
+        <div class="left">
+            <div class="phase-meta" *ngIf="phase">
+                <!-- usa o helper para mostrar o título tipo (BUILD/FIX/COMPLETE) de forma legível -->
+                <div class="phase-type">
+                    {{ getPhaseTitle() }}
+                </div>
+
+                <!-- Dificuldade: BASIC (Fácil) | INTERMEDIATE (Intermediário) | ADVANCED (Avançado) -->
+                <div class="phase-mode"
+                     [ngClass]="{
+                        'mode-easy': phase.mode === 'BASIC',
+                        'mode-intermediate': phase.mode === 'INTERMEDIATE',
+                        'mode-advanced': phase.mode === 'ADVANCED'
+                     }">
+                    {{ phase.mode === 'BASIC' ? 'Fácil' : (phase.mode === 'INTERMEDIATE' ? 'Intermediário' : (phase.mode === 'ADVANCED' ? 'Avançado' : phase.mode)) }}
+                </div>
+            </div>
+        </div>
+
         <button (click)="toggleTips()" class="btn-icon filled" [class.open-clues]="isOpen">
             <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
         </button>
