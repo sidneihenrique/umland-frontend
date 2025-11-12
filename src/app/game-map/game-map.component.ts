@@ -449,14 +449,23 @@ export class GameMapComponent implements OnInit, OnDestroy {
 
     // Chamada de API em lote (ou sequencial) para atualizar status das phaseUsers
     try {
+      let first = true;
       // exemplo sequencial; você pode implementar endpoint batch atualizando vários de uma vez
       for (const puId of idsToUnlock) {
         const pu = this.phaseUsers.find(p => p.id === puId);
         if (!pu) continue;
-        const updated = { ...pu, status: 'AVAILABLE' } as any;
-        await this.phaseUserService.updatePhaseUser(puId, updated).toPromise();
-        // Atualiza localmente para resposta imediata
-        pu.status = 'AVAILABLE';
+        if(first) {
+          first = false;
+          const updated = { ...pu, status: 'AVAILABLE', current: true } as any;
+          await this.phaseUserService.updatePhaseUser(puId, updated).toPromise();
+          pu.status = 'AVAILABLE';
+          pu.current = true;
+        } else {
+          const updated = { ...pu, status: 'AVAILABLE' } as any;
+          await this.phaseUserService.updatePhaseUser(puId, updated).toPromise();
+          // Atualiza localmente para resposta imediata
+          pu.status = 'AVAILABLE';
+        }
       }
 
       // ----------------------------
