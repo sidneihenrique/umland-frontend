@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.API_URL || 'http://localhost:9090',
+  BASE_URL: import.meta.env.API_URL,
   ENDPOINTS: {
     USERS: '/users',
     AVATARS: '/avatars',
