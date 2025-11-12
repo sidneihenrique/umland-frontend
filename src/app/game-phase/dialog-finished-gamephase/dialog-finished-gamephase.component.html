@@ -37,10 +37,16 @@
 
         </div>
 
+        <button class="play-again" (click)="playAgain()">
+            <span>JOGAR NOVAMENTE</span>
+            <lucide-icon name="play" class="lucide-icon"></lucide-icon>
+        </button>
+
+
         <button class="back-to-map" (click)="backToMenu()">
             <span *ngIf="!isFinalPhase()">VOLTAR PARA O MAPA</span>
             <span *ngIf="isFinalPhase()">VER CRÉDITOS</span>
-            <lucide-icon [name]="isFinalPhase() ? 'film' : 'rotate-ccw'" class="lucide-icon"></lucide-icon>
+            <lucide-icon [name]="isFinalPhase() ? 'film' : 'map-pinned'" class="lucide-icon"></lucide-icon>
         </button>
     </div>
     

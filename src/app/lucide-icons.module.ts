@@ -36,7 +36,8 @@ import {
   MapPinOff,
   Linkedin,
   Instagram,
-  Zap
+  Zap,
+  Play
 } from 'lucide-angular';
 
 @NgModule({
@@ -75,7 +76,8 @@ import {
     MapPinOff,
     Linkedin,
     Instagram,
-    Zap
+    Zap,
+    Play
   })],
   exports: [LucideAngularModule],
 })

@@ -6,6 +6,7 @@ import { DataService } from '../../../services/data.service';
 import { PhaseUserService } from '../../../services/phase-user.service';
 import { UserService, User } from '../../../services/user.service';
 import { PhaseUser } from '../../../services/game-map.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-dialog-finished-gamephase',
@@ -33,7 +34,8 @@ export class DialogFinishedGamephaseComponent implements OnInit {
     private dataService: DataService,
     private phaseUserService: PhaseUserService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private notificationsService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -81,7 +83,7 @@ export class DialogFinishedGamephaseComponent implements OnInit {
         accuracy: this.accuracy, // Salvar acurácia final (se existir campo)
         coins: this.coinsSum,
         reputation: this.reputationSum,
-        current: false, // Garantir que não está mais em andamento
+        current: this.accuracy < 40 ? true : false, // Garantir que não está mais em andamento
         status: 'COMPLETED',
         userDiagram: JSON.stringify(this.phaseUser.userDiagram) // Garantir que o diagrama do usuário seja salvo
       };
@@ -100,12 +102,13 @@ export class DialogFinishedGamephaseComponent implements OnInit {
       this.phaseUserService.updatePhaseUser(this.phaseUser.id, updatedPhaseUser).subscribe({
         next: (savedPhaseUser) => {
 
-          if (updatedPhaseUser.accuracy && updatedPhaseUser.accuracy >= 70) {
+          if (updatedPhaseUser.accuracy && updatedPhaseUser.accuracy >= 40) {
             this.phaseUserService.unlockNextPhaseForUser(savedPhaseUser.phase.id!, savedPhaseUser.user.id!).subscribe({
               next: () => {
-                console.log('✅ Próxima fase desbloqueada com sucesso!');
+                this.notificationsService.showSuccess('🎉 Próxima fase desbloqueada!');
               },
               error: (error) => {
+                this.notificationsService.showError('❌ Erro ao desbloquear próxima fase:');
                 console.error('❌ Erro ao desbloquear próxima fase:', error);
               }
             });
@@ -187,5 +190,20 @@ export class DialogFinishedGamephaseComponent implements OnInit {
       // ✅ Caso contrário, emitir evento normal para voltar ao mapa
       this.backToMenuEvent.emit();
     }
+  }
+
+  playAgain() {
+    const phaseId = this.phaseUser?.phase?.id;
+    if (!phaseId) {
+      this.notificationsService.showError('⚠️ Não foi possível reiniciar: phaseId indisponível');
+      return;
+    }
+    // fechar diálogo e navegar para a mesma fase (recomeçar)
+    this.visible = false;
+    // montar a URL da rota respeitando o base-href da aplicação
+    const url = this.router.serializeUrl(this.router.createUrlTree(['/game', phaseId]));
+
+    // forçar reload completo da página para reiniciar toda a árvore de componentes
+    window.location.href = url;
   }
 }

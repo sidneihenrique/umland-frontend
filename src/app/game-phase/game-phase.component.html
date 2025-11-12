@@ -18,6 +18,25 @@
             <div class="watch-counter" [style.display]="watchCount > 0 ? 'flex' : 'none'">{{watchCount}}</div>
         </button> -->
 
+        <div class="left">
+            <div class="phase-meta" *ngIf="phase">
+                <!-- usa o helper para mostrar o título tipo (BUILD/FIX/COMPLETE) de forma legível -->
+                <div class="phase-type">
+                    {{ getPhaseTitle() }}
+                </div>
+
+                <!-- Dificuldade: BASIC (Fácil) | INTERMEDIATE (Intermediário) | ADVANCED (Avançado) -->
+                <div class="phase-mode"
+                     [ngClass]="{
+                        'mode-easy': phase.mode === 'BASIC',
+                        'mode-intermediate': phase.mode === 'INTERMEDIATE',
+                        'mode-advanced': phase.mode === 'ADVANCED'
+                     }">
+                    {{ phase.mode === 'BASIC' ? 'Fácil' : (phase.mode === 'INTERMEDIATE' ? 'Intermediário' : (phase.mode === 'ADVANCED' ? 'Avançado' : phase.mode)) }}
+                </div>
+            </div>
+        </div>
+
         <button (click)="toggleTips()" class="btn-icon filled" [class.open-clues]="isOpen">
             <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
         </button>
@@ -31,11 +50,11 @@
         </button>
         
         <div class="character-container">
-            @if (isSpeaking) {
-            <div class="speech-bubble" #speechBubble>
+           
+            <div class="speech-bubble" #speechBubble [hidden]="!isSpeaking" [attr.aria-hidden]="!isSpeaking">
                 <app-carousel [items]="phase?.characterDialogues || []"></app-carousel>
             </div>
-            }
+            
 
             <img [src]="getCharacterImageUrl()"
                 [alt]="phase?.character?.name"
@@ -58,7 +77,7 @@
                 <lucide-icon [name]="isSaving ? 'loader-2' : 'cloud-upload'" 
                              class="save-icon" 
                              [class.spinning]="isSaving"
-                             [size]="16">
+                             >
                 </lucide-icon>
                 <span class="save-text">{{ getLastSaveText() }}</span>
             </div>
@@ -66,7 +85,7 @@
                     (click)="toggleAutoSave()" 
                     [title]="autoSaveEnabled ? 'Desativar salvamento automático' : 'Ativar salvamento automático'">
                 <lucide-icon [name]="autoSaveEnabled ? 'toggle-right' : 'toggle-left'" 
-                             [size]="14">
+                             [size]="24">
                 </lucide-icon>
             </button>
         </div>

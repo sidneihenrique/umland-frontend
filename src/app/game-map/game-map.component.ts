@@ -449,15 +449,48 @@ export class GameMapComponent implements OnInit, OnDestroy {
 
     // Chamada de API em lote (ou sequencial) para atualizar status das phaseUsers
     try {
+      let first = true;
       // exemplo sequencial; você pode implementar endpoint batch atualizando vários de uma vez
       for (const puId of idsToUnlock) {
         const pu = this.phaseUsers.find(p => p.id === puId);
         if (!pu) continue;
-        const updated = { ...pu, status: 'AVAILABLE' } as any;
-        await this.phaseUserService.updatePhaseUser(puId, updated).toPromise();
-        // Atualiza localmente para resposta imediata
-        pu.status = 'AVAILABLE';
+        if(first) {
+          first = false;
+          const updated = { ...pu, status: 'AVAILABLE', current: true } as any;
+          await this.phaseUserService.updatePhaseUser(puId, updated).toPromise();
+          pu.status = 'AVAILABLE';
+          pu.current = true;
+        } else {
+          const updated = { ...pu, status: 'AVAILABLE' } as any;
+          await this.phaseUserService.updatePhaseUser(puId, updated).toPromise();
+          // Atualiza localmente para resposta imediata
+          pu.status = 'AVAILABLE';
+        }
       }
+
+      // ----------------------------
+    // NOVO: desmarcar a fase de DECISION como current = false
+    // ----------------------------
+    try {
+      // atualizar objeto local
+      const localCurrent = this.phaseUsers.find(p => p.id === currentPu.id);
+      if (localCurrent) {
+        localCurrent.current = false;
+      }
+
+      // preparar payload para backend: apenas marcar current = false (mantendo outros campos)
+      const updatedCurrent = { ...currentPu, current: false } as any;
+
+      // persistir no backend
+      await this.phaseUserService.updatePhaseUser(currentPu.id, updatedCurrent).toPromise();
+    } catch (errUpdateCurrent) {
+      console.error('Erro ao desmarcar current da decisão:', errUpdateCurrent);
+      // notificar, mas não bloquear o fluxo
+      this.notificationService.showNotification('error', 'Não foi possível atualizar o estado da fase atual no servidor, mas localmente ela será tratada como não atual.');
+      // garantir que localmente já esteja marcado como falso
+      const localCurrentFallback = this.phaseUsers.find(p => p.id === currentPu.id);
+      if (localCurrentFallback) localCurrentFallback.current = false;
+    }
 
       // depois de liberar, recalcule a lista disponível
       this.buildPhaseUsersAvailable();

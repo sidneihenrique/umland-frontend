@@ -186,6 +186,11 @@ diagram-editor {
   cursor: default;
 }
 
+/* quando hidden, escondemos e desabilitamos interação */
+.speech-bubble[hidden] {
+  display: none; /* simples e direto; mantém o componente no DOM? sim - attribute hidden apenas oculta visualmente, o elemento permanece no DOM */
+}
+
 .speech-bubble app-carousel {
   width: 100%;
   height: 100%;
@@ -440,27 +445,26 @@ header .watch-time.active {
 }
 
 .auto-save-indicator {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid #e1e5e9;
+    background: transparent;
+    border: 3px solid var(--black);
     border-radius: 8px;
     padding: 6px 10px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: #666;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    gap: 8px;
+    font-size: 12px;
+    color: var(--black);
     transition: all 0.3s ease;
 }
 
 .auto-save-indicator.saving {
   background: rgba(255, 248, 220, 0.95);
-  border-color: #ffc107;
-  color: #856404;
+  border-color: var(--yellow);
+  color: var(--yellow);
 }
 
 .auto-save-indicator.enabled {
-  border-color: #28a745;
+  border-color: var(--blue);
 }
 
 .save-status {
@@ -470,13 +474,16 @@ header .watch-time.active {
 }
 
 .save-icon {
-  color: #28a745;
+  color: var(--black);
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
   transition: color 0.3s ease;
 }
 
 .save-icon.spinning {
   animation: spin 1s linear infinite;
-  color: #ffc107;
+  color: var(--yellow);
 }
 
 .save-text {
@@ -490,7 +497,7 @@ header .watch-time.active {
   cursor: pointer;
   padding: 2px;
   border-radius: 4px;
-  color: #666;
+  color: var(--black);
   transition: all 0.2s ease;
 }
 
@@ -507,6 +514,60 @@ header .watch-time.active {
     text-align: center;
     margin: -30px auto 20px auto;
     padding: 4px 16px;
+}
+
+.action-buttons .left {
+    margin-right: auto;
+}
+
+/* Phase meta (tipo + dificuldade) */
+.phase-meta {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-right: 12px;
+}
+
+/* Tipo da fase (caixa neutra) */
+.phase-type {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--black);
+  background: rgba(255,255,255,0.03);
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Dificuldade com cores distintas */
+.phase-mode {
+  font-weight: 800;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  text-transform: none;
+}
+
+/* Verde = Fácil (BASIC) */
+.mode-easy {
+  color: var(--green);
+  background: rgba(0, 214, 25, 0.08);
+  border: 1px solid rgba(0,214,25,0.12);
+}
+
+/* Amarelo = Intermediário (INTERMEDIATE) */
+.mode-intermediate {
+  color: var(--yellow);
+  background: rgba(255, 204, 0, 0.08);
+  border: 1px solid rgba(255,204,0,0.12);
+}
+
+/* Vermelho = Avançado (ADVANCED) */
+.mode-advanced {
+  color: var(--red);
+  background: rgba(255, 0, 0, 0.06);
+  border: 1px solid rgba(255,0,0,0.10);
 }
 
 @keyframes spin {
