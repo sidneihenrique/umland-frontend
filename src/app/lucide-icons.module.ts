@@ -37,7 +37,10 @@ import {
   Linkedin,
   Instagram,
   Zap,
-  Play
+  Play, 
+  Volume2,
+  VolumeOff,
+  MessageCircleMore
 } from 'lucide-angular';
 
 @NgModule({
@@ -77,7 +80,10 @@ import {
     Linkedin,
     Instagram,
     Zap,
-    Play
+    Play,
+    Volume2,
+    VolumeOff,
+    MessageCircleMore
   })],
   exports: [LucideAngularModule],
 })
