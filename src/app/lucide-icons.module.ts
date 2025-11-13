@@ -36,7 +36,12 @@ import {
   MapPinOff,
   Linkedin,
   Instagram,
-  Zap
+  Zap,
+  Play, 
+  Volume2,
+  VolumeOff,
+  MessageCircleMore,
+  Youtube
 } from 'lucide-angular';
 
 @NgModule({
@@ -75,7 +80,12 @@ import {
     MapPinOff,
     Linkedin,
     Instagram,
-    Zap
+    Zap,
+    Play,
+    Volume2,
+    VolumeOff,
+    MessageCircleMore,
+    Youtube
   })],
   exports: [LucideAngularModule],
 })

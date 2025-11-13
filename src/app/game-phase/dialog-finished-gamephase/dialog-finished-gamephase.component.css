@@ -126,7 +126,7 @@
 }
 
 .dialog .back-to-map:hover .lucide-icon {
-    animation: spin 1s linear infinite;
+    animation: brighten 1s linear infinite;
 
 }
 
@@ -140,11 +140,59 @@
     color: var(--red);
 }
 
+/* estilo para o botão Jogar novamente */
+.dialog .play-again {
+    cursor: pointer;
+
+    align-self: center;
+
+    width: fit-content;
+    background: var(--yellow);
+    border-radius: 6px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    outline: 0;
+    border: 0;
+
+    padding: 8px 24px;
+    font-size: 16px;
+
+    transition: 1s;
+}
+
+.dialog .play-again:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+
+.dialog .play-again .lucide-icon {
+    width: 24px;
+    height: 24px;
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
     }
     to {
         transform: rotate(-360deg);
+    }
+}
+
+@keyframes brighten {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.1);
+        filter: brightness(2);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(3);
     }
 }

@@ -1,21 +1,27 @@
 <div class="admin-panel">
-  <h1>🛠️ Painel do Administrador</h1>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>🛠️ Painel do Administrador</h1>
+      </div>
 
-    <!-- ✅ ADICIONAR: Navegação de tabs -->
-  <div class="tabs-navigation">
-    <button 
-      *ngFor="let tab of tabs" 
-      class="tab-button"
-      [class.active]="activeTab === tab.id"
-      (click)="setActiveTab(tab.id)">
-      {{ tab.icon }} {{ tab.name }}
-    </button>
-  </div>
+      <!-- Vertical tabs navigation -->
+      <nav class="tabs-navigation-vertical">
+        <button
+          *ngFor="let tab of tabs"
+          class="tab-button-vertical"
+          [class.active]="activeTab === tab.id"
+          (click)="setActiveTab(tab.id)">
+          <span class="tab-icon">{{ tab.icon }}</span>
+          <span class="tab-name">{{ tab.name }}</span>
+        </button>
+      </nav>
+    </aside>
 
-  <!-- ✅ MODIFICAR: Envolver cada seção com *ngIf -->
-  
-  <!-- Avatar Tab -->
-  <div *ngIf="activeTab === 'avatars'" class="card">
+    <main class="main-content">
+      <!-- ✅ MODIFICAR: Envolver cada seção com *ngIf -->
+    <!-- Avatar Tab -->
+    <div *ngIf="activeTab === 'avatars'" class="card">
     <div class="card-header">
       <h2>👤 Cadastro de Avatar</h2>
     </div>
@@ -49,7 +55,7 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
 
   <!-- Character Tab -->
   <div *ngIf="activeTab === 'characters'" class="card">
@@ -95,13 +101,19 @@
     </div>
   </div>
 
-  <!-- Phase Tab -->
-  <div *ngIf="activeTab === 'phases'" class="card">
+    <!-- Phase Tab -->
+    <div *ngIf="activeTab === 'phases'" class="card">
     <div class="card-header">
       <h2>🎮 Cadastro de Fase</h2>
     </div>
     <div class="card-content">
-      <form (ngSubmit)="onSubmitPhase()" #phaseForm="ngForm" class="form">
+      <!-- Create button: shows the form when clicked -->
+      <div class="phase-actions-top">
+        <button *ngIf="!isCreatingPhase && !isEditingPhase" class="btn-primary" (click)="startCreatePhase()">➕ Cadastrar fase</button>
+        <button *ngIf="isCreatingPhase || isEditingPhase" class="btn-secondary" (click)="resetPhaseForm()">❌ Cancelar</button>
+      </div>
+
+      <form *ngIf="isCreatingPhase || isEditingPhase" (ngSubmit)="onSubmitPhase()" #phaseForm="ngForm" class="form">
         
         <div class="form-group">
           <label>Nó do Fluxo:</label>
@@ -387,7 +399,8 @@
       </form>
       
       
-      <div class="phases-list">
+      <!-- List of phases: hidden while creating or editing -->
+      <div class="phases-list" *ngIf="!isCreatingPhase && !isEditingPhase">
         <div *ngFor="let phase of phases; let i = index" class="phase-card expanded">
           <div class="phase-header">
             <div class="phase-badges">
@@ -455,10 +468,10 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
 
-  <!-- Phase Transitions Tab -->
-  <div *ngIf="activeTab === 'phase-transitions'" class="card">
+    <!-- Phase Transitions Tab -->
+    <div *ngIf="activeTab === 'phase-transitions'" class="card">
     <div class="card-header">
       <h2>🔗 Cadastro e Edição de Transições</h2>
     </div>
@@ -515,11 +528,11 @@
         <button type="button" class="btn-primary" (click)="savePhaseTransitions()">💾 Salvar Transições</button>
       </div>
     </div>
-  </div>
+    </div>
    
 
-  <!-- Tip Tab -->
-  <div *ngIf="activeTab === 'tips'" class="card">
+    <!-- Tip Tab -->
+    <div *ngIf="activeTab === 'tips'" class="card">
     <div class="card-header">
       <h2>💡 Cadastro de Dicas</h2>
     </div>
@@ -550,10 +563,10 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
 
-  <!-- GameMap Tab -->
-  <div *ngIf="activeTab === 'gamemaps'" class="card">
+    <!-- GameMap Tab -->
+    <div *ngIf="activeTab === 'gamemaps'" class="card">
     <div class="card-header">
       <h2>🗺️ Cadastro de GameMap</h2>
     </div>
@@ -648,5 +661,7 @@
         </div>
       </div>
     </div>
+      </div>
+    </main>
   </div>
 </div>

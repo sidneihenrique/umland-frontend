@@ -18,11 +18,30 @@
             <div class="watch-counter" [style.display]="watchCount > 0 ? 'flex' : 'none'">{{watchCount}}</div>
         </button> -->
 
-        <button (click)="toggleTips()" class="btn-icon filled" [class.open-clues]="isOpen">
+        <div class="left">
+            <div class="phase-meta" *ngIf="phase">
+                <!-- usa o helper para mostrar o título tipo (BUILD/FIX/COMPLETE) de forma legível -->
+                <div class="phase-type">
+                    {{ getPhaseTitle() }}
+                </div>
+
+                <!-- Dificuldade: BASIC (Fácil) | INTERMEDIATE (Intermediário) | ADVANCED (Avançado) -->
+                <div class="phase-mode"
+                     [ngClass]="{
+                        'mode-easy': phase.mode === 'BASIC',
+                        'mode-intermediate': phase.mode === 'INTERMEDIATE',
+                        'mode-advanced': phase.mode === 'ADVANCED'
+                     }">
+                    {{ phase.mode === 'BASIC' ? 'Fácil' : (phase.mode === 'INTERMEDIATE' ? 'Intermediário' : (phase.mode === 'ADVANCED' ? 'Avançado' : phase.mode)) }}
+                </div>
+            </div>
+        </div>
+
+        <button (click)="toggleTips()" class="btn-icon filled" [class.open-clues]="isOpen" title="Dicas rápidas">
             <lucide-icon name="lightbulb" class="lucide-icon"></lucide-icon>
         </button>
 
-        <button class="btn-icon filled" (click)="checkDiagram()">
+        <button class="btn-icon filled" (click)="checkDiagram()" title="Verificar inconsistências diagrama">
             <lucide-icon name="book-check" class="lucide-icon"></lucide-icon>
             <div class="count">
                 <lucide-icon *ngIf="phase?.mode == 'BASIC'" name="infinity" class="lucide-icon" color="white"></lucide-icon>
@@ -31,11 +50,11 @@
         </button>
         
         <div class="character-container">
-            @if (isSpeaking) {
-            <div class="speech-bubble" #speechBubble>
-                <app-carousel [items]="phase?.characterDialogues || []"></app-carousel>
+           
+            <div class="speech-bubble" #speechBubble [hidden]="!isSpeaking" [attr.aria-hidden]="!isSpeaking">
+                <app-carousel [items]="phase?.characterDialogues || []" [enableReadAloud]="true"></app-carousel>
             </div>
-            }
+            
 
             <img [src]="getCharacterImageUrl()"
                 [alt]="phase?.character?.name"
@@ -43,10 +62,10 @@
                 [class.speaking]="isSpeaking"
                 (click)="toggleSpeech()" />
         </div>
-        <button class="btn-icon filled" (click)="toggleSpeech()">
-            <lucide-icon name="message-circle-question" class="lucide-icon"></lucide-icon>
+        <button class="btn-icon filled" (click)="toggleSpeech()" title="Falas do personagem">
+            <lucide-icon name="message-circle-more" class="lucide-icon"></lucide-icon>
         </button>
-        <button class="btn-icon filled" (click)="onSaveClick()" [ngClass]="{ 'btn-disabled': saveDisabled }" [disabled]="saveDisabled">
+        <button class="btn-icon filled" (click)="onSaveClick()" [ngClass]="{ 'btn-disabled': saveDisabled }" [disabled]="saveDisabled" title="Salvar e validar fase">
             <lucide-icon name="save" class="lucide-icon"></lucide-icon>
         </button>
         
@@ -58,7 +77,7 @@
                 <lucide-icon [name]="isSaving ? 'loader-2' : 'cloud-upload'" 
                              class="save-icon" 
                              [class.spinning]="isSaving"
-                             [size]="16">
+                             >
                 </lucide-icon>
                 <span class="save-text">{{ getLastSaveText() }}</span>
             </div>
@@ -66,7 +85,7 @@
                     (click)="toggleAutoSave()" 
                     [title]="autoSaveEnabled ? 'Desativar salvamento automático' : 'Ativar salvamento automático'">
                 <lucide-icon [name]="autoSaveEnabled ? 'toggle-right' : 'toggle-left'" 
-                             [size]="14">
+                             [size]="24">
                 </lucide-icon>
             </button>
         </div>

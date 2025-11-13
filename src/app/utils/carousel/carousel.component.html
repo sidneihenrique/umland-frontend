@@ -1,4 +1,9 @@
 <div class="swiper" #swiperContainer>
+  <button *ngIf="enableReadAloud" class="read-aloud-btn" (click)="readCurrent()" [attr.aria-pressed]="playing" [title]="playing ? 'Parar leitura' : 'Ouvir slide'">
+    <!-- texto + ícone simples; troque por <lucide-icon> se preferir e importar o módulo -->
+    <lucide-icon *ngIf="!playing" name="volume-off" class="lucide-icon" [size]="24"></lucide-icon>
+    <lucide-icon *ngIf="playing" name="volume-2" class="lucide-icon" [size]="24"></lucide-icon>
+  </button>
   <div class="swiper-wrapper">
     <div class="swiper-slide" *ngFor="let item of items">
       <p>{{ item }}</p>
