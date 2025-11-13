@@ -246,7 +246,7 @@ export class GameMapComponent implements OnInit, OnDestroy {
   }
 
   getCharacterImagePath(phaseUser: PhaseUser): string {
-    return `http://localhost:9090/uploads/characters/${phaseUser.phase.character.filePath}`;
+    return FileUrlBuilder.character(phaseUser.phase.character.filePath);
   }
 
   // ✅ Métodos de compatibilidade
