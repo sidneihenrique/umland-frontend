@@ -82,7 +82,7 @@ export class HeaderComponent implements OnInit, OnDestroy, OnChanges {
   // novo: controla exibição do tutorial
   public showTutorialModal: boolean = false;
   // coloque aqui a URL/ID do vídeo do YouTube que deseja exibir
-  public tutorialVideoUrl: string = 'https://www.youtube.com/watch?v=377KHulJJoY';
+  public tutorialVideoUrl: string = 'https://youtu.be/bQvr8F2PNwA';
 
   constructor(
     private dataService: DataService,

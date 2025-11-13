@@ -1,6 +1,5 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://divergent-techily-shawnta.ngrok-free.dev/$1" }
-  ]
+  "buildCommand": "ng build --configuration production",
+  "outputDirectory": "dist/umland-frontend/browser",
+  "framework": "angular"
 }
